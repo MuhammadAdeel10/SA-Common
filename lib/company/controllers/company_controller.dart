@@ -8,6 +8,7 @@ import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/Logger.dart';
+import 'package:sa_common/utils/app_routes.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Controller/BaseController.dart';
@@ -143,6 +144,7 @@ class CompanyController extends BaseController {
         //           isPull: true,
         //         ),
         //     arguments: [companyLogo]);
+        routeName.value = Routes.DASHBOARD;
         return true;
       } else {
         var user = UserModel(
@@ -162,8 +164,8 @@ class CompanyController extends BaseController {
         //Pop Up Or Other Work ToDo
         //hideLoading();
         status.value = Status.success;
+        routeName.value = Routes.BRANCHES;
         //Get.toNamed(Routes.BRANCHES, arguments: [companyName, companyLogo]);
-        openPage;
       }
     }
 
@@ -206,7 +208,7 @@ class CompanyController extends BaseController {
     }
   }
 
-  Future<void> SaveCompanySetting(CompanyModel model) async {
+  Future<CompanySettingModel?> SaveCompanySetting(CompanyModel model) async {
     var saveCompanySetting = lstCompanySetting.firstWhere((element) => element.slug == model.slug!);
     if (model.branches == null) {
       model.branches = [];
@@ -231,6 +233,7 @@ class CompanyController extends BaseController {
     var companySettings = await CompanySettingDatabase().GetCompany();
     if (companySettings != null) {
       Helper.requestContext = companySettings;
+      return companySettings;
     }
     Logger.InfoLog("Create Folder");
     var path = await Helper.createFolder("uploads/${model.slug}/");
@@ -245,6 +248,7 @@ class CompanyController extends BaseController {
         await data.writeAsBytes(imageData.bodyBytes);
       }
     }
+    return null;
   }
 
   Future<List<Branches>?> GetBranches() async {

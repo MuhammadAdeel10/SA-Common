@@ -1,15 +1,14 @@
 class ApiEndPoint {
-  // static const baseUrl = "http://localhost:44356/api/";
-  static String baseUrl = "";
-  // static const ImageBaseUrl = "https://qa.splendidaccounts.com/";
-  static String ImageBaseUrl = "";
+  static const baseUrl = "https://qa.splendidaccounts.com/api/";
+  //static String baseUrl = "";
+  static const ImageBaseUrl = "https://qa.splendidaccounts.com/";
+  //static String ImageBaseUrl = "";
 
   static const logIn = "auth/login";
   static const refreshToken = "auth/refreshToken";
   static const getAllCompanies = "companies";
   static const licenseStatus = "/LicenseActiveSubscription/LicenseStatus";
-  static const allActiveSubscription =
-      "/LicenseActiveSubscription/AllActiveSubscription";
+  static const allActiveSubscription = "/LicenseActiveSubscription/AllActiveSubscription";
   static const getAllProduct = "/Products/Updated?start=";
   static const getProductCategories = "ProductCategories/Updated?start=";
   static const defaultContacts = "/Contacts/Default";
@@ -41,8 +40,7 @@ class ApiEndPoint {
   static const forgotPassword = "auth/RequestPassword";
   static const branches = "Branches/Users/";
   static const reserve = "/PosCashRegisters/CheckReserveCounter";
-  static const getProposedNumber =
-      "/PosCashRegisters/GetLastNumberOfSeries?series=";
+  static const getProposedNumber = "/PosCashRegisters/GetLastNumberOfSeries?series=";
   static const schemes = "/Schemes/ModifiedBetween/";
   static const regions = "/Regions/ModifiedBetween/";
   static const zones = "/Zones/ModifiedBetween/";
@@ -52,25 +50,19 @@ class ApiEndPoint {
   static const bulkUpdate = "/PosInvoices/SaveAndApprove";
   static const getBatches = "/Batches/ModifiedBetween/";
   static const getProductStocks = "/Products/ModifiedBetween/";
-  static const getTransaction =
-      "/PosCashRegisters/GetTransactionModifiedBetween/";
-  static const getTemplateDefinitionPOSInvoice =
-      "/TemplateDefinitions/PosInvoice/ActiveTemplates/";
+  static const getTransaction = "/PosCashRegisters/GetTransactionModifiedBetween/";
+  static const getTemplateDefinitionPOSInvoice = "/TemplateDefinitions/PosInvoice/ActiveTemplates/";
   static const saleReturn = "/saleReturns/UnAllocatedByNumber/";
   static const fbrInvoiceNumber = "/PosInvoices/FBRInvoiceNo";
   static const creditNotes = "/creditNotes/UnAllocatedByNumber/";
-  static const defaultBatchesByProductWarehouse =
-      "/DefaultBatchesByProductWarehouse";
-  static const cashAndBankAccounts =
-      "/CashAndBankAccounts?currencyId=&includeHomeCurrency=true&isActive=true";
+  static const defaultBatchesByProductWarehouse = "/DefaultBatchesByProductWarehouse";
+  static const cashAndBankAccounts = "/CashAndBankAccounts?currencyId=&includeHomeCurrency=true&isActive=true";
   static const fundTransfer = "/FundsTransfer/SaveAndApprove?";
   static const authorizeFundTransfer = "/FundsTransfer/AuthorizeFundTransfer?";
   static const attachmentsFundTransfer = "/attachments/FundTransfer/0";
   static const attachments = "/attachments/";
   static const downloadAttachments = "/attachments/doc/";
-  static const getCustomerLoyaltyPoint =
-      "/CustomerLoyatyPoint/ModifiedBetween/";
-  static const getCustomerLoyaltyPointBalance =
-      "/CustomerLoyatyPoint/CustomerLoyatyPointBalance/";
+  static const getCustomerLoyaltyPoint = "/CustomerLoyatyPoint/ModifiedBetween/";
+  static const getCustomerLoyaltyPointBalance = "/CustomerLoyatyPoint/CustomerLoyatyPointBalance/";
   static const EndOfTheFDay = "/EndOfDay/GetLastEndOfDay/";
 }

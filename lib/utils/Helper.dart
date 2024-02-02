@@ -24,6 +24,7 @@ import '../schemes/database/productSalesTax_database.dart';
 import '../schemes/database/product_database.dart';
 import '../schemes/database/tax_database.dart';
 import '../synchronization/Database/EndOfTheDay_database.dart';
+import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
 import 'ApiEndPoint.dart';
 import 'LocalStorageKey.dart';
@@ -40,6 +41,7 @@ class Helper {
   static EndOfTheDayModel? endOfTheDayModel = null;
   static UserModel user = UserModel();
   static String plainPassword = "";
+  static String homeCurrency = "";
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
     return emailValid;
@@ -173,6 +175,10 @@ class Helper {
     branchProductSalesTaxModel = await BranchProductTaxDatabase().getByCompanySlug();
     discounts = await DiscountDatabase().getByCompanySlug();
     var getLastEndOfDay = await EndOfTheDayDatabase.dao.SelectSingle("branchId = $branchId order by endOfDayDate desc");
+    var currencyModel = await CurrencyDatabase.dao.SelectSingle("Id = ${Helper.requestContext.currencyId}");
+    if (currencyModel != null) {
+      homeCurrency = !Helper.requestContext.currencySymbol ? currencyModel.code : currencyModel.symbol;
+    }
     endOfTheDayModel = getLastEndOfDay;
   }
 

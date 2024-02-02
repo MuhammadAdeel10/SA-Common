@@ -76,8 +76,7 @@ class POSInvoiceDetailDiscountModel extends BaseModel<int> {
     };
   }
 
-  factory POSInvoiceDetailDiscountModel.fromMap(Map<String, dynamic> map,
-      {String? slug}) {
+  factory POSInvoiceDetailDiscountModel.fromMap(Map<String, dynamic> map, {String? slug}) {
     return POSInvoiceDetailDiscountModel(
         id: map['id']?.toInt(),
         companySlug: map['companySlug'],
@@ -88,9 +87,7 @@ class POSInvoiceDetailDiscountModel extends BaseModel<int> {
         discountInPercent: map['discountInPercent'],
         discountAmount: map['discountAmount'] ?? 0.0,
         totalSavedAmount: map['totalSavedAmount'],
-        appliedOn: map['appliedOn'] != null
-            ? intToDiscountAppliedOn(map['appliedOn'])
-            : null,
+        appliedOn: map['appliedOn'] != null ? intToDiscountAppliedOn(map['appliedOn']) : null,
         sort: map['sort'] == null ? 0 : map['sort'],
         schemeId: map['schemeId']?.toInt(),
         schemeDetailId: map['schemeDetailId']?.toInt(),
@@ -107,11 +104,7 @@ class POSInvoiceDetailDiscountModel extends BaseModel<int> {
     return toMap();
   }
 
-  List<POSInvoiceDetailDiscountModel> FromJson(String str, String slug) =>
-      List<POSInvoiceDetailDiscountModel>.from(json
-          .decode(str)
-          .map((x) => POSInvoiceDetailDiscountModel().fromJson(x, slug: slug)));
+  List<POSInvoiceDetailDiscountModel> FromJson(String str, String slug) => List<POSInvoiceDetailDiscountModel>.from(json.decode(str).map((x) => POSInvoiceDetailDiscountModel().fromJson(x, slug: slug)));
 
-  String ToJson(List<POSInvoiceDetailDiscountModel> data) =>
-      json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  String ToJson(List<POSInvoiceDetailDiscountModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 }

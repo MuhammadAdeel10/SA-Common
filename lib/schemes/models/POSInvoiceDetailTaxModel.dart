@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:sa_common/schemes/models/tax_model.dart';
-import 'package:sa_common/utils/Enums.dart';
+
 import '../../Controller/BaseRepository.dart';
+import '../../utils/Enums.dart';
 
 class POSInvoiceTaxField {
   static final String id = 'id';
@@ -30,17 +32,7 @@ class POSInvoiceTaxModel extends BaseModel<int> {
   int? sort;
   int? branchId;
   TaxModel? tax;
-  POSInvoiceTaxModel(
-      {this.id,
-      this.companySlug,
-      this.posInvoiceDetailId,
-      this.taxId,
-      this.appliedOn,
-      this.taxRate,
-      this.taxAmount,
-      this.sort,
-      this.branchId,
-      this.tax});
+  POSInvoiceTaxModel({this.id, this.companySlug, this.posInvoiceDetailId, this.taxId, this.appliedOn, this.taxRate, this.taxAmount, this.sort, this.branchId, this.tax});
 
   POSInvoiceTaxModel copyWith({
     int? id,
@@ -104,29 +96,12 @@ class POSInvoiceTaxModel extends BaseModel<int> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is POSInvoiceTaxModel &&
-        other.id == id &&
-        other.companySlug == companySlug &&
-        other.posInvoiceDetailId == posInvoiceDetailId &&
-        other.taxId == taxId &&
-        other.appliedOn == appliedOn &&
-        other.taxRate == taxRate &&
-        other.taxAmount == taxAmount &&
-        other.sort == sort &&
-        other.branchId == branchId;
+    return other is POSInvoiceTaxModel && other.id == id && other.companySlug == companySlug && other.posInvoiceDetailId == posInvoiceDetailId && other.taxId == taxId && other.appliedOn == appliedOn && other.taxRate == taxRate && other.taxAmount == taxAmount && other.sort == sort && other.branchId == branchId;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^
-        companySlug.hashCode ^
-        posInvoiceDetailId.hashCode ^
-        taxId.hashCode ^
-        appliedOn.hashCode ^
-        taxRate.hashCode ^
-        taxAmount.hashCode ^
-        sort.hashCode ^
-        branchId.hashCode;
+    return id.hashCode ^ companySlug.hashCode ^ posInvoiceDetailId.hashCode ^ taxId.hashCode ^ appliedOn.hashCode ^ taxRate.hashCode ^ taxAmount.hashCode ^ sort.hashCode ^ branchId.hashCode;
   }
 
   @override
@@ -139,11 +114,7 @@ class POSInvoiceTaxModel extends BaseModel<int> {
     return toMap();
   }
 
-  List<POSInvoiceTaxModel> FromJson(String str, String slug) =>
-      List<POSInvoiceTaxModel>.from(json
-          .decode(str)
-          .map((x) => POSInvoiceTaxModel().fromJson(x, slug: slug)));
+  List<POSInvoiceTaxModel> FromJson(String str, String slug) => List<POSInvoiceTaxModel>.from(json.decode(str).map((x) => POSInvoiceTaxModel().fromJson(x, slug: slug)));
 
-  String ToJson(List<POSInvoiceTaxModel> data) =>
-      json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  String ToJson(List<POSInvoiceTaxModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 }

@@ -212,23 +212,15 @@ class SchemePOSInvoiceDetailModel {
       tagPrice: map['tagPrice'],
       totalSavedAmount: map['totalSavedAmount'],
       discountType: map['discountType']?.toInt(),
-      discounts: map['discounts'] != null
-          ? List<POSInvoiceDetailDiscountModel>.from(map['discounts']
-              ?.map((x) => POSInvoiceDetailDiscountModel.fromMap(x)))
-          : null,
-      taxes: map['taxes'] != null
-          ? List<POSInvoiceTaxModel>.from(
-              map['taxes']?.map((x) => POSInvoiceTaxModel.fromMap(x)))
-          : null,
-      product:
-          map['product'] != null ? ProductModel.fromMap(map['product']) : null,
+      discounts: map['discounts'] != null ? List<POSInvoiceDetailDiscountModel>.from(map['discounts']?.map((x) => POSInvoiceDetailDiscountModel.fromMap(x))) : null,
+      taxes: map['taxes'] != null ? List<POSInvoiceTaxModel>.from(map['taxes']?.map((x) => POSInvoiceTaxModel.fromMap(x))) : null,
+      product: map['product'] != null ? ProductModel.fromMap(map['product']) : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory SchemePOSInvoiceDetailModel.fromJson(String source) =>
-      SchemePOSInvoiceDetailModel.fromMap(json.decode(source));
+  factory SchemePOSInvoiceDetailModel.fromJson(String source) => SchemePOSInvoiceDetailModel.fromMap(json.decode(source));
 
   @override
   String toString() {

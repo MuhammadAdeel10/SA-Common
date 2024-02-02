@@ -17,8 +17,7 @@ class BaseRepository<T extends BaseModel> {
   Future<T> find(int id) async {
     try {
       final dbClient = await db;
-      var map =
-          await dbClient.query(tableName, where: "id = ?", whereArgs: [id]);
+      var map = await dbClient.query(tableName, where: "id = ?", whereArgs: [id]);
 
       return fromJson(map.first) as T;
     } catch (ex) {
@@ -32,8 +31,7 @@ class BaseRepository<T extends BaseModel> {
       PrefUtils pref = PrefUtils();
       var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
       final dbClient = await db;
-      var map = await dbClient.rawQuery(
-          '''Select * from $tableName where companySlug = '$slug' and  $filter ''');
+      var map = await dbClient.rawQuery('''Select * from $tableName where companySlug = '$slug' and  $filter ''');
 
       if (map.length > 0) {
         return fromJson(map.first) as T;
@@ -51,8 +49,7 @@ class BaseRepository<T extends BaseModel> {
       PrefUtils pref = PrefUtils();
       var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
       var dbClient = await db;
-      var map = await dbClient.rawQuery(
-          '''Select * from $tableName where companySlug = '$slug' and $filter ''');
+      var map = await dbClient.rawQuery('''Select * from $tableName where companySlug = '$slug' and $filter ''');
       if (map.length > 0) {
         return List.generate(map.length, (i) => fromJson(map[i]) as T);
       } else {
@@ -80,8 +77,7 @@ class BaseRepository<T extends BaseModel> {
       var dbClient = await db;
       var prefs = await SharedPreferences.getInstance();
       var companySlug = prefs.get(LocalStorageKey.companySlug) as String;
-      var map = await dbClient
-          .query(tableName, where: "companySlug = ?", whereArgs: [companySlug]);
+      var map = await dbClient.query(tableName, where: "companySlug = ?", whereArgs: [companySlug]);
       return List.generate(map.length, (i) => fromJson(map[i]) as T);
     } catch (ex) {
       Logger.ErrorLog("Find By Company Slug $tableName: $ex");

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:sa_common/Controller/BaseRepository.dart';
-import 'package:sa_common/utils/Enums.dart';
+import '../../Controller/BaseRepository.dart';
+import '../../utils/Enums.dart';
 
 class PosPaymentField {
   static final String id = 'id';
@@ -17,8 +17,7 @@ class PosPaymentField {
   static final String creditNoteId = 'creditNoteId';
   static final String saleReturnId = 'saleReturnId';
   static final String branchId = 'branchId';
-  static final String customerLoyaltyRedeemPoints =
-      'customerLoyaltyRedeemPoints';
+  static final String customerLoyaltyRedeemPoints = 'customerLoyaltyRedeemPoints';
 }
 
 class PosPaymentModel extends BaseModel<int> {
@@ -38,21 +37,7 @@ class PosPaymentModel extends BaseModel<int> {
   int? saleReturnId;
   int? branchId;
   int customerLoyaltyRedeemPoints;
-  PosPaymentModel(
-      {this.id,
-      this.companySlug,
-      this.posInvoiceId,
-      this.posPaymentMode,
-      this.amount = 0.0,
-      this.adjusted,
-      this.balance,
-      this.cardNumber,
-      this.creditNoteNumber,
-      this.saleReturnNumber,
-      this.creditNoteId,
-      this.saleReturnId,
-      this.branchId,
-      this.customerLoyaltyRedeemPoints = 0});
+  PosPaymentModel({this.id, this.companySlug, this.posInvoiceId, this.posPaymentMode, this.amount = 0.0, this.adjusted, this.balance, this.cardNumber, this.creditNoteNumber, this.saleReturnNumber, this.creditNoteId, this.saleReturnId, this.branchId, this.customerLoyaltyRedeemPoints = 0});
 
   PosPaymentModel copyWith({
     int? id,
@@ -133,37 +118,12 @@ class PosPaymentModel extends BaseModel<int> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is PosPaymentModel &&
-        other.id == id &&
-        other.companySlug == companySlug &&
-        other.posInvoiceId == posInvoiceId &&
-        other.posPaymentMode == posPaymentMode &&
-        other.amount == amount &&
-        other.adjusted == adjusted &&
-        other.balance == balance &&
-        other.cardNumber == cardNumber &&
-        other.creditNoteNumber == creditNoteNumber &&
-        other.saleReturnNumber == saleReturnNumber &&
-        other.creditNoteId == creditNoteId &&
-        other.saleReturnId == saleReturnId &&
-        other.branchId == branchId;
+    return other is PosPaymentModel && other.id == id && other.companySlug == companySlug && other.posInvoiceId == posInvoiceId && other.posPaymentMode == posPaymentMode && other.amount == amount && other.adjusted == adjusted && other.balance == balance && other.cardNumber == cardNumber && other.creditNoteNumber == creditNoteNumber && other.saleReturnNumber == saleReturnNumber && other.creditNoteId == creditNoteId && other.saleReturnId == saleReturnId && other.branchId == branchId;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^
-        companySlug.hashCode ^
-        posInvoiceId.hashCode ^
-        posPaymentMode.hashCode ^
-        amount.hashCode ^
-        adjusted.hashCode ^
-        balance.hashCode ^
-        cardNumber.hashCode ^
-        creditNoteNumber.hashCode ^
-        saleReturnNumber.hashCode ^
-        creditNoteId.hashCode ^
-        saleReturnId.hashCode ^
-        branchId.hashCode;
+    return id.hashCode ^ companySlug.hashCode ^ posInvoiceId.hashCode ^ posPaymentMode.hashCode ^ amount.hashCode ^ adjusted.hashCode ^ balance.hashCode ^ cardNumber.hashCode ^ creditNoteNumber.hashCode ^ saleReturnNumber.hashCode ^ creditNoteId.hashCode ^ saleReturnId.hashCode ^ branchId.hashCode;
   }
 
   @override
@@ -176,11 +136,7 @@ class PosPaymentModel extends BaseModel<int> {
     return toMap();
   }
 
-  List<PosPaymentModel> FromJson(String str, String slug) =>
-      List<PosPaymentModel>.from(json
-          .decode(str)
-          .map((x) => PosPaymentModel().fromJson(x, slug: slug)));
+  List<PosPaymentModel> FromJson(String str, String slug) => List<PosPaymentModel>.from(json.decode(str).map((x) => PosPaymentModel().fromJson(x, slug: slug)));
 
-  String ToJson(List<PosPaymentModel> data) =>
-      json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  String ToJson(List<PosPaymentModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 }

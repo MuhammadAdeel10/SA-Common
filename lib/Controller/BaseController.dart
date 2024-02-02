@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 import 'package:sa_common/utils/Helper.dart';
 import '../HttpService/AppExceptions.dart';
 
-enum Status { loading, success, error }
+enum Status { idle, loading, success, error }
 
 abstract class BaseController extends GetxController {
   BuildContext? context = Get.key.currentContext;
-  Rx<Status> status = Status.loading.obs;
+  Rx<Status> status = Status.idle.obs;
   RxString message = "Please Wait...".obs;
   RxString errorTitle = "".obs;
   RxString errorMessage = "".obs;
