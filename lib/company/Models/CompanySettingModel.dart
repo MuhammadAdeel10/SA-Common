@@ -41,6 +41,7 @@ class CompanySettingField {
   static final String customerLoyaltyProgramCategories = 'customerLoyaltyProgramCategories';
   static final String customerLoyaltyCalculationType = 'customerLoyaltyCalculationType';
   static final String currencySymbol = 'currencySymbol';
+  static final String allowNegativeStock = 'allowNegativeStock';
 }
 
 class CompanySettingModel extends BaseModel<Guid> {
@@ -82,6 +83,7 @@ class CompanySettingModel extends BaseModel<Guid> {
   int decimalPlaces;
   CustomerLoyaltyCalculationType customerLoyaltyCalculationType;
   bool currencySymbol;
+  bool allowNegativeStock;
 
   CompanySettingModel(
       {this.id,
@@ -119,7 +121,8 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.printerName,
       this.decimalPlaces = 0,
       this.customerLoyaltyCalculationType = CustomerLoyaltyCalculationType.None,
-      this.currencySymbol = false});
+      this.currencySymbol = false,
+      this.allowNegativeStock = false});
 
   CompanySettingModel copyWith({
     Guid? id,
@@ -197,6 +200,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       'customerLoyaltyProgramCategories': customerLoyaltyProgramCategories,
       'customerLoyaltyCalculationType': customerLoyaltyCalculationType.value,
       'currencySymbol': currencySymbol == true ? 1 : 0,
+      'allowNegativeStock': allowNegativeStock == true ? 1 : 0,
     };
   }
 
@@ -238,6 +242,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       customerLoyaltyPointsToAmountConversionRate: map['customerLoyaltyPointsToAmountConversionRate']?.toDouble() ?? 0.0,
       customerLoyaltyCalculationType: intToCustomerLoyaltyCalculationType(map['customerLoyaltyCalculationType'] ?? 0),
       currencySymbol: (map['currencySymbol'] == 0 || map['currencySymbol'] == false) ? false : true,
+      allowNegativeStock: (map['allowNegativeStock'] == 0 || map['allowNegativeStock'] == false) ? false : true,
     );
   }
 

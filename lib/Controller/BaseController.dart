@@ -7,20 +7,14 @@ enum Status { idle, loading, success, error }
 
 abstract class BaseController extends GetxController {
   BuildContext? context = Get.key.currentContext;
-  Rx<Status> status = Status.idle.obs;
-  RxString message = "Please Wait...".obs;
-  RxString errorTitle = "".obs;
-  RxString errorMessage = "".obs;
-  RxString routeName = "".obs;
+
   @protected
   void handleError(
     error, {
     VoidCallback? goLoginPage,
   }) {
-    status.value = Status.error;
-    if (Get.isDialogOpen!) {
-      Get.back();
-    }
+    //status.value = Status.error;
+    Helper.dialogHide();
     if (error is BadRequestException) {
       var message = error.message;
       Helper.errorMsg("Bad Request", message ?? "Something went wrong", context!);
@@ -28,7 +22,9 @@ abstract class BaseController extends GetxController {
     } else if (error is ForbiddenException) {
       Helper.errorMsg("Unauthorized", "You are not authorized to access in this page", context!);
     } else if (error is UnAuthorizedException) {
-      goLoginPage;
+      if (goLoginPage != null) {
+        goLoginPage();
+      }
       // Navigator.pushAndRemoveUntil(context!, MaterialPageRoute(
       //   builder: (context) {
       //     PrefUtils().clearPreferencesData();
@@ -39,7 +35,9 @@ abstract class BaseController extends GetxController {
     } else if (error is NotFoundException) {
       Helper.errorMsg('Not Found', error.message ?? "Something went wrong", context!);
     } else if (error is LockException) {
-      goLoginPage;
+      if (goLoginPage != null) {
+        goLoginPage();
+      }
       // Navigator.pushAndRemoveUntil(context!, MaterialPageRoute(
       //   builder: (context) {
       //     PrefUtils().clearPreferencesData();

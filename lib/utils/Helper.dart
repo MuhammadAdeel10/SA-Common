@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:sa_common/Controller/statusController.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserDatabase.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -18,6 +19,7 @@ import 'package:sa_common/synchronization/Models/BranchProductTaxModel.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:toastification/toastification.dart';
+import '../Controller/BaseController.dart';
 import '../productCategory/product_categoriesDatabase.dart';
 import '../productCategory/product_categories_model.dart';
 import '../schemes/database/productSalesTax_database.dart';
@@ -29,7 +31,7 @@ import '../synchronization/Models/EndOfTheDay_model.dart';
 import 'ApiEndPoint.dart';
 import 'LocalStorageKey.dart';
 
-class Helper {
+class Helper extends BaseController {
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   static List<ProductModel> productsModel = [];
   static List<ProductModel> allProductModel = [];
@@ -69,21 +71,31 @@ class Helper {
   }
 
   static Future<bool> hasNetwork() async {
+    StatusController statusController = Get.put(StatusController());
+
     try {
       final result = await InternetAddress.lookup("example.com");
       Logger.InfoLog("hasNetwork  $result");
       var response = await http.get(Uri.parse("${ApiEndPoint.baseUrl}"));
       Logger.InfoLog("Site  statusCode:${response.statusCode}");
       if (response.statusCode != 200) {
+        statusController.status.value = Status.error;
         return false;
       }
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } catch (_) {
-      if (Get.isDialogOpen!) {
-        Get.back();
-      }
+      statusController.status.value = Status.error;
+      // if (Get.isDialogOpen!) {
+      //   Get.back();
+      // }
       Logger.ErrorLog("hasNetwork  $_");
       return false;
+    }
+  }
+
+  static dialogHide() {
+    if (Get.isDialogOpen!) {
+      Get.back();
     }
   }
 

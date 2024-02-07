@@ -49,7 +49,7 @@ class ApiEndPoint {
   static const territories = "/Territories/ModifiedBetween/";
   static const bulkUpdate = "/PosInvoices/SaveAndApprove";
   static const getBatches = "/Batches/ModifiedBetween/";
-  static const getProductStocks = "/Products/ModifiedBetween/";
+  static const getProductStocks = "/Products/ModifiedBetweenProductStock/";
   static const getTransaction = "/PosCashRegisters/GetTransactionModifiedBetween/";
   static const getTemplateDefinitionPOSInvoice = "/TemplateDefinitions/PosInvoice/ActiveTemplates/";
   static const saleReturn = "/saleReturns/UnAllocatedByNumber/";

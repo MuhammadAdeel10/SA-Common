@@ -7,8 +7,7 @@ enum DiscountAppliedOn {
 }
 
 DiscountAppliedOn intToDiscountAppliedOn(int value) {
-  return DiscountAppliedOn.values
-      .firstWhere((element) => element.value == value);
+  return DiscountAppliedOn.values.firstWhere((element) => element.value == value);
 }
 
 enum DiscountType {
@@ -35,8 +34,7 @@ enum SaleTaxAppliedOn {
 }
 
 SaleTaxAppliedOn intToSaleTaxAppliedOn(int value) {
-  return SaleTaxAppliedOn.values
-      .firstWhere((element) => element.value == value);
+  return SaleTaxAppliedOn.values.firstWhere((element) => element.value == value);
 }
 
 enum DiscountInvoiceType {
@@ -95,8 +93,7 @@ enum SaleInvoiceStatus {
 }
 
 SaleInvoiceStatus intToSaleInvoiceStatus(int value) {
-  return SaleInvoiceStatus.values
-      .firstWhere((element) => element.value == value);
+  return SaleInvoiceStatus.values.firstWhere((element) => element.value == value);
 }
 
 DiscountType intDiscountType(int value) {
@@ -116,8 +113,7 @@ enum SaleReturnStatus {
 }
 
 SaleReturnStatus intToSaleReturnStatus(int value) {
-  return SaleReturnStatus.values
-      .firstWhere((element) => element.value == value);
+  return SaleReturnStatus.values.firstWhere((element) => element.value == value);
 }
 
 enum FundTransferStatus {
@@ -131,8 +127,7 @@ enum FundTransferStatus {
 }
 
 FundTransferStatus intToFundTransferStatus(int value) {
-  return FundTransferStatus.values
-      .firstWhere((element) => element.value == value);
+  return FundTransferStatus.values.firstWhere((element) => element.value == value);
 }
 
 enum CustomerLoyaltyCalculationType {
@@ -146,6 +141,19 @@ enum CustomerLoyaltyCalculationType {
 }
 
 CustomerLoyaltyCalculationType intToCustomerLoyaltyCalculationType(int value) {
-  return CustomerLoyaltyCalculationType.values
-      .firstWhere((element) => element.value == value);
+  return CustomerLoyaltyCalculationType.values.firstWhere((element) => element.value == value);
+}
+
+enum LicenseStatus {
+  Pending(0),
+  Activated(10),
+  Deactivated(20),
+  PaymentNotVerified(30),
+  AwaitingPayment(40),
+  NearToExpire(50),
+  Expired(100),
+  Demo(200);
+
+  const LicenseStatus(this.value);
+  final int value;
 }

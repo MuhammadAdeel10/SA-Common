@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sa_common/Controller/statusController.dart';
+import 'package:sa_common/company/Database/company_setting_database.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/company/controllers/company_controller.dart';
 import 'package:sa_common/utils/CipherService.dart';
@@ -24,11 +26,12 @@ class LoginController extends BaseController {
   FocusNode focusNodeEmail = FocusNode();
   FocusNode focusNodePassword = FocusNode();
   CompanyController companyController = Get.put(CompanyController());
+  StatusController statusController = Get.put(StatusController());
   //SynchronizationController synchronizationController = Get.put(SynchronizationController());
 
-  Future<dynamic> login(String email, String password, {VoidCallback? errorDialogOpen, Future<CompanySettingModel?>? companySettingModel}) async {
+  Future<dynamic> login(String email, String password, {VoidCallback? errorDialogOpen}) async {
     //synchronizationController.LoaderText('Please Wait..!');
-    status.value = Status.loading;
+    statusController.status.value = Status.loading;
     var hashPassword = CipherService.Encrypt(password);
     UserModel? checkUser = await UserDatabase.instance.getLogin(email.toLowerCase(), hashPassword);
     var prefs = await PrefUtils();
@@ -76,20 +79,20 @@ class LoginController extends BaseController {
         prefs.SetPreferencesInteger(LocalStorageKey.localUserId, userResponse.id ?? 0);
         prefs.SetPreferencesString(LocalStorageKey.userId, userResponse.userId ?? "");
 
-        status.value = Status.success;
-        routeName.value = Routes.COMPANY;
+        statusController.status.value = Status.success;
+        statusController.routeName.value = Routes.COMPANY;
         //Get.toNamed(Routes.COMPANY);
       }
       return response;
     } else {
       if (checkUser == null) {
         //hideLoading();
-        status.value = Status.error;
+        statusController.status.value = Status.error;
         Helper.errorMsg("User Not Found", "", context);
         // DialogHelper.showErrorDialog(description: "User Not Found");
       } else if (DateTime.now().compareTo(checkUser.expiry!) > 0) {
         //hideLoading();
-        status.value = Status.error;
+        statusController.status.value = Status.error;
         Helper.errorMsg("License Expired", "", context);
         // DialogHelper.showErrorDialog(description: "License Expired");
       } else {
@@ -99,13 +102,15 @@ class LoginController extends BaseController {
         prefs.SetPreferencesInteger(LocalStorageKey.localUserId, checkUser.id ?? 0);
         prefs.SetPreferencesString(LocalStorageKey.userId, checkUser.userId ?? "");
 
-        var companySetting = await companySettingModel;
+        var companySetting = await CompanySettingDatabase().GetCompany();
+
         if (companySetting != null) {
           Helper.requestContext = companySetting;
         }
-        status.value = Status.success;
+
+        statusController.status.value = Status.success;
         Helper.plainPassword = password;
-        routeName.value = Routes.DASHBOARD;
+        statusController.routeName.value = Routes.DASHBOARD;
         //Get.toNamed(Routes.DASHBOARD);
       }
     }
@@ -126,14 +131,22 @@ class LoginController extends BaseController {
 
   Future<void> ForgotPassword(String email) async {
     //showLoading();
-    status.value = Status.loading;
+    statusController.status.value = Status.loading;
 
     var payloadMap = {
       "email": email,
     };
-    await BaseClient().post(ApiEndPoint.forgotPassword, payloadMap).catchError((error) {
+    var response = await BaseClient().postWithoutAuthorizationToken(ApiEndPoint.forgotPassword, payloadMap).catchError((error) {
       handleError(error);
     });
+
+    if (response != null && response.statusCode == 200) {
+      Helper.dialogHide();
+      Helper.successMsg("Reset Password", "Reset password instructions have been sent to your email", context);
+      Get.back();
+    } else {
+      Helper.dialogHide();
+    }
   }
 
   @override
@@ -184,7 +197,7 @@ class LoginController extends BaseController {
         var payloadMap = {UserFields.email: email, UserFields.password: password};
         var response = await BaseClient().post(ApiEndPoint.logIn, payloadMap).catchError((error) {
           handleError(error);
-          // Get.toNamed(Routes.LOGIN);
+          Get.toNamed(Routes.LOGIN);
           return false;
         });
         if (response == null && response.statusCode != 200) {

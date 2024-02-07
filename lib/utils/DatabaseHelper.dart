@@ -3,14 +3,12 @@ import 'package:path/path.dart';
 import 'package:sa_common/SyncSetting/model.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserModel.dart';
-import 'package:sa_common/schemes/models/POSInvoiceDetailTaxModel.dart';
-import 'package:sa_common/schemes/models/POSInvoiceDiscountModel.dart';
+import 'package:sa_common/productStock/productStock_model.dart';
 import 'package:sa_common/schemes/models/ProductSalesTaxModel.dart';
 import 'package:sa_common/schemes/models/SubAreasModel.dart';
 import 'package:sa_common/schemes/models/ZonesModel.dart';
 import 'package:sa_common/schemes/models/areasModel.dart';
 import 'package:sa_common/schemes/models/discount_model.dart';
-import 'package:sa_common/schemes/models/posPaymentDetailModel.dart';
 import 'package:sa_common/schemes/models/product_model.dart';
 import 'package:sa_common/schemes/models/schemeCustomerCategoriesModel.dart';
 import 'package:sa_common/schemes/models/schemeDetailsModel.dart';
@@ -419,6 +417,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.syncDate} $dateTimeType,
       ${CompanySettingField.printerName} $textType,
       ${CompanySettingField.logo} $textType,
+      ${CompanySettingField.allowNegativeStock} $boolType CHECK(${CompanySettingField.allowNegativeStock} IN (0,1)),
       ${CompanySettingField.enableScheme} $boolType CHECK(${CompanySettingField.enableScheme} IN (0,1)),
       ${CompanySettingField.enableCustomerLoyaltyPoints} $boolType CHECK(${CompanySettingField.enableCustomerLoyaltyPoints} IN (0,1)),
       ${CompanySettingField.customerLoyaltyProgramCategories} $textType,
@@ -881,23 +880,23 @@ class DatabaseHelper implements DBHelper {
 //   FOREIGN KEY (${BatchesField.productId}) REFERENCES ${Tables.products} (id)
 // )''');
 
-//     batch.execute('''
-//   CREATE TABLE ${Tables.ProductStocks} (
-//   ${ProductSockField.id} $idTypeNoAutoIncrement,
-//   ${ProductSockField.companySlug} $textTypeNotNull,
-//   ${ProductSockField.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
-//   ${ProductSockField.syncDate} $dateTimeType,
-//   ${ProductSockField.updatedOn} $dateTimeType,
-//   ${ProductSockField.productId} $integerType,
-//   ${ProductSockField.warehouseId} $integerType,
-//   ${ProductSockField.consignmentId} $integerType,
-//   ${ProductSockField.batchId} $integerType,
-//   ${ProductSockField.quantityInHand} $decimalType,
-//   ${ProductSockField.serialNumber} $textType,
-//   FOREIGN KEY (${ProductSockField.productId}) REFERENCES ${Tables.products} (id),
-//   FOREIGN KEY (${ProductSockField.warehouseId}) REFERENCES ${Tables.WareHouse} (id),
-//   FOREIGN KEY (${ProductSockField.batchId}) REFERENCES ${Tables.Batches} (id)
-// )''');
+    batch.execute('''
+  CREATE TABLE ${Tables.ProductStocks} (
+  ${ProductSockField.id} $idTypeNoAutoIncrement,
+  ${ProductSockField.companySlug} $textTypeNotNull,
+  ${ProductSockField.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
+  ${ProductSockField.syncDate} $dateTimeType,
+  ${ProductSockField.updatedOn} $dateTimeType,
+  ${ProductSockField.productId} $integerType,
+  ${ProductSockField.warehouseId} $integerType,
+  ${ProductSockField.consignmentId} $integerType,
+  ${ProductSockField.batchId} $integerType,
+  ${ProductSockField.quantityInHand} $decimalType,
+  ${ProductSockField.serialNumber} $textType,
+  FOREIGN KEY (${ProductSockField.productId}) REFERENCES ${Tables.products} (id),
+  FOREIGN KEY (${ProductSockField.warehouseId}) REFERENCES ${Tables.WareHouse} (id),
+  FOREIGN KEY (${ProductSockField.batchId}) REFERENCES ${Tables.Batches} (id)
+)''');
 
 //     batch.execute('''
 //   CREATE TABLE ${Tables.Transaction} (
