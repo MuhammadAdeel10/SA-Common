@@ -24,16 +24,16 @@ class BaseClient {
   }
 
   //GET
-  Future<dynamic> get(String api) async {
+  Future<dynamic> get(String baseUrl, String api) async {
     String token = "";
     if (api != ApiEndPoint.logIn) {
       var pref = await SharedPreferences.getInstance();
       token = pref.get(LocalStorageKey.token) as String;
     }
-    var uri = Uri.parse(ApiEndPoint.baseUrl + api);
+    var uri = Uri.parse(baseUrl + api);
     try {
       var response = await http.get(uri, headers: GetHeader(token: token)).timeout(Duration(minutes: TIME_OUT_DURATION));
-      return _processResponse(response);
+      return _processResponse(baseUrl, response);
     } on SocketException {
       Logger.ErrorLog('data: $uri + ${uri.toString()}');
       throw FetchDataException('No Internet connection', uri.toString());
@@ -44,18 +44,18 @@ class BaseClient {
   }
 
   //POST
-  Future<dynamic> post(String api, dynamic userBody) async {
+  Future<dynamic> post(String baseUrl, String api, dynamic userBody) async {
     String token = "";
     if (api != ApiEndPoint.logIn) {
       var pref = await SharedPreferences.getInstance();
       token = pref.get(LocalStorageKey.token) as String;
     }
 
-    var uri = Uri.parse(ApiEndPoint.baseUrl + api);
+    var uri = Uri.parse(baseUrl + api);
     var jsonEncode = json.encode(userBody);
     try {
       var response = await http.post(uri, body: jsonEncode, headers: GetHeader(token: token)).timeout(Duration(minutes: TIME_OUT_DURATION));
-      return _processResponse(response);
+      return _processResponse(baseUrl, response);
     } on SocketException {
       throw FetchDataException('No Internet connection', uri.toString());
     } on TimeoutException {
@@ -65,12 +65,12 @@ class BaseClient {
     }
   }
 
-  Future<dynamic> postWithoutAuthorizationToken(String api, dynamic userBody) async {
-    var uri = Uri.parse(ApiEndPoint.baseUrl + api);
+  Future<dynamic> postWithoutAuthorizationToken(String baseUrl, String api, dynamic userBody) async {
+    var uri = Uri.parse(baseUrl + api);
     var jsonEncode = json.encode(userBody);
     try {
       var response = await http.post(uri, body: jsonEncode, headers: GetHeader()).timeout(Duration(minutes: TIME_OUT_DURATION));
-      return _processResponse(response);
+      return _processResponse(baseUrl, response);
     } on SocketException {
       throw FetchDataException('No Internet connection', uri.toString());
     } on TimeoutException {
@@ -80,16 +80,16 @@ class BaseClient {
     }
   }
 
-  Future<dynamic> put(String api, dynamic userBody) async {
+  Future<dynamic> put(String baseUrl, String api, dynamic userBody) async {
     var pref = await SharedPreferences.getInstance();
     String token = pref.get(LocalStorageKey.token) as String;
 
-    var uri = Uri.parse(ApiEndPoint.baseUrl + api);
+    var uri = Uri.parse(baseUrl + api);
     var jsonEncode = json.encode(userBody);
 
     try {
       var response = await http.put(uri, body: jsonEncode, headers: GetHeader(token: token)).timeout(Duration(minutes: TIME_OUT_DURATION));
-      return _processResponse(response);
+      return _processResponse(baseUrl, response);
     } on SocketException {
       throw FetchDataException('No Internet connection', uri.toString());
     } on TimeoutException {
@@ -99,8 +99,8 @@ class BaseClient {
     }
   }
 
-  Future<dynamic> postFile(String url, List<PlatformFile> selectedFiles) async {
-    var uri = Uri.parse(ApiEndPoint.baseUrl + url);
+  Future<dynamic> postFile(String baseUrl, String url, List<PlatformFile> selectedFiles) async {
+    var uri = Uri.parse(baseUrl + url);
     var pref = await SharedPreferences.getInstance();
     String token = pref.get(LocalStorageKey.token) as String;
 
@@ -117,7 +117,7 @@ class BaseClient {
       var response = await request.send();
       var result = await http.Response.fromStream(response);
 
-      return _processResponse(result);
+      return _processResponse(baseUrl, result);
     } on SocketException {
       throw FetchDataException('No Internet connection', uri.toString());
     } on TimeoutException {
@@ -128,14 +128,14 @@ class BaseClient {
     // Send the request and await the response:
   }
 
-  Future<dynamic> delete(String api) async {
+  Future<dynamic> delete(String baseUrl, String api) async {
     var pref = await SharedPreferences.getInstance();
     String token = pref.get(LocalStorageKey.token) as String;
 
-    var uri = Uri.parse(ApiEndPoint.baseUrl + api);
+    var uri = Uri.parse(baseUrl + api);
     try {
       var response = await http.delete(uri, headers: GetHeader(token: token)).timeout(Duration(minutes: TIME_OUT_DURATION));
-      return _processResponse(response);
+      return _processResponse(baseUrl, response);
     } on SocketException {
       throw FetchDataException('No Internet connection', uri.toString());
     } on TimeoutException {
@@ -145,7 +145,7 @@ class BaseClient {
     }
   }
 
-  dynamic _processResponse(http.Response response) async {
+  dynamic _processResponse(String baseUrl, http.Response response) async {
     switch (response.statusCode) {
       case 200:
       case 201:
@@ -155,7 +155,7 @@ class BaseClient {
 
       case 400:
         Logger.ErrorLog("${response.request} " + 'Server Exception with statusCode: ${response.statusCode}' + " data:" + response.body);
-        var uri = ApiEndPoint.baseUrl + ApiEndPoint.logIn;
+        var uri = baseUrl + ApiEndPoint.logIn;
         dynamic loginError;
         if (response.request?.url.toString() == uri) {
           var loginJson = json.decode(response.body);

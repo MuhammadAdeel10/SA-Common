@@ -13,12 +13,12 @@ import 'package:sa_common/utils/pref_utils.dart';
 import '../Models/PosCashRegister_model.dart';
 
 class NumberSerialController extends BaseController {
-  Future<String> GetLastPOSInvoiceNumber(String series, PosCashRegisterModel data) async {
+  Future<String> GetLastPOSInvoiceNumber(String baseUrl, String series, PosCashRegisterModel data) async {
     var pref = PrefUtils();
     var userId = pref.GetPreferencesInteger(LocalStorageKey.localUserId);
     var user = await UserDatabase.instance.GetUserById(userId);
 
-    var response = await BaseClient().get("${user.companyId}/${user.branchId}" + ApiEndPoint.getProposedNumber + series).catchError(
+    var response = await BaseClient().get(baseUrl, "${user.companyId}/${user.branchId}" + ApiEndPoint.getProposedNumber + series).catchError(
       (error) {
         handleError(error);
       },
@@ -90,12 +90,12 @@ class NumberSerialController extends BaseController {
     return getNumberSerial.lastNumber;
   }
 
-  Future<String> GetLastSaleReturnInvoiceNumber(String series, PosCashRegisterModel data) async {
+  Future<String> GetLastSaleReturnInvoiceNumber(String baseUrl, String series, PosCashRegisterModel data) async {
     var pref = PrefUtils();
     var userId = pref.GetPreferencesInteger(LocalStorageKey.localUserId);
     var user = await UserDatabase.instance.GetUserById(userId);
 
-    var response = await BaseClient().get("${user.companyId}/${user.branchId}" + "/SaleReturns/GetProposedNumber?series=" + series).catchError(
+    var response = await BaseClient().get(baseUrl, "${user.companyId}/${user.branchId}" + "/SaleReturns/GetProposedNumber?series=" + series).catchError(
       (error) {
         handleError(error);
       },

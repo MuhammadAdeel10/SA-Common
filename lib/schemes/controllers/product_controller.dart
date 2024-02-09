@@ -13,18 +13,14 @@ import 'package:sa_common/utils/TablesName.dart';
 import '../../SyncSetting/Database.dart';
 
 class ProductController extends BaseController {
-  Future<void> GetAllProduct(String slug, int branchId, int page) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.products,
-        slug: slug,
-        branchId: branchId,
-        isBranch: true);
+  Future<void> GetAllProduct(String baseUrl, String imageBaseUrl, String slug, int branchId, int page) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.products, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
     var response = await BaseClient()
         .get(
+      baseUrl,
       "${slug}/${branchId}${ApiEndPoint.getAllProduct}"
       "${formatted}"
       "&page=${page}&pageSize=5000",
@@ -44,32 +40,25 @@ class ProductController extends BaseController {
         var totalPages = decode['pages'];
         // int totalRecord = decode['records'];
         var products = decode['results'];
-        var productList = List<ProductModel>.from(
-            products.map((x) => ProductModel().fromJson(x, slug: slug)));
+        var productList = List<ProductModel>.from(products.map((x) => ProductModel().fromJson(x, slug: slug)));
 
-        await ProductDatabase.bulkInsert(productList);
+        await ProductDatabase.bulkInsert(imageBaseUrl, productList);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await GetAllProduct(slug, branchId, currentPage + 1);
+          await GetAllProduct(baseUrl, imageBaseUrl, slug, branchId, currentPage + 1);
         }
       }
-      var productSalesTaxes = await ProductSalesTaxDatabase.dao
-          .SelectList("applicableToAllBranches = 0");
+      var productSalesTaxes = await ProductSalesTaxDatabase.dao.SelectList("applicableToAllBranches = 0");
       if (productSalesTaxes != null) {
         for (var productSalesTax in productSalesTaxes) {
-          var branchProductTaxes = await BaseClient()
-              .get(
-                  "${slug}/${branchId}/Products/branchProductTaxes/${productSalesTax.productId}")
-              .catchError(
+          var branchProductTaxes = await BaseClient().get(baseUrl, "${slug}/${branchId}/Products/branchProductTaxes/${productSalesTax.productId}").catchError(
             (error) {
               handleError(error);
               throw error;
             },
           );
-          if (branchProductTaxes != null &&
-              branchProductTaxes.statusCode == 200) {
-            var branchProductTaxesModel =
-                BranchProductTaxModel().FromJson(branchProductTaxes.body, slug);
+          if (branchProductTaxes != null && branchProductTaxes.statusCode == 200) {
+            var branchProductTaxesModel = BranchProductTaxModel().FromJson(branchProductTaxes.body, slug);
             await BranchProductTaxDatabase.bulkInsert(branchProductTaxesModel);
             //
           }
@@ -82,21 +71,14 @@ class ProductController extends BaseController {
     }
   }
 
-  Future<void> DeleteProduct(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.products,
-        slug: slug,
-        branchId: branchId,
-        isBranch: true);
+  Future<void> DeleteProduct(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.products, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
 
     var getProductCategories = await ProductDatabase.dao.getAll();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("${slug}/${branchId}${ApiEndPoint.deleteProduct}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "${slug}/${branchId}${ApiEndPoint.deleteProduct}${formatted}").catchError(
       (error) {
         handleError(error);
         throw error;
@@ -108,8 +90,7 @@ class ProductController extends BaseController {
 
       if (productCategories.any((element) => true)) {
         for (var unit in productCategories) {
-          var exist =
-              getProductCategories.any((element) => element.id == unit.id);
+          var exist = getProductCategories.any((element) => element.id == unit.id);
           if (exist) {
             await ProductDatabase.dao.deleteById(unit.id!);
           }

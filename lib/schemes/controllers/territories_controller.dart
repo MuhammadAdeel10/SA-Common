@@ -10,7 +10,7 @@ import 'package:sa_common/utils/TablesName.dart';
 import '../models/territoriesModel.dart';
 
 class TerritoriesController extends BaseController {
-  Future<void> Pull(String slug, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, {int page = 1}) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(
       Tables.Territories,
       slug: slug,
@@ -19,6 +19,7 @@ class TerritoriesController extends BaseController {
     var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
     var response = await BaseClient()
         .get(
+      baseUrl,
       "${slug}${ApiEndPoint.territories}"
       "${syncDateString}"
       "?page=${page}&pageSize=5000",
@@ -35,13 +36,12 @@ class TerritoriesController extends BaseController {
         var currentPage = decode['page'];
         var totalPages = decode['pages'];
         var territories = decode['results'];
-        var pullData = List<TerritoriesModel>.from(
-            territories.map((x) => TerritoriesModel().fromJson(x, slug: slug)));
+        var pullData = List<TerritoriesModel>.from(territories.map((x) => TerritoriesModel().fromJson(x, slug: slug)));
 
         await TerritoriesDatabase.bulkInsert(pullData);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await Pull(slug, page: currentPage + 1);
+          await Pull(baseUrl, slug, page: currentPage + 1);
         }
       }
       getSyncSetting.companySlug = slug;

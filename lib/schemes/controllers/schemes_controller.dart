@@ -41,12 +41,13 @@ import '../models/schemePosInvoiceDetailModel.dart';
 import '../models/tax_model.dart';
 
 class SchemesController extends BaseController {
-  Future<void> Pull(String slug, int branchId, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, int branchId, {int page = 1}) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.Schemes, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
     var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
     var response = await BaseClient()
         .get(
+      baseUrl,
       "$slug/$branchId${ApiEndPoint.schemes}"
       "${syncDateString}"
       "?page=${page}&pageSize=5000",
@@ -68,7 +69,7 @@ class SchemesController extends BaseController {
         await SchemesDatabase.bulkWithMasterDetailInsert(pullData);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await Pull(slug, branchId, page: currentPage + 1);
+          await Pull(baseUrl, slug, branchId, page: currentPage + 1);
         }
       }
       getSyncSetting.companySlug = slug;

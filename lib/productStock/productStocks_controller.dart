@@ -13,13 +13,15 @@ import '../utils/Logger.dart';
 import '../utils/TablesName.dart';
 
 class ProductStocksController extends BaseController {
-  Future<void> Pull(String slug, int branchId, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, int branchId, {int page = 1}) async {
     try {
       var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.ProductStocks, slug: slug, branchId: branchId, isBranch: true);
       DateTime syncDate = DateTime.now().toUtc();
       var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
       var response = await BaseClient()
-          .get("$slug/${branchId}${ApiEndPoint.getProductStocks}"
+          .get(
+              baseUrl,
+              "$slug/${branchId}${ApiEndPoint.getProductStocks}"
               "${syncDateString}"
               "?page=${page}&pageSize=5000")
           .catchError(
@@ -38,7 +40,7 @@ class ProductStocksController extends BaseController {
           await ProductStockDatabase.bulkInsert(productStocksList);
           if (currentPage <= totalPages) {
             print("Pages" + "$currentPage");
-            await Pull(slug, branchId, page: currentPage + 1);
+            await Pull(baseUrl, slug, branchId, page: currentPage + 1);
           }
         }
         getSyncSetting.companySlug = slug;

@@ -9,7 +9,7 @@ import '../Database/area_database.dart';
 import '../models/areasModel.dart';
 
 class AreasController extends BaseController {
-  Future<void> Pull(String slug, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, {int page = 1}) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(
       Tables.Areas,
       slug: slug,
@@ -18,6 +18,7 @@ class AreasController extends BaseController {
     var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
     var response = await BaseClient()
         .get(
+      baseUrl,
       "${slug}${ApiEndPoint.areas}"
       "${syncDateString}"
       "?page=${page}&pageSize=5000",
@@ -34,13 +35,12 @@ class AreasController extends BaseController {
         var currentPage = decode['page'];
         var totalPages = decode['pages'];
         var areas = decode['results'];
-        var pullData = List<AreasModel>.from(
-            areas.map((x) => AreasModel().fromJson(x, slug: slug)));
+        var pullData = List<AreasModel>.from(areas.map((x) => AreasModel().fromJson(x, slug: slug)));
 
         await AreasDatabase.bulkInsert(pullData);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await Pull(slug, page: currentPage + 1);
+          await Pull(baseUrl, slug, page: currentPage + 1);
         }
       }
       getSyncSetting.companySlug = slug;

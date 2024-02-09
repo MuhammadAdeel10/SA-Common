@@ -10,14 +10,14 @@ import '../utils/Helper.dart';
 import '../utils/TablesName.dart';
 
 class ProductCategoriesController extends BaseController {
-  Future<List<BaseModel>> GetAllProductCategories(String slug) async {
+  Future<List<BaseModel>> GetAllProductCategories(String baseUrl, String imageBaseUrl, String slug) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.productsCategories, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
     final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
     var getAllProductCategory = await ProductCategoryDatabase.dao.getAll();
 
-    var response = await BaseClient().get("${slug}/${ApiEndPoint.getProductCategories}${formatted}").catchError(
+    var response = await BaseClient().get(baseUrl, "${slug}/${ApiEndPoint.getProductCategories}${formatted}").catchError(
       (error) {
         handleError(error);
         throw error;
@@ -25,7 +25,7 @@ class ProductCategoriesController extends BaseController {
     );
     if (response != null) {
       var pullData = ProductCategoryModel().FromJson(response.body, slug);
-      ProductCategoryDatabase.bulkInsert(pullData);
+      ProductCategoryDatabase.bulkInsert(imageBaseUrl, pullData);
       getSyncSetting.companySlug = slug;
       getSyncSetting.syncDate = syncDate;
       getSyncSetting.isSync = true;
@@ -35,13 +35,13 @@ class ProductCategoriesController extends BaseController {
     return getAllProductCategory;
   }
 
-  Future<void> DeleteProductCategories(String slug) async {
+  Future<void> DeleteProductCategories(String baseUrl, String slug) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.productsCategories, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getProductCategories = await ProductCategoryDatabase.dao.getAll();
     var getSyncSettingDate = getSyncSetting.syncDate;
     final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient().get("${slug}${ApiEndPoint.deleteCategories}${formatted}").catchError(
+    var response = await BaseClient().get(baseUrl, "${slug}${ApiEndPoint.deleteCategories}${formatted}").catchError(
       (error) {
         handleError(error);
         throw error;

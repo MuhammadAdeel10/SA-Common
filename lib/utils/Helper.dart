@@ -70,13 +70,13 @@ class Helper extends BaseController {
     return Directory.current.path;
   }
 
-  static Future<bool> hasNetwork() async {
+  static Future<bool> hasNetwork(String baseUrl) async {
     StatusController statusController = Get.put(StatusController());
 
     try {
       final result = await InternetAddress.lookup("example.com");
       Logger.InfoLog("hasNetwork  $result");
-      var response = await http.get(Uri.parse("${ApiEndPoint.baseUrl}"));
+      var response = await http.get(Uri.parse("${baseUrl}"));
       Logger.InfoLog("Site  statusCode:${response.statusCode}");
       if (response.statusCode != 200) {
         statusController.status.value = Status.error;

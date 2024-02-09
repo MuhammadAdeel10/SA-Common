@@ -9,19 +9,12 @@ import '../Database/account_database.dart';
 import '../Models/AccountModel.dart';
 
 class AccountController extends BaseController {
-  Future<void> Pull(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.accounts,
-        slug: slug,
-        branchId: branchId,
-        isBranch: true);
+  Future<void> Pull(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.accounts, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("$slug/${branchId}${ApiEndPoint.getAccounts}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "$slug/${branchId}${ApiEndPoint.getAccounts}${formatted}").catchError(
       (error) {
         handleError(error);
       },
@@ -36,21 +29,14 @@ class AccountController extends BaseController {
     }
   }
 
-  Future<void> Delete(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.accounts,
-        slug: slug,
-        branchId: branchId,
-        isBranch: true);
+  Future<void> Delete(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.accounts, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
     var getAll = await AccountDatabase.dao.getAll();
 
-    var response = await BaseClient()
-        .get("${slug}/${branchId}${ApiEndPoint.deleteAccounts}${formatted}")
-        .catchError(
+    var response = await BaseClient().get(baseUrl, "${slug}/${branchId}${ApiEndPoint.deleteAccounts}${formatted}").catchError(
       (error) {
         handleError(error);
       },

@@ -7,12 +7,10 @@ import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/TablesName.dart';
 
 class CurrencyController extends BaseController {
-  Future<void> Pull(String slug, int branchId) async {
-    var getSyncSetting =
-        await SyncSettingDatabase.GetByTableName(Tables.Currency, slug: slug);
+  Future<void> Pull(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.Currency, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
-    var response =
-        await BaseClient().get("${ApiEndPoint.getCurrencies}").catchError(
+    var response = await BaseClient().get(baseUrl, "${ApiEndPoint.getCurrencies}").catchError(
       (error) {
         handleError(error);
         throw error;

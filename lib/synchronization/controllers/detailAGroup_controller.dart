@@ -8,17 +8,12 @@ import '../Database/detailAGroup_database.dart';
 import '../Models/DetailAGroupModel.dart';
 
 class DetailAGroupController extends BaseController {
-  Future<void> Pull(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.DetailAGroup,
-        slug: slug);
+  Future<void> Pull(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.DetailAGroup, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("$slug${ApiEndPoint.getDetailAGroups}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "$slug${ApiEndPoint.getDetailAGroups}${formatted}").catchError(
       (error) {
         handleError(error);
       },
@@ -33,18 +28,13 @@ class DetailAGroupController extends BaseController {
     }
   }
 
-  Future<void> Delete(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.DetailAGroup,
-        slug: slug);
+  Future<void> Delete(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.DetailAGroup, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getAll = await DetailAGroupDatabase.dao.getAll();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("${slug}${ApiEndPoint.deleteDetailAGroups}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "${slug}${ApiEndPoint.deleteDetailAGroups}${formatted}").catchError(
       (error) {
         handleError(error);
       },

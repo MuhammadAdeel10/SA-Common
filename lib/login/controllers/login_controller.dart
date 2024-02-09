@@ -29,16 +29,16 @@ class LoginController extends BaseController {
   StatusController statusController = Get.put(StatusController());
   //SynchronizationController synchronizationController = Get.put(SynchronizationController());
 
-  Future<dynamic> login(String email, String password, {VoidCallback? errorDialogOpen}) async {
+  Future<dynamic> login(String baseUrl, String email, String password, {VoidCallback? errorDialogOpen}) async {
     //synchronizationController.LoaderText('Please Wait..!');
     statusController.status.value = Status.loading;
     var hashPassword = CipherService.Encrypt(password);
     UserModel? checkUser = await UserDatabase.instance.getLogin(email.toLowerCase(), hashPassword);
     var prefs = await PrefUtils();
-    var hasNetwork = await Helper.hasNetwork();
+    var hasNetwork = await Helper.hasNetwork(baseUrl);
     if (hasNetwork) {
       var payloadMap = {UserFields.email: email, UserFields.password: password};
-      var response = await BaseClient().post(ApiEndPoint.logIn, payloadMap).catchError((error) {
+      var response = await BaseClient().post(baseUrl, ApiEndPoint.logIn, payloadMap).catchError((error) {
         handleError(error);
       });
       if (response != null) {
@@ -47,7 +47,7 @@ class LoginController extends BaseController {
         prefs.SetPreferencesString(LocalStorageKey.token, jsonDecode["token"]);
         var userId = jsonDecode["id"];
         var expiryInSeconds = jsonDecode["expires_in"];
-        var userProfile = await GetUserProfile();
+        var userProfile = await GetUserProfile(baseUrl);
         UserModel? userResponse = checkUser;
 
         if (userResponse == null) {
@@ -116,9 +116,9 @@ class LoginController extends BaseController {
     }
   }
 
-  Future<UserModel?> GetUserProfile() async {
+  Future<UserModel?> GetUserProfile(String baseUrl) async {
     //
-    var response = await BaseClient().get("UserProfile").catchError((error) {
+    var response = await BaseClient().get(baseUrl, "UserProfile").catchError((error) {
       handleError(error);
     });
     if (response != null && response.statusCode == 200) {
@@ -129,23 +129,22 @@ class LoginController extends BaseController {
     return null;
   }
 
-  Future<void> ForgotPassword(String email) async {
+  Future<void> ForgotPassword(String baseUrl, String email) async {
     //showLoading();
     statusController.status.value = Status.loading;
 
     var payloadMap = {
       "email": email,
     };
-    var response = await BaseClient().postWithoutAuthorizationToken(ApiEndPoint.forgotPassword, payloadMap).catchError((error) {
+    var response = await BaseClient().postWithoutAuthorizationToken(baseUrl, ApiEndPoint.forgotPassword, payloadMap).catchError((error) {
       handleError(error);
     });
 
     if (response != null && response.statusCode == 200) {
-      Helper.dialogHide();
+      statusController.status.value = Status.success;
       Helper.successMsg("Reset Password", "Reset password instructions have been sent to your email", context);
-      Get.back();
     } else {
-      Helper.dialogHide();
+      statusController.status.value = Status.error;
     }
   }
 
@@ -164,17 +163,17 @@ class LoginController extends BaseController {
     super.onClose();
   }
 
-  Future<void> AutoLogIn(VoidCallback openChallengeLogInPopUp) async {
+  Future<void> AutoLogIn(String baseUrl, VoidCallback openChallengeLogInPopUp) async {
     var pref = PrefUtils();
     var token = pref.GetPreferencesString(LocalStorageKey.token);
     var plainPassword = Helper.plainPassword;
     if (token == "" && plainPassword != "") {
-      var hasNetwork = await Helper.hasNetwork();
+      var hasNetwork = await Helper.hasNetwork(baseUrl);
       if (hasNetwork) {
         var user = Helper.user;
 
         var payloadMap = {UserFields.email: user.email, UserFields.password: plainPassword};
-        var response = await BaseClient().post(ApiEndPoint.logIn, payloadMap).catchError((error) {
+        var response = await BaseClient().post(baseUrl, ApiEndPoint.logIn, payloadMap).catchError((error) {
           if (error is BadRequestException) {
             // Get.dialog(ChallengeLogInPopUp(context!),
             //     barrierDismissible: false);
@@ -183,19 +182,19 @@ class LoginController extends BaseController {
             //     "Bad Request", message ?? "Something went wrong", context!);
           }
         });
-        await CheckResponse(response);
+        await CheckResponse(baseUrl, response);
       }
     }
   }
 
-  Future<bool> ChallengePOpUp(String email, String password) async {
+  Future<bool> ChallengePOpUp(String baseUrl, String email, String password) async {
     if (email != "" && password != "") {
       Helper.errorMsg("LogIn", "Email or Password can not be empty", context);
 
-      var hasNetwork = await Helper.hasNetwork();
+      var hasNetwork = await Helper.hasNetwork(baseUrl);
       if (hasNetwork) {
         var payloadMap = {UserFields.email: email, UserFields.password: password};
-        var response = await BaseClient().post(ApiEndPoint.logIn, payloadMap).catchError((error) {
+        var response = await BaseClient().post(baseUrl, ApiEndPoint.logIn, payloadMap).catchError((error) {
           handleError(error);
           Get.toNamed(Routes.LOGIN);
           return false;
@@ -203,7 +202,7 @@ class LoginController extends BaseController {
         if (response == null && response.statusCode != 200) {
           return false;
         }
-        await CheckResponse(response);
+        await CheckResponse(baseUrl, response);
         Get.back();
         return true;
       }
@@ -212,7 +211,7 @@ class LoginController extends BaseController {
     return false;
   }
 
-  Future<void> CheckResponse(response) async {
+  Future<void> CheckResponse(String baseUrl, response) async {
     var user = Helper.user;
     var pref = PrefUtils();
     if (response != null && response.statusCode == 200) {
@@ -222,20 +221,20 @@ class LoginController extends BaseController {
       pref.SetPreferencesInteger(LocalStorageKey.localUserId, user.id ?? 0);
       pref.SetPreferencesString(LocalStorageKey.userId, user.userId ?? "");
       pref.SetPreferencesString(LocalStorageKey.companySlug, user.companyId ?? "");
-      var getAllCompanies = await companyController.GetAllCompanies();
+      var getAllCompanies = await companyController.GetAllCompanies(baseUrl);
       if (getAllCompanies.isNotEmpty) {
         pref.SetPreferencesInteger(LocalStorageKey.companyCount, getAllCompanies.length);
       }
-      await companyController.GetBranches();
+      await companyController.GetBranches(baseUrl);
     }
   }
 
-  Future<void> RefreshToken() async {
-    if (await Helper.hasNetwork()) {
+  Future<void> RefreshToken(String baseUrl) async {
+    if (await Helper.hasNetwork(baseUrl)) {
       var pref = PrefUtils();
       var token = pref.GetPreferencesString(LocalStorageKey.token);
       if (token.isNotEmpty && token != "") {
-        var response = await BaseClient().post(ApiEndPoint.refreshToken, null).catchError((error) {
+        var response = await BaseClient().post(baseUrl, ApiEndPoint.refreshToken, null).catchError((error) {
           handleError(error);
         });
         if (response != null && response.statusCode == 200) {

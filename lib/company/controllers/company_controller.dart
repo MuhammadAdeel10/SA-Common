@@ -28,9 +28,9 @@ class CompanyController extends BaseController {
   List<CompanySettingModel> lstCompanySetting = [];
   List<Branches> lstBranches = [];
   StatusController statusController = Get.put(StatusController());
-  Future<List<CompanyModel>> GetAllCompanies() async {
+  Future<List<CompanyModel>> GetAllCompanies(String baseUrl) async {
     lstCompany = [];
-    var response = await BaseClient().get(ApiEndPoint.getAllCompanies).catchError(
+    var response = await BaseClient().get(baseUrl, ApiEndPoint.getAllCompanies).catchError(
       (error) {
         handleError(error);
       },
@@ -47,8 +47,8 @@ class CompanyController extends BaseController {
     return lstCompany;
   }
 
-  Future<LicenseStatusModel?> GetLicense(String companySlg) async {
-    var response = await BaseClient().get(companySlg + ApiEndPoint.licenseStatus).catchError(
+  Future<LicenseStatusModel?> GetLicense(String baseUrl, String companySlg) async {
+    var response = await BaseClient().get(baseUrl, companySlg + ApiEndPoint.licenseStatus).catchError(
       (error) {
         handleError(error);
         throw error;
@@ -62,9 +62,9 @@ class CompanyController extends BaseController {
     return null;
   }
 
-  Future<List<AllActiveSubscriptionModel>> AllActiveSubscription(String companySlg) async {
+  Future<List<AllActiveSubscriptionModel>> AllActiveSubscription(String baseUrl, String companySlg) async {
     List<AllActiveSubscriptionModel> lstActive = [];
-    var response = await BaseClient().get(companySlg + ApiEndPoint.allActiveSubscription).catchError(
+    var response = await BaseClient().get(baseUrl, companySlg + ApiEndPoint.allActiveSubscription).catchError(
       (error) {
         handleError(error);
         throw error;
@@ -83,11 +83,11 @@ class CompanyController extends BaseController {
     return lstActive;
   }
 
-  Future<bool> CheckStatus(CompanyModel model, {String? companyName = "", String? companyLogo = "", VoidCallback? openPage, BuildContext? context}) async {
+  Future<bool> CheckStatus(String baseUrl, String imageBaseUrl, CompanyModel model, {String? companyName = "", String? companyLogo = "", VoidCallback? openPage, BuildContext? context}) async {
     statusController.status.value = Status.loading;
     var prefs = await SharedPreferences.getInstance();
     prefs.setString(LocalStorageKey.companySlug, (model.slug ?? ""));
-    var getLicense = await GetLicense(model.slug!);
+    var getLicense = await GetLicense(baseUrl, model.slug!);
     if (getLicense?.licenseStatus == null) {
       //hideLoading();
       statusController.status.value = Status.error;
@@ -101,9 +101,9 @@ class CompanyController extends BaseController {
       return false;
     }
 
-    var allActives = await AllActiveSubscription(model.slug!);
+    var allActives = await AllActiveSubscription(baseUrl, model.slug!);
 
-    SaveCompanySetting(model);
+    SaveCompanySetting(imageBaseUrl, model);
 
     if (allActives.length > 0) {
       final allActive = (allActives.length) > 0 ? allActives.first : null;
@@ -191,9 +191,9 @@ class CompanyController extends BaseController {
     super.onClose();
   }
 
-  Future<void> GetCompany() async {
+  Future<void> GetCompany(String baseUrl) async {
     var companyId = Helper.requestContext.id;
-    var response = await BaseClient().get(ApiEndPoint.getAllCompanies + "/${companyId}").catchError((error) {
+    var response = await BaseClient().get(baseUrl, ApiEndPoint.getAllCompanies + "/${companyId}").catchError((error) {
       handleError(error);
       throw error;
     });
@@ -212,7 +212,7 @@ class CompanyController extends BaseController {
     }
   }
 
-  Future<CompanySettingModel?> SaveCompanySetting(CompanyModel model) async {
+  Future<CompanySettingModel?> SaveCompanySetting(String imageBaseUrl, CompanyModel model) async {
     var saveCompanySetting = lstCompanySetting.firstWhere((element) => element.slug == model.slug!);
     if (model.branches == null) {
       model.branches = [];
@@ -243,7 +243,7 @@ class CompanyController extends BaseController {
     var path = await Helper.createFolder("uploads/${model.slug}/");
     Logger.InfoLog("Path $path");
     if (Helper.requestContext.logo!.isNotEmpty) {
-      var imageUrl = ApiEndPoint.ImageBaseUrl + model.logo!;
+      var imageUrl = imageBaseUrl + model.logo!;
       Logger.InfoLog("Image Url $imageUrl");
       if (imageUrl.isNotEmpty) {
         Uri uri = Uri.parse(imageUrl);
@@ -255,12 +255,12 @@ class CompanyController extends BaseController {
     return null;
   }
 
-  Future<List<Branches>?> GetBranches() async {
+  Future<List<Branches>?> GetBranches(String baseUrl) async {
     lstBranches = [];
     var prefs = await SharedPreferences.getInstance();
     int userId = prefs.getInt(LocalStorageKey.localUserId) as int;
     var user = await UserDatabase.instance.GetUserById(userId);
-    var response = await BaseClient().get("${user.companyId}/" + ApiEndPoint.branches + "${user.userId}").catchError((error) {
+    var response = await BaseClient().get(baseUrl, "${user.companyId}/" + ApiEndPoint.branches + "${user.userId}").catchError((error) {
       handleError(error);
       throw error;
     });

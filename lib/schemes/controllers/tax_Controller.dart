@@ -8,18 +8,14 @@ import 'package:sa_common/utils/TablesName.dart';
 import '../../SyncSetting/Database.dart';
 
 class TaxController extends BaseController {
-  Future<void> GetAllTax(String slug, int branchId) async {
-    var getSyncSetting =
-        await SyncSettingDatabase.GetByTableName(Tables.Tax, slug: slug);
+  Future<void> GetAllTax(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.Tax, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
 
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
 
-    var response = await BaseClient()
-        .get("${slug}${ApiEndPoint.getTaxes} ${formatted}} ")
-        .catchError(
+    var response = await BaseClient().get(baseUrl, "${slug}${ApiEndPoint.getTaxes} ${formatted}} ").catchError(
       (error) {
         handleError(error);
         throw error;

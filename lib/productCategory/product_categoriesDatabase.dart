@@ -53,7 +53,7 @@ class ProductCategoryDatabase {
     return productCategory;
   }
 
-  static Future<void> bulkInsert(List<ProductCategoryModel> model) async {
+  static Future<void> bulkInsert(String imageBaseUrl, List<ProductCategoryModel> model) async {
     final db = await DatabaseHelper.instance.database;
     var user = Helper.user;
     var path = await Helper.createFolder("uploads/${user.companyId}/");
@@ -61,7 +61,7 @@ class ProductCategoryDatabase {
     Batch batch = db.batch();
     for (var val in model) {
       if (val.imageUrl != null && val.imageUrl!.isNotEmpty) {
-        var imageUrl = ApiEndPoint.ImageBaseUrl + val.imageUrl!;
+        var imageUrl = imageBaseUrl + val.imageUrl!;
         Uri uri = Uri.parse(imageUrl);
         final imageData = await http.get(uri);
         var data = await File(join(path, imageUrl.split("/").last)).create(recursive: true);

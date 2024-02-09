@@ -10,15 +10,15 @@ import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/TablesName.dart';
 
 class CustomerLoyaltyPointBalanceController extends BaseController {
-  Future<void> Pull(String slug, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, {int page = 1}) async {
     try {
-      var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-          Tables.CustomerLoyaltyPointBalance,
-          slug: slug);
+      var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.CustomerLoyaltyPointBalance, slug: slug);
       DateTime syncDate = DateTime.now().toUtc();
       var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
       var response = await BaseClient()
-          .get("$slug${ApiEndPoint.getCustomerLoyaltyPoint}"
+          .get(
+              baseUrl,
+              "$slug${ApiEndPoint.getCustomerLoyaltyPoint}"
               "${syncDateString}"
               "?page=${page}&pageSize=5000")
           .catchError(
@@ -35,15 +35,12 @@ class CustomerLoyaltyPointBalanceController extends BaseController {
           var totalPages = decode['pages'];
           // int totalRecord = decode['records'];
           var customerLoyalty = decode['results'];
-          var customerLoyaltyList = List<CustomerLoyaltyPointBalanceModel>.from(
-              customerLoyalty.map((x) =>
-                  CustomerLoyaltyPointBalanceModel().fromJson(x, slug: slug)));
+          var customerLoyaltyList = List<CustomerLoyaltyPointBalanceModel>.from(customerLoyalty.map((x) => CustomerLoyaltyPointBalanceModel().fromJson(x, slug: slug)));
 
-          await CustomerLoyaltyPointBalanceDatabase.bulkInsert(
-              customerLoyaltyList);
+          await CustomerLoyaltyPointBalanceDatabase.bulkInsert(customerLoyaltyList);
           if (currentPage <= totalPages) {
             print("Pages" + "$currentPage");
-            await Pull(slug, page: currentPage + 1);
+            await Pull(baseUrl, slug, page: currentPage + 1);
           }
         }
         getSyncSetting.companySlug = slug;

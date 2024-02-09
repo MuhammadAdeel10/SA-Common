@@ -9,17 +9,12 @@ import '../Database/customerCategory_database.dart';
 import '../Models/CustomerCategoryModel.dart';
 
 class CustomerCategoryController extends BaseController {
-  Future<void> Pull(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.CustomerCategory,
-        slug: slug);
+  Future<void> Pull(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.CustomerCategory, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("$slug/${ApiEndPoint.getCustomerCategories}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "$slug/${ApiEndPoint.getCustomerCategories}${formatted}").catchError(
       (error) {
         handleError(error);
         throw error;
@@ -35,19 +30,14 @@ class CustomerCategoryController extends BaseController {
     }
   }
 
-  Future<void> Delete(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.CustomerCategory,
-        slug: slug);
+  Future<void> Delete(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.CustomerCategory, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
     var getAll = await CustomerCategoryDatabase.dao.getAll();
 
-    var response = await BaseClient()
-        .get("${slug}${ApiEndPoint.deleteCustomerCategories}${formatted}")
-        .catchError(
+    var response = await BaseClient().get(baseUrl, "${slug}${ApiEndPoint.deleteCustomerCategories}${formatted}").catchError(
       (error) {
         handleError(error);
         throw error;
