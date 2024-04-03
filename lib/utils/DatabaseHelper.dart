@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
 import 'package:sa_common/SyncSetting/model.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -29,6 +32,7 @@ import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../productCategory/product_categories_model.dart';
+import '../schemes/models/POSInvoiceDetailTaxModel.dart';
 import '../schemes/models/SchemeInvoiceDiscountModel.dart';
 import '../schemes/models/regionsModel.dart';
 import '../schemes/models/schemeBranchesModel.dart';
@@ -57,6 +61,7 @@ class DatabaseHelper implements DBHelper {
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
   int version = 1;
+  String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
 
@@ -67,15 +72,22 @@ class DatabaseHelper implements DBHelper {
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    _database = await initDB('POS.db');
+    _database = await initDB(dataBaseName);
     return _database!;
   }
 
+  @override
   Future<Database> initDB(String filePath) async {
     try {
+      final path;
       Logger.InfoLog("_initDB $filePath");
+      // if (Platform.isWindows) {
       final dbPath = await getDatabasesPath();
-      final path = join(dbPath, filePath);
+      path = join(dbPath, filePath);
+      // } else {
+      //   final dbPath = await getApplicationDocumentsDirectory();
+      //   path = join(dbPath.path, filePath);
+      // }
 
       return await openDatabase(path, version: version, onCreate: createDB, onUpgrade: onUpgrade);
     } catch (ex) {
@@ -84,8 +96,74 @@ class DatabaseHelper implements DBHelper {
     }
   }
 
+  @override
   Future<void> createDB(Database db, int version) async {
     Batch batch = db.batch();
+
+//     batch.execute(''' create table if not exists TempSchemeDiscountProductIds (
+//     Id int,
+//     BaseVariantId int,BaseProductId int);''');
+//     batch.execute(''' create table if not exists DiscountProductQuantity (
+//     SchemeId int,
+//     DiscountId int,
+//     DiscountProductQuantity decimal(10,30));''');
+
+//     batch.execute(''' create table if not exists TempSchemeProductBonusProductIds (
+//           Id int,
+//           BaseProductId int);''');
+//     batch.execute(''' create table if not exists MaxSchemeProductQuantity (
+//           SchemeId int,
+//           DiscountId int,
+//           SchemeProductQuantity decimal(10,30));''');
+//     batch.execute(''' create table if not exists schemeTableProduct (
+// 		SchemeId int,
+// 		SchemeDetailId int,
+// 		DiscountId int,
+// 		DiscountRate decimal(30, 10),
+// 		DiscountEffect int,
+//     DiscountAmount decimal(30, 10),
+//     DiscountProductQuantity decimal(30, 10));''');
+
+//     batch.execute('''create table if not exists SchemeTableProductCategory (
+// 		SchemeId int,
+// 		SchemeDetailId int,
+// 		DiscountId int,
+// 		DiscountRate decimal(30, 10),
+// 		DiscountEffect int,
+// 		ProductCategoryId int,
+//     DiscountAmount decimal(30, 10),
+//     DiscountProductQuantity decimal(30, 10)
+//     );''');
+
+//     batch.execute('''create table if not exists MaxDiscountProductQuantity (
+// 		SchemeId int,
+// 		SchemeProductCategoryId int,
+// 		DiscountId int,
+// 		DiscountProductQuantity decimal(30, 10));''');
+//     batch.execute('''
+// create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProductCategoryId int, SchemeProductQuantity int);''');
+
+//     batch.execute('''create table if not EXISTS  MaxInoviceDiscount (
+//     SchemeDetailId int,
+//     SchemeId int,
+//     DiscountId int,
+//     BounsAmount decimal (30,10));''');
+
+//     batch.execute(''' CREATE TABLE IF NOT EXISTS SchemeTable (
+//     SchemeId INTEGER,
+//     SchemeDetailId INTEGER,
+//     InvoiceAmount DECIMAL(30, 10),
+//     DiscountRate DECIMAL(30, 10),
+//     DiscountId INTEGER,
+//     DiscountEffect INTEGER
+// );''');
+
+//     batch.execute('''create table if not EXISTS  MaxInoviceDiscounts (
+//     SchemeId int,
+//     SchemeDetailId int,
+//     DiscountId int,
+//     InvoiceAmount decimal (30,10));''');
+
     batch.execute('''
   CREATE TABLE ${Tables.user} ( 
   ${UserFields.id} $idType, 
@@ -235,54 +313,55 @@ class DatabaseHelper implements DBHelper {
     // ${SubAreaFields.syncDate} $dateTimeType)''');
 
     batch.execute('''
-  CREATE TABLE ${Tables.Customer} (
-  ${CustomerFields.id} $idTypeNoAutoIncrement, 
-  ${CustomerFields.idTemp} $integerType,
-  ${CustomerFields.name} $textTypeNotNull,
-  ${CustomerFields.contactType} $integerType,
-  ${CustomerFields.code} $textType,
-  ${CustomerFields.series} $integerType,
-  ${CustomerFields.categoryName} $textType,
-  ${CustomerFields.address1} $textType,
-  ${CustomerFields.address2} $textType,
-  ${CustomerFields.city} $textType,
-  ${CustomerFields.contactPerson} $textType,
-  ${CustomerFields.phone} $textType,
-  ${CustomerFields.fax} $textType,
-  ${CustomerFields.opening} $decimalType,
-  ${CustomerFields.asOfDate} $dateTimeType,
-  ${CustomerFields.creditLimit} $decimalType,
-  ${CustomerFields.creditLimitDays} $integerType,
-  ${CustomerFields.displayName} $textType,
-  ${CustomerFields.printName} $textType,
-  ${CustomerFields.cNIC} $textType,
-  ${CustomerFields.email} $textType,
-  ${CustomerFields.state} $textType,
-  ${CustomerFields.zip} $textType,
-  ${CustomerFields.outstandingBalance} $decimalType,
-  ${CustomerFields.dateOfBirth} $dateTimeType,
-  ${CustomerFields.sTN} $textType,
-  ${CustomerFields.exchangeRate} $decimalType,
-  ${CustomerFields.isNew} $boolType CHECK(${CustomerFields.isNew} IN (0,1)),
-  ${CustomerFields.isDeleted} $boolType CHECK(${CustomerFields.isDeleted} IN (0,1)),
-  ${CustomerFields.discountInPercent} $decimalType,
-  ${CustomerFields.insertedDate} $textType,
-  ${CustomerFields.isActive} $boolType CHECK(${CustomerFields.isActive} IN (0,1)),
-  ${CustomerFields.textField1Value} $textType,
-  ${CustomerFields.textField2Value} $textType,
-  ${CustomerFields.customerCategoryId} $integerType,
-  ${CustomerFields.countryId} $integerType,
-  ${CustomerFields.CurrencyId} $integerType,
-  ${CustomerFields.subAreaId} $integerType,
-  ${CustomerFields.branchId} $integerType,
-  ${CustomerFields.companySlug} $textTypeNotNull,
-  ${CustomerFields.isSync} $boolType CHECK(${CustomerFields.isSync} IN (0,1)),
-  ${CustomerFields.syncDate} $dateTimeType,
-  FOREIGN KEY (${CustomerFields.customerCategoryId}) REFERENCES ${Tables.CustomerCategory} (id),
-  FOREIGN KEY (${CustomerFields.countryId}) REFERENCES ${Tables.Country} (id),
-  FOREIGN KEY (${CustomerFields.CurrencyId}) REFERENCES ${Tables.Currency} (id),
-  FOREIGN KEY (${CustomerFields.subAreaId}) REFERENCES ${Tables.SubAreas} (id)
-  )''');
+    CREATE TABLE ${Tables.Customer} (
+    ${CustomerFields.id} $idTypeNoAutoIncrement,
+    ${CustomerFields.idTemp} $integerType,
+    ${CustomerFields.name} $textTypeNotNull,
+    ${CustomerFields.contactType} $integerType,
+    ${CustomerFields.code} $textType,
+    ${CustomerFields.series} $integerType,
+    ${CustomerFields.categoryName} $textType,
+    ${CustomerFields.address1} $textType,
+    ${CustomerFields.address2} $textType,
+    ${CustomerFields.city} $textType,
+    ${CustomerFields.contactPerson} $textType,
+    ${CustomerFields.phone} $textType,
+    ${CustomerFields.fax} $textType,
+    ${CustomerFields.opening} $decimalType,
+    ${CustomerFields.asOfDate} $dateTimeType,
+    ${CustomerFields.creditLimit} $decimalType,
+    ${CustomerFields.creditLimitDays} $integerType,
+    ${CustomerFields.displayName} $textType,
+    ${CustomerFields.printName} $textType,
+    ${CustomerFields.cNIC} $textType,
+    ${CustomerFields.email} $textType,
+    ${CustomerFields.state} $textType,
+    ${CustomerFields.zip} $textType,
+    ${CustomerFields.outstandingBalance} $decimalType,
+    ${CustomerFields.dateOfBirth} $dateTimeType,
+    ${CustomerFields.sTN} $textType,
+    ${CustomerFields.exchangeRate} $decimalType,
+    ${CustomerFields.isNew} $boolType CHECK(${CustomerFields.isNew} IN (0,1)),
+    ${CustomerFields.isEdit} $boolType CHECK(${CustomerFields.isEdit} IN (0,1)),
+    ${CustomerFields.isDeleted} $boolType CHECK(${CustomerFields.isDeleted} IN (0,1)),
+    ${CustomerFields.discountInPercent} $decimalType,
+    ${CustomerFields.insertedDate} $textType,
+    ${CustomerFields.isActive} $boolType CHECK(${CustomerFields.isActive} IN (0,1)),
+    ${CustomerFields.textField1Value} $textType,
+    ${CustomerFields.textField2Value} $textType,
+    ${CustomerFields.customerCategoryId} $integerType,
+    ${CustomerFields.countryId} $integerType,
+    ${CustomerFields.CurrencyId} $integerType,
+    ${CustomerFields.subAreaId} $integerType,
+    ${CustomerFields.branchId} $integerType,
+    ${CustomerFields.companySlug} $textTypeNotNull,
+    ${CustomerFields.isSync} $boolType CHECK(${CustomerFields.isSync} IN (0,1)),
+    ${CustomerFields.syncDate} $dateTimeType,
+    FOREIGN KEY (${CustomerFields.customerCategoryId}) REFERENCES ${Tables.CustomerCategory} (id),
+    FOREIGN KEY (${CustomerFields.countryId}) REFERENCES ${Tables.Country} (id),
+    FOREIGN KEY (${CustomerFields.CurrencyId}) REFERENCES ${Tables.Currency} (id),
+    FOREIGN KEY (${CustomerFields.subAreaId}) REFERENCES ${Tables.SubAreas} (id)
+    )''');
     batch.execute('''
     CREATE TABLE ${Tables.MasterGroup} (
     ${MasterGroupField.id} $idTypeNoAutoIncrement,
@@ -426,25 +505,25 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.customerLoyaltyPointsToAmountConversionRate} $decimalType,
       ${CompanySettingField.customerLoyaltyCalculationType} $integerType
       )''');
-    // batch.execute('''
-    //   CREATE TABLE ${Tables.SalesPerson} (
-    //   ${SalesPersonFiles.id} $idTypeNoAutoIncrement,
-    //   ${SalesPersonFiles.companySlug} $textTypeNotNull,
-    //   ${SalesPersonFiles.name} $textTypeNotNull,
-    //   ${SalesPersonFiles.applicationUserId} $textType,
-    //   ${SalesPersonFiles.cashAccountId} $integerType,
-    //   ${SalesPersonFiles.receiveMoneySeries} $textType,
-    //   ${SalesPersonFiles.saleOrderSeries} $textType,
-    //   ${SalesPersonFiles.isOrderBooker} $boolType CHECK(${SalesPersonFiles.isOrderBooker} IN (0,1)),
-    //   ${SalesPersonFiles.isDeliveryPerson} $boolType CHECK(${SalesPersonFiles.isDeliveryPerson} IN (0,1)),
-    //   ${SalesPersonFiles.isSalesman} $boolType CHECK(${SalesPersonFiles.isSalesman} IN (0,1)),
-    //   ${SalesPersonFiles.CanChangePrice} $boolType CHECK(${SalesPersonFiles.CanChangePrice} IN (0,1)),
-    //   ${SalesPersonFiles.CanAddDiscount} $boolType CHECK(${SalesPersonFiles.CanAddDiscount} IN (0,1)),
-    //   ${SalesPersonFiles.isSync} $boolType CHECK(${SalesPersonFiles.isSync} IN (0,1)),
-    //   ${SalesPersonFiles.syncDate} $dateTimeType,
-    //   ${SalesPersonFiles.branchId} $integerType,
-    //   ${SalesPersonFiles.isActive} $boolType CHECK(${SalesPersonFiles.isActive} IN (0,1))
-    //   )''');
+    batch.execute('''
+      CREATE TABLE ${Tables.SalesPerson} (
+      ${SalesPersonFiles.id} $idTypeNoAutoIncrement,
+      ${SalesPersonFiles.companySlug} $textTypeNotNull,
+      ${SalesPersonFiles.name} $textTypeNotNull,
+      ${SalesPersonFiles.applicationUserId} $textType,
+      ${SalesPersonFiles.cashAccountId} $integerType,
+      ${SalesPersonFiles.receiveMoneySeries} $textType,
+      ${SalesPersonFiles.saleOrderSeries} $textType,
+      ${SalesPersonFiles.isOrderBooker} $boolType CHECK(${SalesPersonFiles.isOrderBooker} IN (0,1)),
+      ${SalesPersonFiles.isDeliveryPerson} $boolType CHECK(${SalesPersonFiles.isDeliveryPerson} IN (0,1)),
+      ${SalesPersonFiles.isSalesman} $boolType CHECK(${SalesPersonFiles.isSalesman} IN (0,1)),
+      ${SalesPersonFiles.CanChangePrice} $boolType CHECK(${SalesPersonFiles.CanChangePrice} IN (0,1)),
+      ${SalesPersonFiles.CanAddDiscount} $boolType CHECK(${SalesPersonFiles.CanAddDiscount} IN (0,1)),
+      ${SalesPersonFiles.isSync} $boolType CHECK(${SalesPersonFiles.isSync} IN (0,1)),
+      ${SalesPersonFiles.syncDate} $dateTimeType,
+      ${SalesPersonFiles.branchId} $integerType,
+      ${SalesPersonFiles.isActive} $boolType CHECK(${SalesPersonFiles.isActive} IN (0,1))
+      )''');
     // batch.execute('''
     //   CREATE TABLE ${Tables.WareHouse} (
     //   ${WareHousesFiled.id} $idTypeNoAutoIncrement,
@@ -812,22 +891,39 @@ class DatabaseHelper implements DBHelper {
   FOREIGN KEY (${SalesGeographySchemesField.subAreaId}) REFERENCES ${Tables.SubAreas} (id)
 )''');
 
-//     batch.execute('''
-//   CREATE TABLE ${Tables.POSInvoiceDetailTaxes} (
-//   ${POSInvoiceTaxField.id} $idTypeNoAutoIncrement,
-//   ${POSInvoiceTaxField.companySlug} $textTypeNotNull,
-//   ${POSInvoiceTaxField.isSync} $boolType CHECK(${POSInvoiceTaxField.isSync} IN (0,1)),
-//   ${POSInvoiceTaxField.syncDate} $dateTimeType,
-//   ${POSInvoiceTaxField.posInvoiceDetailId} $integerType,
-//   ${POSInvoiceTaxField.taxId} $integerType,
-//   ${POSInvoiceTaxField.appliedOn} $integerType,
-//   ${POSInvoiceTaxField.taxRate} $decimalType,
-//   ${POSInvoiceTaxField.taxAmount} $decimalType,
-//   ${POSInvoiceTaxField.sort} $integerType,
-//   ${POSInvoiceTaxField.branchId} $integerType,
-//   FOREIGN KEY (${POSInvoiceTaxField.taxId}) REFERENCES ${Tables.Tax} (id),
-//   FOREIGN KEY (${POSInvoiceTaxField.posInvoiceDetailId}) REFERENCES ${Tables.POSInvoiceDetail} (id) ON DELETE CASCADE
-// )''');
+    batch.execute('''
+  CREATE TABLE ${Tables.POSInvoiceDetailTaxes} (
+  ${LineItemTaxField.id} $idTypeNoAutoIncrement,
+  ${LineItemTaxField.companySlug} $textTypeNotNull,
+  ${LineItemTaxField.isSync} $boolType CHECK(${LineItemTaxField.isSync} IN (0,1)),
+  ${LineItemTaxField.syncDate} $dateTimeType,
+  ${LineItemTaxField.posInvoiceDetailId} $integerType,
+  ${LineItemTaxField.taxId} $integerType,
+  ${LineItemTaxField.appliedOn} $integerType,
+  ${LineItemTaxField.taxRate} $decimalType,
+  ${LineItemTaxField.taxAmount} $decimalType,
+  ${LineItemTaxField.sort} $integerType,
+  ${LineItemTaxField.branchId} $integerType,
+  ${LineItemTaxField.saleOrderDetailId} $integerType,
+  FOREIGN KEY (${LineItemTaxField.taxId}) REFERENCES ${Tables.Tax} (id),
+  FOREIGN KEY (${LineItemTaxField.posInvoiceDetailId}) REFERENCES ${Tables.POSInvoiceDetail} (id) ON DELETE CASCADE
+)''');
+
+    batch.execute('''
+  CREATE TABLE ${Tables.ProductSalesTax} (
+  ${ProductSalesTaxField.id} $idTypeNoAutoIncrement,
+  ${ProductSalesTaxField.companySlug} $textTypeNotNull,
+  ${ProductSalesTaxField.isSync} $boolType CHECK(${ProductSalesTaxField.isSync} IN (0,1)),
+  ${ProductSalesTaxField.syncDate} $dateTimeType,
+  ${ProductSalesTaxField.productId} $integerType, 
+  ${ProductSalesTaxField.taxId} $integerType,
+  ${ProductSalesTaxField.taxAmount} $decimalType,
+  ${ProductSalesTaxField.appliedOn} $integerType,
+  ${ProductSalesTaxField.sort} $integerType,
+  ${ProductSalesTaxField.applicableToAllBranches} $boolType CHECK(${ProductSalesTaxField.applicableToAllBranches} IN (0,1)),
+  FOREIGN KEY (${ProductSalesTaxField.productId}) REFERENCES ${Tables.products} (id),
+  FOREIGN KEY (${ProductSalesTaxField.taxId}) REFERENCES ${Tables.Tax} (id)
+)''');
 
 //     batch.execute('''
 //   CREATE TABLE ${Tables.PosInvoicePayment} (
@@ -845,22 +941,6 @@ class DatabaseHelper implements DBHelper {
 //   ${PosPaymentField.customerLoyaltyRedeemPoints} $integerType,
 //   FOREIGN KEY (${PosPaymentField.posInvoiceId}) REFERENCES ${Tables.POSInvoice} (id) ON DELETE CASCADE
 // )''');
-
-    batch.execute('''
-  CREATE TABLE ${Tables.ProductSalesTax} (
-  ${ProductSalesTaxField.id} $idTypeNoAutoIncrement,
-  ${ProductSalesTaxField.companySlug} $textTypeNotNull,
-  ${ProductSalesTaxField.isSync} $boolType CHECK(${ProductSalesTaxField.isSync} IN (0,1)),
-  ${ProductSalesTaxField.syncDate} $dateTimeType,
-  ${ProductSalesTaxField.productId} $integerType, 
-  ${ProductSalesTaxField.taxId} $integerType,
-  ${ProductSalesTaxField.taxAmount} $decimalType,
-  ${ProductSalesTaxField.appliedOn} $integerType,
-  ${ProductSalesTaxField.sort} $integerType,
-  ${ProductSalesTaxField.applicableToAllBranches} $boolType CHECK(${ProductSalesTaxField.applicableToAllBranches} IN (0,1)),
-  FOREIGN KEY (${ProductSalesTaxField.productId}) REFERENCES ${Tables.products} (id),
-  FOREIGN KEY (${ProductSalesTaxField.taxId}) REFERENCES ${Tables.Tax} (id)
-)''');
 
 //     batch.execute('''
 //   CREATE TABLE ${Tables.Batches} (
@@ -1396,6 +1476,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
     batch.commit();
   }
 
+  @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {}
   }

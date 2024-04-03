@@ -61,6 +61,23 @@ class BaseRepository<T extends BaseModel> {
     }
   }
 
+  Future<List<T>?> SelectListOnlyCompanySlug() async {
+    try {
+      PrefUtils pref = PrefUtils();
+      var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
+      var dbClient = await db;
+      var map = await dbClient.rawQuery('''Select * from $tableName where companySlug = '$slug' ''');
+      if (map.length > 0) {
+        return List.generate(map.length, (i) => fromJson(map[i]) as T);
+      } else {
+        return null;
+      }
+    } catch (ex) {
+      Logger.ErrorLog("SelectList $tableName: $ex");
+      throw ex;
+    }
+  }
+
   Future<List<T>> getAll() async {
     try {
       var dbClient = await db;

@@ -1,5 +1,5 @@
+import 'package:path_provider/path_provider.dart';
 import 'package:sa_common/productCategory/product_categories_model.dart';
-import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -64,9 +64,16 @@ class ProductCategoryDatabase {
         var imageUrl = imageBaseUrl + val.imageUrl!;
         Uri uri = Uri.parse(imageUrl);
         final imageData = await http.get(uri);
-        var data = await File(join(path, imageUrl.split("/").last)).create(recursive: true);
-        await data.writeAsBytes(imageData.bodyBytes);
+        if (Platform.isWindows) {
+          var data = await File(join(path, imageUrl.split("/").last)).create(recursive: true);
+          await data.writeAsBytes(imageData.bodyBytes);
+        } else if (Platform.isAndroid || Platform.isIOS) {
+          final documentDirectory = await getApplicationDocumentsDirectory();
+          final file = await File('${documentDirectory.path}/${imageUrl.split("/").last}').create(recursive: true);
+          await file.writeAsBytes(imageData.bodyBytes);
+        }
       }
+
       var exist = getAll.any((element) => element.id == val.id);
       if (exist) {
         batch.update(

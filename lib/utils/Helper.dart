@@ -28,7 +28,6 @@ import '../schemes/database/tax_database.dart';
 import '../synchronization/Database/EndOfTheDay_database.dart';
 import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
-import 'ApiEndPoint.dart';
 import 'LocalStorageKey.dart';
 
 class Helper extends BaseController {
@@ -57,13 +56,16 @@ class Helper extends BaseController {
   }
 
   static Future<String> createFolder(String folderName) async {
-    Directory current = Directory.current;
-    final path = current.path + "/" + folderName;
-    var checkDirectory = await Directory(path).exists();
-    if (!checkDirectory) {
-      Directory(path).create();
+    if (Platform.isWindows) {
+      Directory current = Directory.current;
+      final path = current.path + "/" + folderName;
+      var checkDirectory = await Directory(path).exists();
+      if (!checkDirectory) {
+        Directory(path).create();
+      }
+      return path;
     }
-    return path;
+    return "";
   }
 
   static String getCurrentPath() {

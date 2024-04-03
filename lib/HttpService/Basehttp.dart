@@ -16,9 +16,9 @@ class BaseClient {
   Map<String, String> GetHeader({String token = ""}) {
     Map<String, String> userHeader;
     if (token.isNotEmpty) {
-      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": GlobalConstant.appId, "Authorization": "Bearer " + token};
+      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": Platform.isWindows ? GlobalConstant.appId : GlobalConstant.orderBookerAppId, "Authorization": "Bearer " + token};
     } else {
-      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": GlobalConstant.appId};
+      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": Platform.isWindows ? GlobalConstant.appId : GlobalConstant.orderBookerAppId};
     }
     return userHeader;
   }

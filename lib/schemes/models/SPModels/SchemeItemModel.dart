@@ -5,10 +5,10 @@ class SchemeItemModel {
   int? SchemeId;
   int? SchemeDetailId;
   int? DiscountId;
-  double? DiscountRate;
+  num? DiscountRate;
   DiscountEffectTypes? DiscountEffect;
-  double DiscountAmount;
-  double DiscountProductQuantity;
+  num DiscountAmount;
+  num DiscountProductQuantity;
 
   SchemeItemModel({this.SchemeId, this.SchemeDetailId, this.DiscountId, this.DiscountRate, this.DiscountEffect, this.DiscountAmount = 0, this.DiscountProductQuantity = 0.0});
 

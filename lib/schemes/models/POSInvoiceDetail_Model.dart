@@ -71,7 +71,7 @@ class POSInvoiceDetailModel extends BaseModel<int> {
   num totalSavedAmount;
   PosPaymentMode posPaymentMode;
   num amount;
-  List<POSInvoiceTaxModel>? taxes;
+  List<LineItemTaxModel>? taxes;
   POSInvoiceDetailModel(
       {this.id,
       this.companySlug,
@@ -232,7 +232,7 @@ class POSInvoiceDetailModel extends BaseModel<int> {
         isBonusProduct: (map['isBonusProduct'] == 0 || map['isBonusProduct'] == false) ? false : true,
         tagPrice: map['tagPrice'],
         totalSavedAmount: map['totalSavedAmount'],
-        taxes: map['taxes'] != null ? List<POSInvoiceTaxModel>.from(map['taxes']?.map((x) => POSInvoiceTaxModel.fromMap(x))) : null,
+        taxes: map['taxes'] != null ? List<LineItemTaxModel>.from(map['taxes']?.map((x) => LineItemTaxModel.fromMap(x))) : null,
         posPaymentMode: intToPosPaymentMode(map['posPaymentMode']),
         amount: map['amount']);
   }

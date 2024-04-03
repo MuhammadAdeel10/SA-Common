@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sa_common/utils/Helper.dart';
+import 'package:sa_common/utils/app_routes.dart';
+import 'package:sa_common/utils/pref_utils.dart';
 import '../HttpService/AppExceptions.dart';
 
 enum Status { idle, loading, success, error }
@@ -25,12 +27,8 @@ abstract class BaseController extends GetxController {
       if (goLoginPage != null) {
         goLoginPage();
       }
-      // Navigator.pushAndRemoveUntil(context!, MaterialPageRoute(
-      //   builder: (context) {
-      //     PrefUtils().clearPreferencesData();
-      //     return LoginView();
-      //   },
-      // ), (route) => false);
+      PrefUtils().clearPreferencesData();
+      Get.offNamedUntil(Routes.LOGIN, (route) => false);
       Helper.infoMsg('${error.message}', 'Session Expired', context!);
     } else if (error is NotFoundException) {
       Helper.errorMsg('Not Found', error.message ?? "Something went wrong", context!);
@@ -38,12 +36,8 @@ abstract class BaseController extends GetxController {
       if (goLoginPage != null) {
         goLoginPage();
       }
-      // Navigator.pushAndRemoveUntil(context!, MaterialPageRoute(
-      //   builder: (context) {
-      //     PrefUtils().clearPreferencesData();
-      //     return LoginView();
-      //   },
-      // ), (route) => false);
+      PrefUtils().clearPreferencesData();
+      Get.offNamedUntil(Routes.LOGIN, (route) => false);
       Helper.infoMsg('Session Expired', 'You are already logged in another session', context!);
     } else {
       Helper.errorMsg("Error", "Something went wrong", context!);

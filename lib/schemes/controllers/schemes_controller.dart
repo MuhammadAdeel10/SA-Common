@@ -79,7 +79,7 @@ class SchemesController extends BaseController {
     }
   }
 
-  Future<SchemePOSInvoiceModel> MapCartToInvoice(int screenType, int customerId, {List<dynamic>? cartModelList}) async {
+  Future<SchemePOSInvoiceModel> MapCartToInvoice(int customerId, {List<dynamic>? cartModelList, int? screenType}) async {
     var user = Helper.user;
 
     SchemePOSInvoiceModel schemeModel = SchemePOSInvoiceModel(posInvoiceDetails: [], posInvoiceDiscounts: []);
@@ -97,7 +97,7 @@ class SchemesController extends BaseController {
 
     schemeModel.amountBeforeDiscount = cartModel?.fold(0, (num previousValue, element) => previousValue + element.qty * element.price).toDouble();
 
-    List<POSInvoiceTaxModel> taxesAll = [];
+    List<LineItemTaxModel> taxesAll = [];
     for (var element in cartModel!.where((element) => element.isAppliedScheme == false)) {
       var detail = SchemePOSInvoiceDetailModel();
       discounts = [];
@@ -135,7 +135,7 @@ class SchemesController extends BaseController {
         for (var productSalesTax in productSalesTaxes) {
           var tax = Helper.taxModel.firstWhere((element) => element.id == productSalesTax.taxId);
           num taxAmount = (detail.netAmount ?? 0) * tax.rate / 100;
-          POSInvoiceTaxModel posInvoiceTaxModel = POSInvoiceTaxModel();
+          LineItemTaxModel posInvoiceTaxModel = LineItemTaxModel();
           posInvoiceTaxModel.appliedOn = productSalesTax.appliedOn;
           posInvoiceTaxModel.sort = productSalesTax.sort;
           posInvoiceTaxModel.taxId = productSalesTax.taxId;
@@ -433,17 +433,19 @@ class SchemesController extends BaseController {
 		DiscountRate decimal(30, 10),
 		DiscountEffect int,
     DiscountAmount decimal(30, 10),
-    DiscountProductQuantity decimal(30, 10));
-create table if not exists ProductIds (
+    DiscountProductQuantity decimal(30, 10));''');
+    batch.execute(''' create table if not exists ProductIds (
 Id int,
-BaseVariantId int,BaseProductId int);
+BaseVariantId int,BaseProductId int);''');
 
-insert into ProductIds SELECT Id, BaseProductId, BaseVariantId from Products WHERE id = ${params.productId} and companySlug = '${companySetting?.slug}';
-create table if not exists DiscountProductQuantity (
+    batch.execute(''' insert into ProductIds SELECT Id, BaseProductId, BaseVariantId from Products WHERE id = ${params.productId} and companySlug = '${companySetting?.slug}';''');
+
+    batch.execute(''' create table if not exists DiscountProductQuantity (
 SchemeId int,
 DiscountId int,
-DiscountProductQuantity decimal(10,30));
+DiscountProductQuantity decimal(10,30));''');
 
+    batch.execute(''' 
 INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.DiscountProductQuantity) AS DiscountProductQuantity
 	FROM SchemeDetails D
 	INNER JOIN ProductIds P ON D.SchemeProductId = P.Id OR (D.SchemeProductId = P.BaseProductId AND P.BaseVariantId IS NOT NULL) 
@@ -467,7 +469,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 		AND (D.DiscountProductQuantity <= ${params.quantity})
 		AND (instr(S.WeekDays, $dayId) > 0)
 		AND (S.SchemeTypeId = 20)
-	  GROUP BY D.SchemeId, S.DiscountId ''');
+	  GROUP BY D.SchemeId, S.DiscountId;''');
 
     if (companySetting?.enableSalesGeography == true) {
       batch.execute('''Insert into schemeTableProduct
@@ -512,7 +514,11 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
       ''');
     }
     db.execute('''Delete from ProductIds;
+     ''');
+    db.execute('''
       Delete from DiscountProductQuantity;
+      ''');
+    db.execute('''
       Delete from schemeTableProduct;''');
     Logger.InfoLog("GetSchemeDiscountSP Start ${DateTime.now().toIso8601String()}");
     return result;
@@ -546,10 +552,10 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
           var productSalesTax = await ProductSalesTaxDatabase().GetByProductId(item.ProductId!);
 
           if (productSalesTax.isNotEmpty && productSalesTax.length > 0) {
-            List<POSInvoiceTaxModel> taxes = [];
+            List<LineItemTaxModel> taxes = [];
             for (var tax in productSalesTax) {
               var Tax = await TaxDatabase.dao.find(tax.taxId!);
-              taxes.add(new POSInvoiceTaxModel(
+              taxes.add(new LineItemTaxModel(
                 appliedOn: SaleTaxAppliedOn.values.firstWhereOrNull((element) => element.value == tax.appliedOn),
                 taxId: tax.taxId,
                 taxRate: Tax.rate,
@@ -594,9 +600,12 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
       if (customer.customerCategoryId != null) parameters.customerCategoryId = customer.customerCategoryId;
       parameters.customerId = customer.id;
     }
+    // try {
     var result = await this.GetSchemeProductBonusSp(parameters, companySetting, db);
-    Logger.InfoLog("GetSchemeProductBonus End ${DateTime.now().toIso8601String()}");
     return result;
+    // } catch (ex) {
+    //   throw ex;
+    // }
   }
 
   Future<List<SchemeProductBonusItemModel>> GetSchemeProductBonusSp(SchemeProductBonusParamsModel params, CompanySettingModel? companySetting, Database db) async {
@@ -608,13 +617,13 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
     DateTime date = DateTime(params.date!.year, params.date!.month, params.date!.day);
     await db.execute(''' create table if not exists ProductIdss (
           Id int,
-          BaseProductId int);
-  create table if not exists MaxSchemeProductQuantity (
+          BaseProductId int);''');
+    await db.execute('''create table if not exists MaxSchemeProductQuantity (
           SchemeId int,
           DiscountId int,
-          SchemeProductQuantity decimal(10,30));
-  insert into ProductIdss SELECT Id, BaseProductId from Products WHERE id = ${params.productId} and companySlug = '${companySetting?.slug}';
-  INSERT into MaxSchemeProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.SchemeProductQuantity) AS SchemeProductQuantity 	
+          SchemeProductQuantity decimal(10,30));''');
+    await db.execute('''insert into ProductIdss SELECT Id, BaseProductId from Products WHERE id = ${params.productId} and companySlug = '${companySetting?.slug}';''');
+    await db.execute('''INSERT into MaxSchemeProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.SchemeProductQuantity) AS SchemeProductQuantity 	
 	  FROM SchemeDetails D
 		INNER JOIN ProductIdss P ON D.SchemeProductId = P.Id
 		INNER JOIN Schemes S ON D.SchemeId = S.Id AND S.IsActive = 1 AND Status = 20
@@ -665,6 +674,8 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 		AND ((CG.CustomerCategoryId = ${params.customerCategoryId} OR CG.CustomerCategoryId IS NULL))''');
     }
     await db.execute('''Delete from ProductIdss;
+                  ''');
+    await db.execute('''
                   Delete from MaxSchemeProductQuantity ''');
     Logger.InfoLog("GetSchemeProductBonusSp End ${DateTime.now().toIso8601String()}");
     return List.generate(response.length, (i) => SchemeProductBonusItemModel.fromMap(response[i]));
@@ -831,15 +842,15 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 		ProductCategoryId int,
     DiscountAmount decimal(30, 10),
     DiscountProductQuantity decimal(30, 10)
-    );
-    
-    create table if not exists MaxDiscountProductQuantity (
+    );''');
+
+    batch.execute(''' create table if not exists MaxDiscountProductQuantity (
 		SchemeId int,
 		SchemeProductCategoryId int,
 		DiscountId int,
-		DiscountProductQuantity decimal(30, 10));
+		DiscountProductQuantity decimal(30, 10));''');
 
-insert into MaxDiscountProductQuantity SELECT D.SchemeId, D.SchemeProductCategoryId AS ProductCategoryId, S.DiscountId, MAX(D.DiscountProductQuantity) AS DiscountProductQuantity 
+    batch.execute('''insert into MaxDiscountProductQuantity SELECT D.SchemeId, D.SchemeProductCategoryId AS ProductCategoryId, S.DiscountId, MAX(D.DiscountProductQuantity) AS DiscountProductQuantity 
 	FROM SchemeDetails D
 		INNER JOIN Schemes S ON D.SchemeId = S.Id AND S.IsActive = 1 AND Status = 20 --(Approved status)
 		LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
@@ -901,6 +912,8 @@ insert into MaxDiscountProductQuantity SELECT D.SchemeId, D.SchemeProductCategor
     var response = await db.rawQuery('''select * from SchemeTableProductCategory''');
 
     db.execute('''Delete from MaxDiscountProductQuantity;
+                 ''');
+    db.execute('''
                   Delete from SchemeTableProductCategory ''');
 
     var result = List.generate(response.length, (i) => SchemeProductCategoryDiscountItemModel.fromMap(response[i]));
@@ -944,10 +957,10 @@ insert into MaxDiscountProductQuantity SELECT D.SchemeId, D.SchemeProductCategor
           data.product?.saleTaxes = productSalesTax;
 
           if (data.product != null && data.product!.saleTaxes!.isNotEmpty) {
-            List<POSInvoiceTaxModel> taxes = [];
+            List<LineItemTaxModel> taxes = [];
             for (var tax in data.product!.saleTaxes!) {
               var Tax = await TaxDatabase.dao.find(tax.taxId!);
-              taxes.add(new POSInvoiceTaxModel(
+              taxes.add(new LineItemTaxModel(
                 appliedOn: SaleTaxAppliedOn.values.firstWhere((element) => element.value == tax.appliedOn),
                 taxId: tax.taxId,
                 taxRate: Tax.rate,
@@ -988,10 +1001,10 @@ insert into MaxDiscountProductQuantity SELECT D.SchemeId, D.SchemeProductCategor
           var productSalesTax = await ProductSalesTaxDatabase().GetByProductId(item.ProductId!);
           data.product?.saleTaxes = productSalesTax;
           if (data.product != null && data.product!.saleTaxes!.isNotEmpty) {
-            List<POSInvoiceTaxModel> taxes = [];
+            List<LineItemTaxModel> taxes = [];
             for (var tax in data.product!.saleTaxes!) {
               var Tax = await TaxDatabase.dao.find(tax.taxId!);
-              taxes.add(new POSInvoiceTaxModel(
+              taxes.add(new LineItemTaxModel(
                 appliedOn: SaleTaxAppliedOn.values.firstWhere((element) => element.value == tax.appliedOn),
                 taxId: tax.taxId,
                 taxRate: Tax.rate,
@@ -1046,9 +1059,9 @@ insert into MaxDiscountProductQuantity SELECT D.SchemeId, D.SchemeProductCategor
     var dayId = (params.date?.weekday);
     DateTime date = DateTime(params.date!.year, params.date!.month, params.date!.day);
     await db.execute('''
-create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProductCategoryId int, SchemeProductQuantity int);
+create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProductCategoryId int, SchemeProductQuantity int);''');
 
-insert into MaxSchemeProductQuantities SELECT D.SchemeId, D.SchemeProductCategoryId AS ProductCategoryId, MAX(D.SchemeProductQuantity) AS SchemeProductQuantity
+    await db.execute('''insert into MaxSchemeProductQuantities SELECT D.SchemeId, D.SchemeProductCategoryId AS ProductCategoryId, MAX(D.SchemeProductQuantity) AS SchemeProductQuantity
 	FROM SchemeDetails D
 		INNER JOIN Schemes S ON D.SchemeId = S.Id AND S.IsActive = 1 AND Status = 20
 		LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
@@ -1141,10 +1154,10 @@ insert into MaxSchemeProductQuantities SELECT D.SchemeId, D.SchemeProductCategor
           data.product = await ProductDatabase.dao.find(item.ProductId!);
           data.product?.saleTaxes = await ProductSalesTaxDatabase().GetByProductId(item.ProductId!);
           if (data.product != null && data.product!.saleTaxes!.isNotEmpty) {
-            List<POSInvoiceTaxModel> taxes = [];
+            List<LineItemTaxModel> taxes = [];
             for (var tax in data.product!.saleTaxes!) {
               var Tax = await TaxDatabase.dao.find(tax.taxId!);
-              taxes.add(new POSInvoiceTaxModel(
+              taxes.add(new LineItemTaxModel(
                 appliedOn: SaleTaxAppliedOn.values.firstWhere((element) => element.value == tax.appliedOn),
                 taxRate: Tax.rate,
                 taxId: tax.taxId,
@@ -1175,10 +1188,10 @@ insert into MaxSchemeProductQuantities SELECT D.SchemeId, D.SchemeProductCategor
           data.product = await ProductDatabase.dao.find(item.ProductId!);
           data.product?.saleTaxes = await ProductSalesTaxDatabase().GetByProductId(item.ProductId!);
           if (data.product != null && data.product!.saleTaxes!.isNotEmpty) {
-            List<POSInvoiceTaxModel> taxes = [];
+            List<LineItemTaxModel> taxes = [];
             for (var tax in data.product!.saleTaxes!) {
               var Tax = await TaxDatabase.dao.find(tax.taxId!);
-              taxes.add(new POSInvoiceTaxModel(
+              taxes.add(new LineItemTaxModel(
                 appliedOn: SaleTaxAppliedOn.values.firstWhere((element) => element.value == tax.appliedOn),
                 taxRate: Tax.rate,
                 taxId: tax.taxId,
@@ -1241,9 +1254,9 @@ insert into MaxSchemeProductQuantities SELECT D.SchemeId, D.SchemeProductCategor
     SchemeDetailId int,
     SchemeId int,
     DiscountId int,
-    BounsAmount decimal (30,10));
+    BounsAmount decimal (30,10));''');
 
-insert into MaxInoviceDiscount SELECT D.Id As SchemeDetailId, D.SchemeId, S.DiscountId, MAX(D.BounsAmount) AS BounsAmount
+    await db.execute('''insert into MaxInoviceDiscount SELECT D.Id As SchemeDetailId, D.SchemeId, S.DiscountId, MAX(D.BounsAmount) AS BounsAmount
 	FROM SchemeDetails D
 		INNER JOIN Schemes S ON D.SchemeId = S.Id AND S.IsActive = 1 AND Status = 20
 		LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
@@ -1448,15 +1461,15 @@ insert into MaxInoviceDiscount SELECT D.Id As SchemeDetailId, D.SchemeId, S.Disc
     DiscountRate DECIMAL(30, 10),
     DiscountId INTEGER,
     DiscountEffect INTEGER
-);
+);''');
 
-create table if not EXISTS  MaxInoviceDiscounts (
+    await db.execute('''create table if not EXISTS  MaxInoviceDiscounts (
     SchemeId int,
     SchemeDetailId int,
     DiscountId int,
-    InvoiceAmount decimal (30,10));
+    InvoiceAmount decimal (30,10));''');
 
-Insert into MaxInoviceDiscounts
+    await db.execute('''Insert into MaxInoviceDiscounts
 SELECT dtl.SchemeId, dtl.SchemeDetailId, dtl.DiscountId, dtl.InvoiceAmount
 FROM (
     SELECT D.SchemeId, D.Id AS SchemeDetailId, S.DiscountId, D.InvoiceAmount,
@@ -1514,14 +1527,15 @@ WHERE rowId = 1;
     var discountEffect = resSchemeTable.map((e) => e["DiscountEffect"]).toList();
     var response = await db.rawQuery('''select * from SchemeTable ''');
     var result = List.generate(response.length, (i) => SchemeInvoiceDiscountItem.fromMap(response[i]));
+    print("${result.length.toString()}");
 
     if (discountEffect.length > 0) {
       await db.execute('''delete from SchemeTable where DiscountEffect = 0;
       ''');
     }
     await db.execute('''Delete from MaxInoviceDiscounts;
-      Delete from SchemeTable;
       ''');
+    await db.execute(''' Delete from SchemeTable;''');
     Logger.InfoLog("GetSchemeInvoiceDiscountSp End ${DateTime.now().toIso8601String()}");
     return result;
   }

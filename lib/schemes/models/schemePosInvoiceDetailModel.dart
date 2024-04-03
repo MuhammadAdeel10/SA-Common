@@ -36,7 +36,7 @@ class SchemePOSInvoiceDetailModel {
   num? totalSavedAmount;
   int? discountType;
   List<POSInvoiceDetailDiscountModel>? discounts;
-  List<POSInvoiceTaxModel>? taxes;
+  List<LineItemTaxModel>? taxes;
   ProductModel? product;
 
   SchemePOSInvoiceDetailModel({
@@ -105,7 +105,7 @@ class SchemePOSInvoiceDetailModel {
     num? totalSavedAmount,
     int? discountType,
     List<POSInvoiceDetailDiscountModel>? discounts,
-    List<POSInvoiceTaxModel>? taxes,
+    List<LineItemTaxModel>? taxes,
     ProductModel? product,
   }) {
     return SchemePOSInvoiceDetailModel(
@@ -213,7 +213,7 @@ class SchemePOSInvoiceDetailModel {
       totalSavedAmount: map['totalSavedAmount'],
       discountType: map['discountType']?.toInt(),
       discounts: map['discounts'] != null ? List<POSInvoiceDetailDiscountModel>.from(map['discounts']?.map((x) => POSInvoiceDetailDiscountModel.fromMap(x))) : null,
-      taxes: map['taxes'] != null ? List<POSInvoiceTaxModel>.from(map['taxes']?.map((x) => POSInvoiceTaxModel.fromMap(x))) : null,
+      taxes: map['taxes'] != null ? List<LineItemTaxModel>.from(map['taxes']?.map((x) => LineItemTaxModel.fromMap(x))) : null,
       product: map['product'] != null ? ProductModel.fromMap(map['product']) : null,
     );
   }

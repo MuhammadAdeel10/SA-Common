@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sa_common/Controller/statusController.dart';
 import 'package:sa_common/company/Database/company_setting_database.dart';
-import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/company/controllers/company_controller.dart';
 import 'package:sa_common/utils/CipherService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
