@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sa_common/HttpService/Basehttp.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/app_routes.dart';
 import 'package:sa_common/utils/pref_utils.dart';
@@ -8,6 +9,7 @@ import '../HttpService/AppExceptions.dart';
 enum Status { idle, loading, success, error }
 
 abstract class BaseController extends GetxController {
+  BaseClient baseClient = BaseClient();
   BuildContext? context = Get.key.currentContext;
 
   @protected

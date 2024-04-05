@@ -15,7 +15,6 @@ import 'package:sa_common/utils/pref_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Controller/BaseController.dart';
 import '../../Controller/statusController.dart';
-import '../../HttpService/Basehttp.dart';
 import '../Database/company_setting_database.dart';
 import '../Models/AllActiveSubscription.dart';
 import '../Models/CompanySettingModel.dart';
@@ -30,7 +29,7 @@ class CompanyController extends BaseController {
   StatusController statusController = Get.put(StatusController());
   Future<List<CompanyModel>> GetAllCompanies(String baseUrl) async {
     lstCompany = [];
-    var response = await BaseClient().get(baseUrl, ApiEndPoint.getAllCompanies).catchError(
+    var response = await baseClient.get(baseUrl, ApiEndPoint.getAllCompanies).catchError(
       (error) {
         handleError(error);
       },
@@ -48,7 +47,7 @@ class CompanyController extends BaseController {
   }
 
   Future<LicenseStatusModel?> GetLicense(String baseUrl, String companySlg) async {
-    var response = await BaseClient().get(baseUrl, companySlg + ApiEndPoint.licenseStatus).catchError(
+    var response = await baseClient.get(baseUrl, companySlg + ApiEndPoint.licenseStatus).catchError(
       (error) {
         handleError(error);
         throw error;
@@ -64,7 +63,7 @@ class CompanyController extends BaseController {
 
   Future<List<AllActiveSubscriptionModel>> AllActiveSubscription(String baseUrl, String companySlg) async {
     List<AllActiveSubscriptionModel> lstActive = [];
-    var response = await BaseClient().get(baseUrl, companySlg + ApiEndPoint.allActiveSubscription).catchError(
+    var response = await baseClient.get(baseUrl, companySlg + ApiEndPoint.allActiveSubscription).catchError(
       (error) {
         handleError(error);
         throw error;
@@ -193,7 +192,7 @@ class CompanyController extends BaseController {
 
   Future<void> GetCompany(String baseUrl) async {
     var companyId = Helper.requestContext.id;
-    var response = await BaseClient().get(baseUrl, ApiEndPoint.getAllCompanies + "/${companyId}").catchError((error) {
+    var response = await baseClient.get(baseUrl, ApiEndPoint.getAllCompanies + "/${companyId}").catchError((error) {
       handleError(error);
       throw error;
     });
@@ -260,7 +259,7 @@ class CompanyController extends BaseController {
     var prefs = await SharedPreferences.getInstance();
     int userId = prefs.getInt(LocalStorageKey.localUserId) as int;
     var user = await UserDatabase.instance.GetUserById(userId);
-    var response = await BaseClient().get(baseUrl, "${user.companyId}/" + ApiEndPoint.branches + "${user.userId}").catchError((error) {
+    var response = await baseClient.get(baseUrl, "${user.companyId}/" + ApiEndPoint.branches + "${user.userId}").catchError((error) {
       handleError(error);
       throw error;
     });
