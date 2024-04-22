@@ -9,17 +9,12 @@ import '../Database/detailBGroup_database.dart';
 import '../Models/DetailBGroupModel.dart';
 
 class DetailBGroupController extends BaseController {
-  Future<void> Pull(String slug) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.DetailBGroup,
-        slug: slug);
+  Future<void> Pull(String baseUrl, String slug) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.DetailBGroup, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("$slug${ApiEndPoint.getDetailBGroups}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "$slug${ApiEndPoint.getDetailBGroups}${formatted}").catchError(
       (error) {
         handleError(error);
       },
@@ -34,19 +29,14 @@ class DetailBGroupController extends BaseController {
     }
   }
 
-  Future<void> Delete(String slug) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.DetailBGroup,
-        slug: slug);
+  Future<void> Delete(String baseUrl, String slug) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.DetailBGroup, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getAll = await DetailAGroupDatabase.dao.getAll();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
     Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("${slug}${ApiEndPoint.deleteDetailBGroups}${formatted}")
-        .catchError(
+    var response = await BaseClient().get(baseUrl, "${slug}${ApiEndPoint.deleteDetailBGroups}${formatted}").catchError(
       (error) {
         handleError(error);
       },

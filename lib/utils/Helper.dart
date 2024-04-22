@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:sa_common/Controller/statusController.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserDatabase.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -18,17 +19,18 @@ import 'package:sa_common/synchronization/Models/BranchProductTaxModel.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:toastification/toastification.dart';
+import '../Controller/BaseController.dart';
 import '../productCategory/product_categoriesDatabase.dart';
 import '../productCategory/product_categories_model.dart';
 import '../schemes/database/productSalesTax_database.dart';
 import '../schemes/database/product_database.dart';
 import '../schemes/database/tax_database.dart';
 import '../synchronization/Database/EndOfTheDay_database.dart';
+import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
-import 'ApiEndPoint.dart';
 import 'LocalStorageKey.dart';
 
-class Helper {
+class Helper extends BaseController {
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   static List<ProductModel> productsModel = [];
   static List<ProductModel> allProductModel = [];
@@ -40,6 +42,7 @@ class Helper {
   static EndOfTheDayModel? endOfTheDayModel = null;
   static UserModel user = UserModel();
   static String plainPassword = "";
+  static String homeCurrency = "";
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
     return emailValid;
@@ -53,35 +56,48 @@ class Helper {
   }
 
   static Future<String> createFolder(String folderName) async {
-    Directory current = Directory.current;
-    final path = current.path + "/" + folderName;
-    var checkDirectory = await Directory(path).exists();
-    if (!checkDirectory) {
-      Directory(path).create();
+    if (Platform.isWindows) {
+      Directory current = Directory.current;
+      final path = current.path + "/" + folderName;
+      var checkDirectory = await Directory(path).exists();
+      if (!checkDirectory) {
+        Directory(path).create();
+      }
+      return path;
     }
-    return path;
+    return "";
   }
 
   static String getCurrentPath() {
     return Directory.current.path;
   }
 
-  static Future<bool> hasNetwork() async {
+  static Future<bool> hasNetwork(String baseUrl) async {
+    StatusController statusController = Get.put(StatusController());
+
     try {
       final result = await InternetAddress.lookup("example.com");
       Logger.InfoLog("hasNetwork  $result");
-      var response = await http.get(Uri.parse("${ApiEndPoint.baseUrl}"));
+      var response = await http.get(Uri.parse("${baseUrl}"));
       Logger.InfoLog("Site  statusCode:${response.statusCode}");
       if (response.statusCode != 200) {
+        statusController.status.value = Status.error;
         return false;
       }
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } catch (_) {
-      if (Get.isDialogOpen!) {
-        Get.back();
-      }
+      statusController.status.value = Status.error;
+      // if (Get.isDialogOpen!) {
+      //   Get.back();
+      // }
       Logger.ErrorLog("hasNetwork  $_");
       return false;
+    }
+  }
+
+  static dialogHide() {
+    if (Get.isDialogOpen!) {
+      Get.back();
     }
   }
 
@@ -173,6 +189,10 @@ class Helper {
     branchProductSalesTaxModel = await BranchProductTaxDatabase().getByCompanySlug();
     discounts = await DiscountDatabase().getByCompanySlug();
     var getLastEndOfDay = await EndOfTheDayDatabase.dao.SelectSingle("branchId = $branchId order by endOfDayDate desc");
+    var currencyModel = await CurrencyDatabase.dao.SelectSingle("Id = ${Helper.requestContext.currencyId}");
+    if (currencyModel != null) {
+      homeCurrency = !Helper.requestContext.currencySymbol ? currencyModel.code : currencyModel.symbol;
+    }
     endOfTheDayModel = getLastEndOfDay;
   }
 

@@ -1,17 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sa_common/company/Models/LicenseStatusModel.dart';
 import 'package:sa_common/login/UserDatabase.dart';
 import 'package:sa_common/login/UserModel.dart';
 import 'package:sa_common/utils/ApiEndPoint.dart';
+import 'package:sa_common/utils/Enums.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/Logger.dart';
+import 'package:sa_common/utils/app_routes.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Controller/BaseController.dart';
-import '../../HttpService/Basehttp.dart';
+import '../../Controller/statusController.dart';
 import '../Database/company_setting_database.dart';
 import '../Models/AllActiveSubscription.dart';
 import '../Models/CompanySettingModel.dart';
@@ -23,9 +26,10 @@ class CompanyController extends BaseController {
   List<CompanyModel> lstCompany = [];
   List<CompanySettingModel> lstCompanySetting = [];
   List<Branches> lstBranches = [];
-  Future<List<CompanyModel>> GetAllCompanies() async {
+  StatusController statusController = Get.put(StatusController());
+  Future<List<CompanyModel>> GetAllCompanies(String baseUrl) async {
     lstCompany = [];
-    var response = await BaseClient().get(ApiEndPoint.getAllCompanies).catchError(
+    var response = await baseClient.get(baseUrl, ApiEndPoint.getAllCompanies).catchError(
       (error) {
         handleError(error);
       },
@@ -42,8 +46,8 @@ class CompanyController extends BaseController {
     return lstCompany;
   }
 
-  Future<LicenseStatusModel?> GetLicense(String companySlg) async {
-    var response = await BaseClient().get(companySlg + ApiEndPoint.licenseStatus).catchError(
+  Future<LicenseStatusModel?> GetLicense(String baseUrl, String companySlg) async {
+    var response = await baseClient.get(baseUrl, companySlg + ApiEndPoint.licenseStatus).catchError(
       (error) {
         handleError(error);
         throw error;
@@ -57,9 +61,9 @@ class CompanyController extends BaseController {
     return null;
   }
 
-  Future<List<AllActiveSubscriptionModel>> AllActiveSubscription(String companySlg) async {
+  Future<List<AllActiveSubscriptionModel>> AllActiveSubscription(String baseUrl, String companySlg) async {
     List<AllActiveSubscriptionModel> lstActive = [];
-    var response = await BaseClient().get(companySlg + ApiEndPoint.allActiveSubscription).catchError(
+    var response = await baseClient.get(baseUrl, companySlg + ApiEndPoint.allActiveSubscription).catchError(
       (error) {
         handleError(error);
         throw error;
@@ -78,27 +82,27 @@ class CompanyController extends BaseController {
     return lstActive;
   }
 
-  Future<bool> CheckStatus(CompanyModel model, {String? companyName = "", String? companyLogo = "", VoidCallback? openPage}) async {
-    status.value = Status.loading;
+  Future<bool> CheckStatus(String baseUrl, String imageBaseUrl, CompanyModel model, {String? companyName = "", String? companyLogo = "", VoidCallback? openPage, BuildContext? context}) async {
+    statusController.status.value = Status.loading;
     var prefs = await SharedPreferences.getInstance();
     prefs.setString(LocalStorageKey.companySlug, (model.slug ?? ""));
-    var getLicense = await GetLicense(model.slug!);
+    var getLicense = await GetLicense(baseUrl, model.slug!);
     if (getLicense?.licenseStatus == null) {
       //hideLoading();
-      status.value = Status.error;
+      statusController.status.value = Status.error;
       return false;
     }
-    if (getLicense?.licenseStatus == 20 || getLicense?.licenseStatus == 40 || getLicense?.licenseStatus == 100) {
+    if (getLicense?.licenseStatus == LicenseStatus.Deactivated.value || getLicense?.licenseStatus == LicenseStatus.AwaitingPayment.value || getLicense?.licenseStatus == LicenseStatus.Expired.value) {
       //hideLoading();
       //DialogHelper.showErrorDialog(description: "Your license has expired!!");
-      status.value = Status.error;
-      message.value = "Your license has expired!!";
+      statusController.status.value = Status.error;
+      Helper.infoMsg("Your license has expired!", "", context);
       return false;
     }
 
-    var allActives = await AllActiveSubscription(model.slug!);
+    var allActives = await AllActiveSubscription(baseUrl, model.slug!);
 
-    SaveCompanySetting(model);
+    SaveCompanySetting(imageBaseUrl, model);
 
     if (allActives.length > 0) {
       final allActive = (allActives.length) > 0 ? allActives.first : null;
@@ -127,7 +131,7 @@ class CompanyController extends BaseController {
         );
         await UserDatabase.instance.update(user);
         //hideLoading();
-        status.value = Status.success;
+        statusController.status.value = Status.success;
         prefs.setInt(LocalStorageKey.brachCount, model.branches!.length);
 
         // Get.toNamed(Routes.INVOICE);
@@ -143,6 +147,7 @@ class CompanyController extends BaseController {
         //           isPull: true,
         //         ),
         //     arguments: [companyLogo]);
+        statusController.routeName.value = Routes.DASHBOARD;
         return true;
       } else {
         var user = UserModel(
@@ -161,9 +166,9 @@ class CompanyController extends BaseController {
         await UserDatabase.instance.update(user);
         //Pop Up Or Other Work ToDo
         //hideLoading();
-        status.value = Status.success;
+        statusController.status.value = Status.success;
+        statusController.routeName.value = Routes.BRANCHES;
         //Get.toNamed(Routes.BRANCHES, arguments: [companyName, companyLogo]);
-        openPage;
       }
     }
 
@@ -185,9 +190,9 @@ class CompanyController extends BaseController {
     super.onClose();
   }
 
-  Future<void> GetCompany() async {
+  Future<void> GetCompany(String baseUrl) async {
     var companyId = Helper.requestContext.id;
-    var response = await BaseClient().get(ApiEndPoint.getAllCompanies + "/${companyId}").catchError((error) {
+    var response = await baseClient.get(baseUrl, ApiEndPoint.getAllCompanies + "/${companyId}").catchError((error) {
       handleError(error);
       throw error;
     });
@@ -206,7 +211,7 @@ class CompanyController extends BaseController {
     }
   }
 
-  Future<void> SaveCompanySetting(CompanyModel model) async {
+  Future<CompanySettingModel?> SaveCompanySetting(String imageBaseUrl, CompanyModel model) async {
     var saveCompanySetting = lstCompanySetting.firstWhere((element) => element.slug == model.slug!);
     if (model.branches == null) {
       model.branches = [];
@@ -231,12 +236,13 @@ class CompanyController extends BaseController {
     var companySettings = await CompanySettingDatabase().GetCompany();
     if (companySettings != null) {
       Helper.requestContext = companySettings;
+      return companySettings;
     }
     Logger.InfoLog("Create Folder");
     var path = await Helper.createFolder("uploads/${model.slug}/");
     Logger.InfoLog("Path $path");
     if (Helper.requestContext.logo!.isNotEmpty) {
-      var imageUrl = ApiEndPoint.ImageBaseUrl + model.logo!;
+      var imageUrl = imageBaseUrl + model.logo!;
       Logger.InfoLog("Image Url $imageUrl");
       if (imageUrl.isNotEmpty) {
         Uri uri = Uri.parse(imageUrl);
@@ -245,14 +251,15 @@ class CompanyController extends BaseController {
         await data.writeAsBytes(imageData.bodyBytes);
       }
     }
+    return null;
   }
 
-  Future<List<Branches>?> GetBranches() async {
+  Future<List<Branches>?> GetBranches(String baseUrl) async {
     lstBranches = [];
     var prefs = await SharedPreferences.getInstance();
     int userId = prefs.getInt(LocalStorageKey.localUserId) as int;
     var user = await UserDatabase.instance.GetUserById(userId);
-    var response = await BaseClient().get("${user.companyId}/" + ApiEndPoint.branches + "${user.userId}").catchError((error) {
+    var response = await baseClient.get(baseUrl, "${user.companyId}/" + ApiEndPoint.branches + "${user.userId}").catchError((error) {
       handleError(error);
       throw error;
     });
@@ -281,7 +288,8 @@ class CompanyController extends BaseController {
       pref.ClearCustomerNameUpdate(3);
     }
     CompanySettingDatabase().newUpdate(Helper.requestContext);
-    openPage;
+    statusController.routeName.value = Routes.DASHBOARD;
+
     // Get.delete<DashboardController>(force: true);
     // Get.to(
     //     () => DashboardView(

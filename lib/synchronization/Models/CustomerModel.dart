@@ -35,6 +35,7 @@ class CustomerFields {
   static final String exchangeRate = 'exchangeRate';
   static final String isSync = 'isSync';
   static final String isNew = 'isNew';
+  static final String isEdit = 'isEdit';
   static final String isDeleted = 'isDeleted';
   static final String discountInPercent = 'discountInPercent';
   static final String syncDate = 'syncDate';
@@ -80,6 +81,7 @@ class CustomerModel extends BaseModel<int> {
   double? exchangeRate;
   bool isSync;
   bool isNew;
+  bool isEdit;
   bool isDeleted;
   double? discountInPercent;
   DateTime? syncDate;
@@ -124,6 +126,7 @@ class CustomerModel extends BaseModel<int> {
       this.exchangeRate,
       this.isSync = false,
       this.isNew = false,
+      this.isEdit = false,
       this.isDeleted = false,
       this.discountInPercent,
       this.syncDate,
@@ -255,11 +258,11 @@ class CustomerModel extends BaseModel<int> {
       'exchangeRate': exchangeRate,
       'isSync': isSync == false ? 0 : 1,
       'isNew': isNew == false ? 0 : 1,
+      'isEdit': isEdit == false ? 0 : 1,
       'isDeleted': isDeleted == false ? 0 : 1,
       'discountInPercent': discountInPercent,
       'syncDate': syncDate?.toIso8601String(),
-      'insertedDate':
-          insertedDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'insertedDate': insertedDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'isActive': isActive == false ? 0 : 1,
       'textField2Value': textField2Value,
       'textField1Value': textField1Value,
@@ -291,35 +294,25 @@ class CustomerModel extends BaseModel<int> {
       phone: map['phone'],
       fax: map['fax'],
       opening: map['opening']?.toDouble(),
-      asOfDate:
-          map['asOfDate'] != null ? DateTime.parse(map['asOfDate']) : null,
+      asOfDate: map['asOfDate'] != null ? DateTime.parse(map['asOfDate']) : null,
       creditLimit: map['creditLimit']?.toDouble(),
       creditLimitDays: map['creditLimitDays']?.toInt(),
       displayName: map['displayName'],
       printName: map['printName'],
       cNIC: map['cNIC'],
       outstandingBalance: map['outstandingBalance']?.toDouble() ?? 0.0,
-      dateOfBirth: map['dateOfBirth'] != null
-          ? DateTime.parse(map['dateOfBirth'])
-          : null,
+      dateOfBirth: map['dateOfBirth'] != null ? DateTime.parse(map['dateOfBirth']) : null,
       sTN: map['sTN'],
       exchangeRate: map['exchangeRate']?.toDouble(),
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
 
-      isNew:
-          (map['isNew'] == 0 || map['isNew'] == false || map['isNew'] == null)
-              ? false
-              : true,
-      isDeleted:
-          (map['isDeleted'] == 1 || map['isDeleted'] == true) ? true : false,
+      isNew: (map['isNew'] == 0 || map['isNew'] == false || map['isNew'] == null) ? false : true,
+      isEdit: (map['isEdit'] == 0 || map['isEdit'] == false || map['isEdit'] == null) ? false : true,
+      isDeleted: (map['isDeleted'] == 1 || map['isDeleted'] == true) ? true : false,
       discountInPercent: map['discountInPercent']?.toDouble(),
-      syncDate:
-          map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
-      insertedDate: map['insertedDate'] != null
-          ? DateTime.parse(map['insertedDate'])
-          : null,
-      isActive:
-          (map['isActive'] == 0 || map['isActive'] == false) ? false : true,
+      syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
+      insertedDate: map['insertedDate'] != null ? DateTime.parse(map['insertedDate']) : null,
+      isActive: (map['isActive'] == 0 || map['isActive'] == false) ? false : true,
       textField2Value: map['textField2Value'],
       textField1Value: map['textField1Value'],
       zip: map['zip'],
@@ -430,10 +423,7 @@ class CustomerModel extends BaseModel<int> {
         textField1Value.hashCode;
   }
 
-  List<CustomerModel> FromJson(String str, String slug) =>
-      List<CustomerModel>.from(
-          json.decode(str).map((x) => CustomerModel().fromJson(x, slug: slug)));
+  List<CustomerModel> FromJson(String str, String slug) => List<CustomerModel>.from(json.decode(str).map((x) => CustomerModel().fromJson(x, slug: slug)));
 
-  String ToJson(List<CustomerModel> data) =>
-      json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  String ToJson(List<CustomerModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 }

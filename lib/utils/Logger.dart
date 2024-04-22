@@ -37,10 +37,7 @@ class Logger {
 
   static InfoLog(String message) async {
     if (isInfo == true || kDebugMode == true) {
-      var logger = d.Logger(
-          printer: d.PrettyPrinter(printTime: true),
-          output: AppFileOutput(),
-          filter: MyFilter());
+      var logger = d.Logger(printer: d.PrettyPrinter(printTime: true), output: AppFileOutput(), filter: MyFilter());
       logger.i(message);
     }
   }
@@ -53,26 +50,27 @@ class AppFileOutput extends LogOutput {
 
   @override
   void output(OutputEvent event) async {
-    final DateFormat formatter = DateFormat('dd-MM-yyyy');
-    final String formatted = formatter.format(DateTime.now());
-    io.Directory current = io.Directory.current;
-    final path = current.path + "/Logs";
-    var checkDirectory = await io.Directory(path).exists();
-    if (!checkDirectory) {
-      io.Directory(path).create();
-    }
-    var syncPath = await path + "/" + "$formatted-logs.log";
-    var checkFile = await io.File(syncPath).exists();
-    if (checkFile) {
-      _logFile = File(syncPath);
-    } else {
-      _logFile = io.File(path + "/" + formatted + "-logs.log");
-    }
+    if (Platform.isWindows) {
+      final DateFormat formatter = DateFormat('dd-MM-yyyy');
+      final String formatted = formatter.format(DateTime.now());
+      io.Directory current = io.Directory.current;
+      final path = current.path + "/Logs";
+      var checkDirectory = await io.Directory(path).exists();
+      if (!checkDirectory) {
+        io.Directory(path).create();
+      }
+      var syncPath = await path + "/" + "$formatted-logs.log";
+      var checkFile = await io.File(syncPath).exists();
+      if (checkFile) {
+        _logFile = File(syncPath);
+      } else {
+        _logFile = io.File(path + "/" + formatted + "-logs.log");
+      }
 
-    for (var line in event.lines) {
-      await _logFile?.writeAsString("${line.toString()}\n",
-          mode: FileMode.writeOnlyAppend);
-      print(line); //print to console as well
+      for (var line in event.lines) {
+        await _logFile?.writeAsString("${line.toString()}\n", mode: FileMode.writeOnlyAppend);
+        print(line); //print to console as well
+      }
     }
   }
 }

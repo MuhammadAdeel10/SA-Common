@@ -5,13 +5,10 @@ import 'package:sa_common/utils/DatabaseHelper.dart';
 import 'package:sa_common/utils/TablesName.dart';
 
 class ProductSalesTaxDatabase {
-  static final dao = BaseRepository<ProductSalesTaxModel>(
-      ProductSalesTaxModel(),
-      tableName: Tables.ProductSalesTax);
+  static final dao = BaseRepository<ProductSalesTaxModel>(ProductSalesTaxModel(), tableName: Tables.ProductSalesTax);
   Future<ProductSalesTaxModel> find(int id) => dao.find(id);
   Future<List<ProductSalesTaxModel>> getAll() => dao.getAll();
-  Future<List<ProductSalesTaxModel>> getByCompanySlug() =>
-      dao.getByCompanySlug();
+  Future<List<ProductSalesTaxModel>> getByCompanySlug() => dao.getByCompanySlug();
   Future<int> insert(ProductSalesTaxModel model) => dao.insert(model);
   Future<void> update(ProductSalesTaxModel model) => dao.update(model);
   Future<void> delete(ProductSalesTaxModel model) => dao.delete(model);
@@ -40,12 +37,10 @@ class ProductSalesTaxDatabase {
   Future<List<ProductSalesTaxModel>> GetByProductId(int productId) async {
     List<ProductSalesTaxModel> productTaxList = [];
     final db = await DatabaseHelper.instance.database;
-    var map = await db.rawQuery(
-        'select * from ${Tables.ProductSalesTax} where ${ProductSalesTaxField.productId} = $productId');
+    var map = await db.rawQuery('select * from ${Tables.ProductSalesTax} where ${ProductSalesTaxField.productId} = $productId');
     map.forEach((val) {
       if (val.length > 0) {
-        var model =
-            ProductSalesTaxModel().fromJson(val) as ProductSalesTaxModel;
+        var model = ProductSalesTaxModel().fromJson(val) as ProductSalesTaxModel;
         productTaxList.add(model);
       }
     });

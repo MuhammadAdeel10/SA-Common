@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sa_common/HttpService/Basehttp.dart';
 import 'package:sa_common/utils/Helper.dart';
+import 'package:sa_common/utils/app_routes.dart';
+import 'package:sa_common/utils/pref_utils.dart';
 import '../HttpService/AppExceptions.dart';
 
-enum Status { loading, success, error }
+enum Status { idle, loading, success, error }
 
 abstract class BaseController extends GetxController {
+  BaseClient baseClient = BaseClient();
   BuildContext? context = Get.key.currentContext;
-  Rx<Status> status = Status.loading.obs;
-  RxString message = "Please Wait...".obs;
-  RxString errorTitle = "".obs;
-  RxString errorMessage = "".obs;
-  RxString routeName = "".obs;
+
   @protected
   void handleError(
     error, {
     VoidCallback? goLoginPage,
   }) {
-    status.value = Status.error;
-    if (Get.isDialogOpen!) {
-      Get.back();
-    }
+    //status.value = Status.error;
+    Helper.dialogHide();
     if (error is BadRequestException) {
       var message = error.message;
       Helper.errorMsg("Bad Request", message ?? "Something went wrong", context!);
@@ -28,24 +26,20 @@ abstract class BaseController extends GetxController {
     } else if (error is ForbiddenException) {
       Helper.errorMsg("Unauthorized", "You are not authorized to access in this page", context!);
     } else if (error is UnAuthorizedException) {
-      goLoginPage;
-      // Navigator.pushAndRemoveUntil(context!, MaterialPageRoute(
-      //   builder: (context) {
-      //     PrefUtils().clearPreferencesData();
-      //     return LoginView();
-      //   },
-      // ), (route) => false);
+      if (goLoginPage != null) {
+        goLoginPage();
+      }
+      PrefUtils().clearPreferencesData();
+      Get.offNamedUntil(Routes.LOGIN, (route) => false);
       Helper.infoMsg('${error.message}', 'Session Expired', context!);
     } else if (error is NotFoundException) {
       Helper.errorMsg('Not Found', error.message ?? "Something went wrong", context!);
     } else if (error is LockException) {
-      goLoginPage;
-      // Navigator.pushAndRemoveUntil(context!, MaterialPageRoute(
-      //   builder: (context) {
-      //     PrefUtils().clearPreferencesData();
-      //     return LoginView();
-      //   },
-      // ), (route) => false);
+      if (goLoginPage != null) {
+        goLoginPage();
+      }
+      PrefUtils().clearPreferencesData();
+      Get.offNamedUntil(Routes.LOGIN, (route) => false);
       Helper.infoMsg('Session Expired', 'You are already logged in another session', context!);
     } else {
       Helper.errorMsg("Error", "Something went wrong", context!);

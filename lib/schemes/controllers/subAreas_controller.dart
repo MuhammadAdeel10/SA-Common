@@ -10,7 +10,7 @@ import 'package:sa_common/utils/TablesName.dart';
 import '../models/subAreasModel.dart';
 
 class SubAreasController extends BaseController {
-  Future<void> Pull(String slug, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, {int page = 1}) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(
       Tables.SubAreas,
       slug: slug,
@@ -19,6 +19,7 @@ class SubAreasController extends BaseController {
     var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
     var response = await BaseClient()
         .get(
+      baseUrl,
       "${slug}${ApiEndPoint.subareas}"
       "${syncDateString}"
       "?page=${page}&pageSize=5000",
@@ -35,13 +36,12 @@ class SubAreasController extends BaseController {
         var currentPage = decode['page'];
         var totalPages = decode['pages'];
         var subareas = decode['results'];
-        var pullData = List<SubAreasModel>.from(
-            subareas.map((x) => SubAreasModel().fromJson(x, slug: slug)));
+        var pullData = List<SubAreasModel>.from(subareas.map((x) => SubAreasModel().fromJson(x, slug: slug)));
 
         await SubAreasDatabase.bulkInsert(pullData);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await Pull(slug, page: currentPage + 1);
+          await Pull(baseUrl, slug, page: currentPage + 1);
         }
       }
       getSyncSetting.companySlug = slug;

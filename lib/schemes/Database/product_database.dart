@@ -1,6 +1,6 @@
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:sa_common/schemes/Database/productSalesTax_database.dart';
-import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -13,8 +13,7 @@ import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/TablesName.dart';
 
 class ProductDatabase {
-  static final dao =
-      BaseRepository<ProductModel>(ProductModel(), tableName: Tables.products);
+  static final dao = BaseRepository<ProductModel>(ProductModel(), tableName: Tables.products);
   Future<ProductModel> find(int id) => dao.find(id);
   Future<List<ProductModel>> getAll() => dao.getAll();
   Future<int> insert(ProductModel model) => dao.insert(model);
@@ -26,8 +25,7 @@ class ProductDatabase {
 
     List<ProductModel> productList = [];
     final db = await DatabaseHelper.instance.database;
-    var map = await db.rawQuery(
-        '''select * from Products where companySlug = '$slug' and productCategoryId is null and isOpening = 0 and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null)) order by id Limit 30''');
+    var map = await db.rawQuery('''select * from Products where companySlug = '$slug' and productCategoryId is null and isOpening = 0 and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null)) order by id Limit 30''');
     map.forEach((val) {
       if (val.length > 0) {
         var model = ProductModel().fromJson(val) as ProductModel;
@@ -38,7 +36,7 @@ class ProductDatabase {
     return productList;
   }
 
-  static Future<void> bulkInsert(List<ProductModel> model) async {
+  static Future<void> bulkInsert(String imageBaseUrl, List<ProductModel> model) async {
     final db = await DatabaseHelper.instance.database;
     var getAllProduct = await ProductDatabase.dao.getAll();
     var user = Helper.user;
@@ -46,20 +44,23 @@ class ProductDatabase {
     Batch batch = db.batch();
     for (var val in model) {
       if (val.imageUrl.isNotEmpty) {
-        var imageUrl = ApiEndPoint.ImageBaseUrl + val.imageUrl;
+        var imageUrl = imageBaseUrl + val.imageUrl;
         Uri uri = Uri.parse(imageUrl);
         final imageData = await http.get(uri);
-        var data = await File(join(path, imageUrl.split("/").last))
-            .create(recursive: true);
-        await data.writeAsBytes(imageData.bodyBytes);
+        if (Platform.isWindows) {
+          var data = await File(join(path, imageUrl.split("/").last)).create(recursive: true);
+          await data.writeAsBytes(imageData.bodyBytes);
+        } else if (Platform.isAndroid || Platform.isIOS) {
+          final documentDirectory = await getApplicationDocumentsDirectory();
+          final file = await File('${documentDirectory.path}/${imageUrl.split("/").last}').create(recursive: true);
+          await file.writeAsBytes(imageData.bodyBytes);
+        }
         print(val.imageUrl.toString());
       }
       var exist = getAllProduct.any((element) => element.id == val.id);
       if (exist) {
-        batch.rawQuery(
-            "delete from '${Tables.ProductSalesTax}' where companySlug = '${user.companyId}' and ProductId = ${val.id} ");
-        batch.rawQuery(
-            "delete from '${Tables.BranchProductTaxes}' where companySlug = '${user.companyId}' and ProductId = ${val.id} ");
+        batch.rawQuery("delete from '${Tables.ProductSalesTax}' where companySlug = '${user.companyId}' and ProductId = ${val.id} ");
+        batch.rawQuery("delete from '${Tables.BranchProductTaxes}' where companySlug = '${user.companyId}' and ProductId = ${val.id} ");
         batch.update(
           Tables.products,
           val.toJson(),
@@ -74,10 +75,7 @@ class ProductDatabase {
     batch.commit();
     model.forEach((val) {
       if (val.saleTaxes != null) {
-        val.saleTaxes!
-            .map((e) => e.companySlug =
-                e.companySlug != null ? e.companySlug : val.companySlug)
-            .toList();
+        val.saleTaxes!.map((e) => e.companySlug = e.companySlug != null ? e.companySlug : val.companySlug).toList();
         ProductSalesTaxDatabase.bulkInsert(val.saleTaxes!);
       }
     });
@@ -86,8 +84,7 @@ class ProductDatabase {
   Future<List<ProductModel>> getCategoryId(int productCategoryId) async {
     List<ProductModel> productList = [];
     final db = await DatabaseHelper.instance.database;
-    var map = await db.rawQuery(
-        'select * from Products where productCategoryId = $productCategoryId and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null))');
+    var map = await db.rawQuery('select * from Products where productCategoryId = $productCategoryId and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null))');
     map.forEach((val) {
       if (val.length > 0) {
         var model = ProductModel().fromJson(val) as ProductModel;
@@ -101,12 +98,10 @@ class ProductDatabase {
     var prefs = await SharedPreferences.getInstance();
     var slug = prefs.get(LocalStorageKey.companySlug) as String;
     final db = await DatabaseHelper.instance.database;
-    var map = await db.rawQuery(
-        "select * from Products WHERE code like '$code' and companySlug = '$slug' and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null)) ");
+    var map = await db.rawQuery("select * from Products WHERE code like '$code' and companySlug = '$slug' and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null)) ");
 
     if (map.length == 0) {
-      map = await db.rawQuery(
-          "select * from Products WHERE barcode like '$code' and companySlug = '$slug' and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null)) ");
+      map = await db.rawQuery("select * from Products WHERE barcode like '$code' and companySlug = '$slug' and isActive = 1 and (productType = 10 or (productType = 40 and baseProductId is not null)) ");
     }
     if (map.length > 0) {
       var model = ProductModel().fromJson(map.first) as ProductModel;
@@ -153,8 +148,7 @@ class ProductDatabase {
     var prefs = await SharedPreferences.getInstance();
     var slug = prefs.get(LocalStorageKey.companySlug) as String;
     final db = await DatabaseHelper.instance.database;
-    var map = await db.rawQuery(
-        '''select * from Products where productCategoryId = is not null and companySlug= '$slug' and (productType = 10 or (productType = 40 and baseProductId is not null)) ''');
+    var map = await db.rawQuery('''select * from Products where productCategoryId = is not null and companySlug= '$slug' and (productType = 10 or (productType = 40 and baseProductId is not null)) ''');
     map.forEach((val) {
       if (val.length > 0) {
         var model = ProductModel().fromJson(val) as ProductModel;

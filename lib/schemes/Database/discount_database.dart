@@ -7,8 +7,7 @@ import 'package:sa_common/utils/pref_utils.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DiscountDatabase {
-  static final dao = BaseRepository<DiscountModel>(DiscountModel(),
-      tableName: Tables.Discount);
+  static final dao = BaseRepository<DiscountModel>(DiscountModel(), tableName: Tables.Discount);
   Future<DiscountModel> find(int id) => dao.find(id);
   Future<List<DiscountModel>> getAll() => dao.getAll();
   Future<List<DiscountModel>> getByCompanySlug() => dao.getByCompanySlug();
@@ -39,8 +38,7 @@ class DiscountDatabase {
     var pref = PrefUtils();
 
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
-    var map = await db.rawQuery(
-        '''select * from ${Tables.Discount} where ${DiscountField.companySlug} = '$slug' and ${DiscountField.isDefault} = 1''');
+    var map = await db.rawQuery('''select * from ${Tables.Discount} where ${DiscountField.companySlug} = '$slug' and ${DiscountField.isDefault} = 1''');
 
     if (map.length > 0) {
       var model = DiscountModel().fromJson(map[0]) as DiscountModel;

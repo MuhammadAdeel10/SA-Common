@@ -8,17 +8,12 @@ import '../../utils/Helper.dart';
 import '../Database/masterGroup_database.dart';
 
 class MasterGroupController extends BaseController {
-  Future<void> Pull(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.MasterGroup,
-        slug: slug);
+  Future<void> Pull(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.MasterGroup, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("$slug${ApiEndPoint.getMasterGroups}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "$slug${ApiEndPoint.getMasterGroups}${formatted}").catchError(
       (error) {
         handleError(error);
       },
@@ -33,18 +28,13 @@ class MasterGroupController extends BaseController {
     }
   }
 
-  Future<void> Delete(String slug, int branchId) async {
-    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
-        Tables.MasterGroup,
-        slug: slug);
+  Future<void> Delete(String baseUrl, String slug, int branchId) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.MasterGroup, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getAll = await MasterGroupDatabase.dao.getAll();
     var getSyncSettingDate = getSyncSetting.syncDate;
-    final String formatted =
-        Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient()
-        .get("${slug}${ApiEndPoint.deleteMasterGroups}${formatted}")
-        .catchError(
+    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
+    var response = await BaseClient().get(baseUrl, "${slug}${ApiEndPoint.deleteMasterGroups}${formatted}").catchError(
       (error) {
         handleError(error);
       },

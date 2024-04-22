@@ -10,10 +10,8 @@ class CompanySettingField {
   static final String slug = 'slug';
   static final String name = 'name';
   static final String allowDiscountOnPosProduct = 'allowDiscountOnPosProduct';
-  static final String allowPriceChangeForPosProduct =
-      'allowPriceChangeForPosProduct';
-  static final String allowRemovePosProductAfterScanning =
-      'allowRemovePosProductAfterScanning';
+  static final String allowPriceChangeForPosProduct = 'allowPriceChangeForPosProduct';
+  static final String allowRemovePosProductAfterScanning = 'allowRemovePosProductAfterScanning';
   static final String allowOverallDiscountPos = 'allowOverallDiscountPos';
   static final String manuallyManageEOD = 'manuallyManageEOD';
   static final String enableFbrPos = 'enableFbrPos';
@@ -22,7 +20,7 @@ class CompanySettingField {
   static final String enableSalesmansOnPos = 'enableSalesmansOnPos';
   static final String isSalesmanRequiredOnPos = 'isSalesmanRequiredOnPos';
   static final String enableSalesGeography = 'enableSalesGeography';
-  static final String homeCurrencyId = 'homeCurrencyId';
+  static final String currencyId = 'currencyId';
   static final String enableMasterGroups = 'enableMasterGroups';
   static final String masterGroupCaption = 'masterGroupCaption';
   static final String detailAGroupCaption = 'detailAGroupCaption';
@@ -36,18 +34,14 @@ class CompanySettingField {
   static final String enableScheme = 'enableScheme';
   static final String defaultPOSCustomerId = 'defaultPOSCustomerId';
   static final String decimalPlaces = 'decimalPlaces';
-  static final String enableCustomerLoyaltyPoints =
-      'enableCustomerLoyaltyPoints';
-  static final String customerLoyaltyPointsToAmountConversionRate =
-      'customerLoyaltyPointsToAmountConversionRate';
-  static final String customerLoyaltyAmountToPointsConversionRate =
-      'customerLoyaltyAmountToPointsConversionRate';
-  static final String customerLoyaltyDiscountAccountId =
-      'customerLoyaltyDiscountAccountId';
-  static final String customerLoyaltyProgramCategories =
-      'customerLoyaltyProgramCategories';
-  static final String customerLoyaltyCalculationType =
-      'customerLoyaltyCalculationType';
+  static final String enableCustomerLoyaltyPoints = 'enableCustomerLoyaltyPoints';
+  static final String customerLoyaltyPointsToAmountConversionRate = 'customerLoyaltyPointsToAmountConversionRate';
+  static final String customerLoyaltyAmountToPointsConversionRate = 'customerLoyaltyAmountToPointsConversionRate';
+  static final String customerLoyaltyDiscountAccountId = 'customerLoyaltyDiscountAccountId';
+  static final String customerLoyaltyProgramCategories = 'customerLoyaltyProgramCategories';
+  static final String customerLoyaltyCalculationType = 'customerLoyaltyCalculationType';
+  static final String currencySymbol = 'currencySymbol';
+  static final String allowNegativeStock = 'allowNegativeStock';
 }
 
 class CompanySettingModel extends BaseModel<Guid> {
@@ -70,7 +64,7 @@ class CompanySettingModel extends BaseModel<Guid> {
   DateTime? syncDate;
   bool isSync;
   bool enableSalesGeography;
-  int? homeCurrencyId;
+  int? currencyId;
   bool enableMasterGroups;
   String? masterGroupCaption;
   bool enableDetailAGroups;
@@ -88,6 +82,8 @@ class CompanySettingModel extends BaseModel<Guid> {
   String? customerLoyaltyProgramCategories;
   int decimalPlaces;
   CustomerLoyaltyCalculationType customerLoyaltyCalculationType;
+  bool currencySymbol;
+  bool allowNegativeStock;
 
   CompanySettingModel(
       {this.id,
@@ -108,7 +104,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.syncDate,
       this.isSync = false,
       this.enableSalesGeography = false,
-      this.homeCurrencyId,
+      this.currencyId,
       this.enableMasterGroups = false,
       this.masterGroupCaption,
       this.detailAGroupCaption,
@@ -124,8 +120,9 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.customerLoyaltyProgramCategories,
       this.printerName,
       this.decimalPlaces = 0,
-      this.customerLoyaltyCalculationType =
-          CustomerLoyaltyCalculationType.None});
+      this.customerLoyaltyCalculationType = CustomerLoyaltyCalculationType.None,
+      this.currencySymbol = false,
+      this.allowNegativeStock = false});
 
   CompanySettingModel copyWith({
     Guid? id,
@@ -150,26 +147,19 @@ class CompanySettingModel extends BaseModel<Guid> {
         // companyId: companyId ?? this.companyId,
         slug: slug ?? this.slug,
         name: name ?? this.name,
-        allowDiscountOnPosProduct:
-            allowDiscountOnPosProduct ?? this.allowDiscountOnPosProduct,
-        allowPriceChangeForPosProduct:
-            allowPriceChangeForPosProduct ?? this.allowPriceChangeForPosProduct,
-        allowRemovePosProductAfterScanning:
-            allowRemovePosProductAfterScanning ??
-                this.allowRemovePosProductAfterScanning,
-        allowOverallDiscountPos:
-            allowOverallDiscountPos ?? this.allowOverallDiscountPos,
+        allowDiscountOnPosProduct: allowDiscountOnPosProduct ?? this.allowDiscountOnPosProduct,
+        allowPriceChangeForPosProduct: allowPriceChangeForPosProduct ?? this.allowPriceChangeForPosProduct,
+        allowRemovePosProductAfterScanning: allowRemovePosProductAfterScanning ?? this.allowRemovePosProductAfterScanning,
+        allowOverallDiscountPos: allowOverallDiscountPos ?? this.allowOverallDiscountPos,
         manuallyManageEOD: manuallyManageEOD ?? this.manuallyManageEOD,
         enableFbrPos: enableFbrPos ?? this.enableFbrPos,
         enableFbrPosFee: enableFbrPosFee ?? this.enableFbrPosFee,
         fbrPosFeeAccountType: fbrPosFeeAccountType ?? this.fbrPosFeeAccountType,
         enableSalesmansOnPos: enableSalesmansOnPos ?? this.enableSalesmansOnPos,
-        isSalesmanRequiredOnPos:
-            isSalesmanRequiredOnPos ?? this.isSalesmanRequiredOnPos,
+        isSalesmanRequiredOnPos: isSalesmanRequiredOnPos ?? this.isSalesmanRequiredOnPos,
         syncDate: syncDate ?? this.syncDate,
         isSync: isSync ?? this.isSync,
-        enableSalesGeography:
-            enableSalesGeography ?? this.enableSalesGeography);
+        enableSalesGeography: enableSalesGeography ?? this.enableSalesGeography);
   }
 
   Map<String, dynamic> toMap() {
@@ -182,10 +172,8 @@ class CompanySettingModel extends BaseModel<Guid> {
       'defaultPOSCustomerId': defaultPOSCustomerId,
       'decimalPlaces': decimalPlaces,
       'allowDiscountOnPosProduct': allowDiscountOnPosProduct == true ? 1 : 0,
-      'allowPriceChangeForPosProduct':
-          allowPriceChangeForPosProduct == true ? 1 : 0,
-      'allowRemovePosProductAfterScanning':
-          allowRemovePosProductAfterScanning == true ? 1 : 0,
+      'allowPriceChangeForPosProduct': allowPriceChangeForPosProduct == true ? 1 : 0,
+      'allowRemovePosProductAfterScanning': allowRemovePosProductAfterScanning == true ? 1 : 0,
       'allowOverallDiscountPos': allowOverallDiscountPos == true ? 1 : 0,
       'manuallyManageEOD': manuallyManageEOD == true ? 1 : 0,
       'enableFbrPos': enableFbrPos == true ? 1 : 0,
@@ -193,12 +181,11 @@ class CompanySettingModel extends BaseModel<Guid> {
       'fbrPosFeeAccountType': fbrPosFeeAccountType,
       'enableSalesmansOnPos': enableSalesmansOnPos == true ? 1 : 0,
       'isSalesmanRequiredOnPos': isSalesmanRequiredOnPos == true ? 1 : 0,
-      'syncDate':
-          syncDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'syncDate': syncDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'isSync': isSync == true ? 1 : 0,
       'enableSalesGeography': enableSalesGeography == true ? 1 : 0,
       'enableMasterGroups': enableMasterGroups == true ? 1 : 0,
-      'homeCurrencyId': homeCurrencyId,
+      'currencyId': currencyId,
       'enableDetailAGroups': enableDetailAGroups == true ? 1 : 0,
       'enableDetailBGroups': enableDetailBGroups == true ? 1 : 0,
       'enableScheme': enableScheme == true ? 1 : 0,
@@ -206,15 +193,14 @@ class CompanySettingModel extends BaseModel<Guid> {
       'detailAGroupCaption': detailAGroupCaption,
       'detailBGroupCaption': detailBGroupCaption,
       'printerName': printerName,
-      'enableCustomerLoyaltyPoints':
-          enableCustomerLoyaltyPoints == true ? 1 : 0,
-      'customerLoyaltyAmountToPointsConversionRate':
-          customerLoyaltyAmountToPointsConversionRate,
-      'customerLoyaltyPointsToAmountConversionRate':
-          customerLoyaltyPointsToAmountConversionRate,
+      'enableCustomerLoyaltyPoints': enableCustomerLoyaltyPoints == true ? 1 : 0,
+      'customerLoyaltyAmountToPointsConversionRate': customerLoyaltyAmountToPointsConversionRate,
+      'customerLoyaltyPointsToAmountConversionRate': customerLoyaltyPointsToAmountConversionRate,
       'customerLoyaltyDiscountAccountId': customerLoyaltyDiscountAccountId,
       'customerLoyaltyProgramCategories': customerLoyaltyProgramCategories,
       'customerLoyaltyCalculationType': customerLoyaltyCalculationType.value,
+      'currencySymbol': currencySymbol == true ? 1 : 0,
+      'allowNegativeStock': allowNegativeStock == true ? 1 : 0,
     };
   }
 
@@ -226,85 +212,37 @@ class CompanySettingModel extends BaseModel<Guid> {
       name: map['name'] ?? '',
       defaultPOSCustomerId: map['defaultPOSCustomerId'] ?? 0,
       decimalPlaces: map['decimalPlaces'] ?? 0,
-      allowDiscountOnPosProduct: (map['allowDiscountOnPosProduct'] == 0 ||
-              map['allowDiscountOnPosProduct'] == false)
-          ? false
-          : true,
-      enableScheme: (map['enableScheme'] == 0 || map['enableScheme'] == false)
-          ? false
-          : true,
-      allowPriceChangeForPosProduct:
-          (map['allowPriceChangeForPosProduct'] == 0 ||
-                  map['allowPriceChangeForPosProduct'] == false)
-              ? false
-              : true,
-      allowRemovePosProductAfterScanning:
-          (map['allowRemovePosProductAfterScanning'] == 0 ||
-                  map['allowRemovePosProductAfterScanning'] == false)
-              ? false
-              : true,
-      allowOverallDiscountPos: (map['allowOverallDiscountPos'] == 0 ||
-              map['allowOverallDiscountPos'] == false)
-          ? false
-          : true,
-      manuallyManageEOD:
-          (map['manuallyManageEOD'] == 0 || map['manuallyManageEOD'] == false)
-              ? false
-              : true,
-      enableFbrPos: (map['enableFbrPos'] == 0 || map['enableFbrPos'] == false)
-          ? false
-          : true,
-      enableFbrPosFee:
-          (map['enableFbrPosFee'] == 0 || map['enableFbrPosFee'] == false)
-              ? false
-              : true,
+      allowDiscountOnPosProduct: (map['allowDiscountOnPosProduct'] == 0 || map['allowDiscountOnPosProduct'] == false) ? false : true,
+      enableScheme: (map['enableScheme'] == 0 || map['enableScheme'] == false) ? false : true,
+      allowPriceChangeForPosProduct: (map['allowPriceChangeForPosProduct'] == 0 || map['allowPriceChangeForPosProduct'] == false) ? false : true,
+      allowRemovePosProductAfterScanning: (map['allowRemovePosProductAfterScanning'] == 0 || map['allowRemovePosProductAfterScanning'] == false) ? false : true,
+      allowOverallDiscountPos: (map['allowOverallDiscountPos'] == 0 || map['allowOverallDiscountPos'] == false) ? false : true,
+      manuallyManageEOD: (map['manuallyManageEOD'] == 0 || map['manuallyManageEOD'] == false) ? false : true,
+      enableFbrPos: (map['enableFbrPos'] == 0 || map['enableFbrPos'] == false) ? false : true,
+      enableFbrPosFee: (map['enableFbrPosFee'] == 0 || map['enableFbrPosFee'] == false) ? false : true,
       fbrPosFeeAccountType: map['fbrPosFeeAccountType']?.toInt() ?? 0,
-      enableSalesmansOnPos: (map['enableSalesmansOnPos'] == 0 ||
-              map['enableSalesmansOnPos'] == false)
-          ? false
-          : true,
-      isSalesmanRequiredOnPos: (map['isSalesmanRequiredOnPos'] == 0 ||
-              map['isSalesmanRequiredOnPos'] == false)
-          ? false
-          : true,
-      syncDate:
-          map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
+      enableSalesmansOnPos: (map['enableSalesmansOnPos'] == 0 || map['enableSalesmansOnPos'] == false) ? false : true,
+      isSalesmanRequiredOnPos: (map['isSalesmanRequiredOnPos'] == 0 || map['isSalesmanRequiredOnPos'] == false) ? false : true,
+      syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
-      enableSalesGeography: (map['enableSalesGeography'] == 0 ||
-              map['enableSalesGeography'] == false)
-          ? false
-          : true,
-      enableMasterGroups:
-          (map['enableMasterGroups'] == 0 || map['enableMasterGroups'] == false)
-              ? false
-              : true,
-      homeCurrencyId: map['homeCurrencyId']?.toInt() ?? 0,
-      enableDetailBGroups: (map['enableDetailBGroups'] == 0 ||
-              map['enableDetailBGroups'] == false)
-          ? false
-          : true,
-      enableDetailAGroups: (map['enableDetailAGroups'] == 0 ||
-              map['enableDetailAGroups'] == false)
-          ? false
-          : true,
+      enableSalesGeography: (map['enableSalesGeography'] == 0 || map['enableSalesGeography'] == false) ? false : true,
+      enableMasterGroups: (map['enableMasterGroups'] == 0 || map['enableMasterGroups'] == false) ? false : true,
+      currencyId: map['currencyId']?.toInt() ?? 0,
+      enableDetailBGroups: (map['enableDetailBGroups'] == 0 || map['enableDetailBGroups'] == false) ? false : true,
+      enableDetailAGroups: (map['enableDetailAGroups'] == 0 || map['enableDetailAGroups'] == false) ? false : true,
       masterGroupCaption: map['masterGroupCaption'] ?? '',
       detailAGroupCaption: map['detailAGroupCaption'] ?? '',
       detailBGroupCaption: map['detailBGroupCaption'] ?? '',
       printerName: map['printerName'] ?? '',
       logo: map['logo'] ?? '',
-      enableCustomerLoyaltyPoints: (map['enableCustomerLoyaltyPoints'] == 0 ||
-              map['enableCustomerLoyaltyPoints'] == false)
-          ? false
-          : true,
+      enableCustomerLoyaltyPoints: (map['enableCustomerLoyaltyPoints'] == 0 || map['enableCustomerLoyaltyPoints'] == false) ? false : true,
       customerLoyaltyProgramCategories: map['customerLoyaltyProgramCategories'],
-      customerLoyaltyDiscountAccountId:
-          map['customerLoyaltyDiscountAccountId'] ?? 0,
-      customerLoyaltyAmountToPointsConversionRate:
-          map['customerLoyaltyAmountToPointsConversionRate']?.toDouble() ?? 0.0,
-      customerLoyaltyPointsToAmountConversionRate:
-          map['customerLoyaltyPointsToAmountConversionRate']?.toDouble() ?? 0.0,
-      customerLoyaltyCalculationType: intToCustomerLoyaltyCalculationType(
-          map['customerLoyaltyCalculationType'] ?? 0),
+      customerLoyaltyDiscountAccountId: map['customerLoyaltyDiscountAccountId'] ?? 0,
+      customerLoyaltyAmountToPointsConversionRate: map['customerLoyaltyAmountToPointsConversionRate']?.toDouble() ?? 0.0,
+      customerLoyaltyPointsToAmountConversionRate: map['customerLoyaltyPointsToAmountConversionRate']?.toDouble() ?? 0.0,
+      customerLoyaltyCalculationType: intToCustomerLoyaltyCalculationType(map['customerLoyaltyCalculationType'] ?? 0),
+      currencySymbol: (map['currencySymbol'] == 0 || map['currencySymbol'] == false) ? false : true,
+      allowNegativeStock: (map['allowNegativeStock'] == 0 || map['allowNegativeStock'] == false) ? false : true,
     );
   }
 
@@ -318,10 +256,7 @@ class CompanySettingModel extends BaseModel<Guid> {
     return toMap();
   }
 
-  List<CompanySettingModel> FromJson(String str) =>
-      List<CompanySettingModel>.from(
-          json.decode(str).map((x) => CompanySettingModel().fromJson(x)));
+  List<CompanySettingModel> FromJson(String str) => List<CompanySettingModel>.from(json.decode(str).map((x) => CompanySettingModel().fromJson(x)));
 
-  String ToJson(List<CompanySettingModel> data) =>
-      json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  String ToJson(List<CompanySettingModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 }

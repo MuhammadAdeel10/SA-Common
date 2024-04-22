@@ -4,14 +4,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sa_common/utils/TablesName.dart';
 import '../models/SchemeInvoiceDiscountModel.dart';
 
-class schemeInvoiceDiscountDatabase {
-  static final dao = BaseRepository<SchemeInvoiceDiscountModel>(
-      SchemeInvoiceDiscountModel(),
-      tableName: Tables.SchemeInvoiceDiscount);
+class SchemeInvoiceDiscountDatabase {
+  static final dao = BaseRepository<SchemeInvoiceDiscountModel>(SchemeInvoiceDiscountModel(), tableName: Tables.SchemeInvoiceDiscount);
   Future<SchemeInvoiceDiscountModel> find(int id) => dao.find(id);
   Future<List<SchemeInvoiceDiscountModel>> getAll() => dao.getAll();
-  Future<List<SchemeInvoiceDiscountModel>> getByCompanySlug() =>
-      dao.getByCompanySlug();
+  Future<List<SchemeInvoiceDiscountModel>> getByCompanySlug() => dao.getByCompanySlug();
   Future<int> insert(SchemeInvoiceDiscountModel model) => dao.insert(model);
   Future<void> update(SchemeInvoiceDiscountModel model) => dao.update(model);
   Future<void> delete(SchemeInvoiceDiscountModel model) => dao.delete(model);
@@ -19,7 +16,7 @@ class schemeInvoiceDiscountDatabase {
 
   static Future<void> bulkInsert(List<SchemeInvoiceDiscountModel> model) async {
     final db = await DatabaseHelper.instance.database;
-    var getAll = await schemeInvoiceDiscountDatabase.dao.getByCompanySlug();
+    var getAll = await SchemeInvoiceDiscountDatabase.dao.getByCompanySlug();
     Batch batch = db.batch();
     model.forEach((val) {
       var exist = getAll.any((element) => element.id == val.id);

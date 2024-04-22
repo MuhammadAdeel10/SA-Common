@@ -10,7 +10,7 @@ import '../Database/region_database.dart';
 import '../models/RegionsModel.dart';
 
 class RegionsController extends BaseController {
-  Future<void> Pull(String slug, {int page = 1}) async {
+  Future<void> Pull(String baseUrl, String slug, {int page = 1}) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(
       Tables.Regions,
       slug: slug,
@@ -19,6 +19,7 @@ class RegionsController extends BaseController {
     var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
     var response = await BaseClient()
         .get(
+      baseUrl,
       "${slug}${ApiEndPoint.zones}"
       "${syncDateString}"
       "?page=${page}&pageSize=5000",
@@ -35,13 +36,12 @@ class RegionsController extends BaseController {
         var currentPage = decode['page'];
         var totalPages = decode['pages'];
         var regions = decode['results'];
-        var pullData = List<RegionsModel>.from(
-            regions.map((x) => RegionsModel().fromJson(x, slug: slug)));
+        var pullData = List<RegionsModel>.from(regions.map((x) => RegionsModel().fromJson(x, slug: slug)));
 
         await RegionsDatabase.bulkInsert(pullData);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await Pull(slug, page: currentPage + 1);
+          await Pull(baseUrl, slug, page: currentPage + 1);
         }
       }
       getSyncSetting.companySlug = slug;

@@ -7,11 +7,11 @@ import '../Models/EndOfTheDay_model.dart';
 
 class EndOfTheDayController extends BaseController {
   //
-  Future<void> GetLastEndOfTheDay() async {
+  Future<void> GetLastEndOfTheDay(String baseUrl) async {
     var user = Helper.user;
     var slug = user.companyId;
     var branchId = user.branchId;
-    var response = await BaseClient().get("$slug/${branchId}${ApiEndPoint.EndOfTheFDay}").catchError(
+    var response = await BaseClient().get(baseUrl, "$slug/${branchId}${ApiEndPoint.EndOfTheFDay}").catchError(
       (error) {
         handleError(error);
       },

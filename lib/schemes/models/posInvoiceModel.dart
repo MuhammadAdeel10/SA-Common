@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_guid/flutter_guid.dart';
 import 'package:sa_common/schemes/models/posPaymentDetailModel.dart';
 import 'package:sa_common/schemes/models/schemePosInvoiceDetailModel.dart';
+
 import 'SchemeInvoiceDiscountDtoModel.dart';
 
 class SchemePOSInvoiceModel {
@@ -139,8 +140,7 @@ class SchemePOSInvoiceModel {
       fbrPosInvoiceNumber: fbrPosInvoiceNumber ?? this.fbrPosInvoiceNumber,
       fbrPosFee: fbrPosFee ?? this.fbrPosFee,
       posCashRegisterId: posCashRegisterId ?? this.posCashRegisterId,
-      cashRegisterSessionId:
-          cashRegisterSessionId ?? this.cashRegisterSessionId,
+      cashRegisterSessionId: cashRegisterSessionId ?? this.cashRegisterSessionId,
       customerId: customerId ?? this.customerId,
       currencyId: currencyId ?? this.currencyId,
       status: status ?? this.status,
@@ -230,9 +230,7 @@ class SchemePOSInvoiceModel {
       fbrPosInvoiceNumber: map['fbrPosInvoiceNumber'],
       fbrPosFee: map['fbrPosFee'],
       posCashRegisterId: map['posCashRegisterId']?.toInt(),
-      cashRegisterSessionId: map['cashRegisterSessionId'] != null
-          ? Guid(map['cashRegisterSessionId'])
-          : null,
+      cashRegisterSessionId: map['cashRegisterSessionId'] != null ? Guid(map['cashRegisterSessionId']) : null,
       customerId: map['customerId']?.toInt(),
       currencyId: map['currencyId']?.toInt(),
       status: map['status']?.toInt(),
@@ -261,16 +259,9 @@ class SchemePOSInvoiceModel {
       isAppliedScheme: map['isAppliedScheme'],
       isPosInvoice: map['isPosInvoice'],
       isSaleReturn: map['isSaleReturn'],
-      posInvoiceDetails: List<SchemePOSInvoiceDetailModel>.from(
-          map['posInvoiceDetails']
-              ?.map((x) => SchemePOSInvoiceDetailModel.fromMap(x))),
-      posInvoiceDiscounts: List<SchemeInvoiceDiscountDto>.from(
-          map['posInvoiceDiscounts']
-              ?.map((x) => SchemeInvoiceDiscountDto.fromMap(x))),
-      posPaymentDetails: map['posPaymentDetails'] != null
-          ? List<PosPaymentModel>.from(
-              map['posPaymentDetails']?.map((x) => PosPaymentModel.fromMap(x)))
-          : null,
+      posInvoiceDetails: List<SchemePOSInvoiceDetailModel>.from(map['posInvoiceDetails']?.map((x) => SchemePOSInvoiceDetailModel.fromMap(x))),
+      posInvoiceDiscounts: List<SchemeInvoiceDiscountDto>.from(map['posInvoiceDiscounts']?.map((x) => SchemeInvoiceDiscountDto.fromMap(x))),
+      posPaymentDetails: map['posPaymentDetails'] != null ? List<PosPaymentModel>.from(map['posPaymentDetails']?.map((x) => PosPaymentModel.fromMap(x))) : null,
     );
   }
 

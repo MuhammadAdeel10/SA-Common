@@ -1,4 +1,6 @@
+import 'package:path_provider/path_provider.dart';
 import 'package:sa_common/productCategory/product_categories_model.dart';
+import 'package:sa_common/utils/Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -7,6 +9,9 @@ import '../utils/DatabaseHelper.dart';
 import '../utils/LocalStorageKey.dart';
 import '../utils/TablesName.dart';
 import '../utils/pref_utils.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 
 class ProductCategoryDatabase {
   static final dao = BaseRepository<ProductCategoryModel>(ProductCategoryModel(), tableName: Tables.productsCategories);
@@ -48,11 +53,27 @@ class ProductCategoryDatabase {
     return productCategory;
   }
 
-  static Future<void> bulkInsert(List<ProductCategoryModel> model) async {
+  static Future<void> bulkInsert(String imageBaseUrl, List<ProductCategoryModel> model) async {
     final db = await DatabaseHelper.instance.database;
+    var user = Helper.user;
+    var path = await Helper.createFolder("uploads/${user.companyId}/");
     var getAll = await ProductCategoryDatabase.dao.getAll();
     Batch batch = db.batch();
-    model.forEach((val) {
+    for (var val in model) {
+      if (val.imageUrl != null && val.imageUrl!.isNotEmpty) {
+        var imageUrl = imageBaseUrl + val.imageUrl!;
+        Uri uri = Uri.parse(imageUrl);
+        final imageData = await http.get(uri);
+        if (Platform.isWindows) {
+          var data = await File(join(path, imageUrl.split("/").last)).create(recursive: true);
+          await data.writeAsBytes(imageData.bodyBytes);
+        } else if (Platform.isAndroid || Platform.isIOS) {
+          final documentDirectory = await getApplicationDocumentsDirectory();
+          final file = await File('${documentDirectory.path}/${imageUrl.split("/").last}').create(recursive: true);
+          await file.writeAsBytes(imageData.bodyBytes);
+        }
+      }
+
       var exist = getAll.any((element) => element.id == val.id);
       if (exist) {
         batch.update(
@@ -64,7 +85,7 @@ class ProductCategoryDatabase {
       } else {
         batch.insert(Tables.productsCategories, val.toJson());
       }
-    });
+    }
     await batch.commit();
   }
 
