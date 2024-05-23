@@ -123,7 +123,7 @@ class Helper extends BaseController {
     }
     var inputFormat = DateFormat('yyyy-MM-dd');
     var inputDate = inputFormat.parse(_date);
-    var outputFormat = DateFormat('dd/MM/yyyy');
+    var outputFormat = DateFormat('dd-MM-yyyy');
     return outputFormat.format(inputDate);
   }
 
@@ -133,7 +133,7 @@ class Helper extends BaseController {
     }
     var inputFormat = DateFormat('yyyy-MM-dd');
     var inputDate = inputFormat.parse(_date);
-    var outputFormat = DateFormat('MM/dd/yyyy');
+    var outputFormat = DateFormat('MM-dd-yyyy');
     return outputFormat.format(inputDate);
   }
 
@@ -160,8 +160,8 @@ class Helper extends BaseController {
 
   // static DateFormat dateFormatter = DateFormat('MM/dd/yyyy hh:mm a');
 
-  static DateFormat onlyDateFormatter = DateFormat('MM/dd/yyyy');
-  static DateFormat onlyDateFormatterDateMonth = DateFormat('dd/MM/yyyy');
+  static DateFormat onlyDateFormatter = DateFormat('MM-dd-yyyy');
+  static DateFormat onlyDateFormatterDateMonth = DateFormat('dd-MM-yyyy');
   static DateFormat onlyTimeFormatter = DateFormat.jm();
 
   static String DateTimeRemoveZ(DateTime date) {

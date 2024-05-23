@@ -20,12 +20,15 @@ class SalesPersonFiles {
   static final String isActive = 'isActive';
   static final String branchId = 'branchId';
 }
-
-class SalesPersonModel extends BaseModel<int> {
+mixin  DropDown{ 
+abstract String name;
+}
+class SalesPersonModel extends BaseModel<int> with DropDown  {
   @override
   int? id;
   @override
   String? companySlug;
+  @override
   String name;
   bool isOrderBooker;
   bool isDeliveryPerson;
