@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:sa_common/schemes/models/SubAreasModel.dart';
 
 import '../../Controller/BaseRepository.dart';
+import '../../SalesPerson/model/SalesPersonModel.dart';
+
 
 class CustomerFields {
   static final String id = 'id';
@@ -50,7 +52,7 @@ class CustomerFields {
   static final String branchId = 'branchId';
 }
 
-class CustomerModel extends BaseModel<int> {
+class CustomerModel extends BaseModel<int> with DropDown {
   @override
   int? id;
   String name;
@@ -283,7 +285,7 @@ class CustomerModel extends BaseModel<int> {
       contactType: map['contactType'] ?? 0,
       customerCategoryId: map['customerCategoryId']?.toInt(),
       branchId: map['branchId']?.toInt(),
-      categoryName: map['categoryName'] ?? '',
+      categoryName: map['customerCategoryName'] ?? '',
       countryId: map['countryId']?.toInt(),
       currencyId: map['currencyId']?.toInt(),
       companySlug: map['companySlug'] ?? slug,
