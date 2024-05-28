@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import '../../Controller/BaseRepository.dart';
+import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
+
 
 class AccountField {
   static final String id = 'id';
@@ -22,7 +24,7 @@ class AccountField {
   static final String syncDate = 'syncDate';
 }
 
-class AccountModel extends BaseModel<int> {
+class AccountModel extends BaseModel<int> with DropDown {
   @override
   int? id;
   String? code;
