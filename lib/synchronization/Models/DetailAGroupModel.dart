@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../Controller/BaseRepository.dart';
+import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
 
 class DetailAGroupField {
   static final String id = 'id';
@@ -12,7 +13,7 @@ class DetailAGroupField {
   static final String syncDate = 'syncDate';
 }
 
-class DetailAGroupModel extends BaseModel<int> {
+class DetailAGroupModel extends BaseModel<int> with DropDown {
   @override
   int? id;
   String name;

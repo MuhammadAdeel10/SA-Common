@@ -28,7 +28,6 @@ class SalesPersonModel extends BaseModel<int> with DropDown  {
   int? id;
   @override
   String? companySlug;
-  @override
   String name;
   bool isOrderBooker;
   bool isDeliveryPerson;
