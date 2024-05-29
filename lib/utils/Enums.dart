@@ -1,4 +1,5 @@
 enum DiscountAppliedOn {
+  none(0),
   GrossAmount(10),
   CompoundAmount(20);
 
