@@ -13,7 +13,8 @@ class Tables {
   static const CustomerCategory = "CustomerCategories";
   // static const SubArea = "SubArea";
   static const Customer = "Customers";
-  // static const SalesPersonSubAreas = "SalesPersonSubAreas";
+  static const saleOrder = "SaleOrders";
+ static const salesPersonSubAreas = "SalesPersonSubAreas";
   static const MasterGroup = "MasterGroup";
   static const DetailAGroup = "DetailAGroup";
   static const DetailBGroup = "DetailBGroup";
@@ -39,6 +40,7 @@ class Tables {
   static const Territories = "Territories";
   static const Areas = "Areas";
   static const SubAreas = "SubAreas";
+  static const SubAreaSalesPersons = "SubAreaSalesPersons";
   static const POSInvoiceDetailTaxes = "POSInvoiceDetailTaxes";
   static const ProductSalesTax = "ProductSalesTaxes";
   static const PosInvoicePayment = "PosInvoicePayments";
