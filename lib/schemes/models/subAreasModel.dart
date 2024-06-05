@@ -24,7 +24,7 @@ class SubAreasModel extends BaseModel<int> {
   bool isSync;
   DateTime? syncDate;
   DateTime? updatedOn;
-  String? name;
+  String name;
   int? regionId;
   int? zoneId;
   int? territoryId;
@@ -36,7 +36,7 @@ class SubAreasModel extends BaseModel<int> {
     this.isSync = false,
     this.syncDate,
     this.updatedOn,
-    this.name,
+    this.name = "",
     this.regionId,
     this.zoneId,
     this.territoryId,

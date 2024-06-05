@@ -17,6 +17,7 @@ import 'package:sa_common/schemes/models/schemeCustomerCategoriesModel.dart';
 import 'package:sa_common/schemes/models/schemeDetailsModel.dart';
 import 'package:sa_common/schemes/models/schemeSalesGeographyModel.dart';
 import 'package:sa_common/schemes/models/schemesModel.dart';
+import 'package:sa_common/schemes/models/subAreaSalesPersonsModel.dart';
 import 'package:sa_common/schemes/models/tax_model.dart';
 import 'package:sa_common/synchronization/Models/AccountModel.dart';
 import 'package:sa_common/synchronization/Models/CountryModel.dart';
@@ -224,6 +225,18 @@ class DatabaseHelper implements DBHelper {
     ${TaxFields.updatedOn} $dateTimeType,
     ${TaxFields.isActive} $boolType CHECK(${TaxFields.isActive} IN (0,1))
     )''');
+
+    batch.execute('''
+    CREATE TABLE ${Tables.SubAreaSalesPersons} (
+    ${SubAreaSalesPersonsFields.id} $idTypeNoAutoIncrement,
+    ${SubAreaSalesPersonsFields.companySlug} $textTypeNotNull,
+    ${SubAreaSalesPersonsFields.subAreaName} $textType,
+    ${SubAreaSalesPersonsFields.salesPersonId} $integerType,
+    ${SubAreaSalesPersonsFields.subAreaId} $integerType,
+    ${SubAreaSalesPersonsFields.branchId} $integerType
+    )''');
+
+     // ${SubAreaSalesPersonsFields.subAreaName} $textType,
 
     batch.execute('''
       CREATE TABLE ${Tables.products} (
