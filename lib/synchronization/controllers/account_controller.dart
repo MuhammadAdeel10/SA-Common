@@ -13,8 +13,9 @@ class AccountController extends BaseController {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.accounts, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
+
     final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
-    var response = await BaseClient().get(baseUrl, "$slug/${branchId}${ApiEndPoint.getAccounts}${formatted}").catchError(
+    var response = await this.baseClient.get(baseUrl, "$slug/${branchId}${ApiEndPoint.getAccountsAccordingAssociation}currencyId=${Helper.requestContext.currencyId}&includeHomeCurrency=false&isActive=true").catchError(
       (error) {
         handleError(error);
       },
