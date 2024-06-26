@@ -12,9 +12,6 @@ class AccountController extends BaseController {
   Future<void> Pull(String baseUrl, String slug, int branchId) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.accounts, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
-    var getSyncSettingDate = getSyncSetting.syncDate;
-
-    final String formatted = Helper.dateFormatter.format(getSyncSettingDate ?? DateTime.now());
     var response = await this.baseClient.get(baseUrl, "$slug/${branchId}${ApiEndPoint.getAccountsAccordingAssociation}currencyId=${Helper.requestContext.currencyId}&includeHomeCurrency=false&isActive=true").catchError(
       (error) {
         handleError(error);
