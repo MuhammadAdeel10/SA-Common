@@ -30,6 +30,7 @@ class ApiEndPoint {
   static const getDetailAGroups = "/detailAGroups/Updated?start=";
   static const deleteDetailAGroups = "/detailAGroups/Deleted?start=";
   static const getAccounts = "/Accounts/Updated?start=";
+  static const getAccountsAccordingAssociation = "/entities/CashAndBankAccounts?";
   static const deleteAccounts = "/Accounts/Deleted?start=";
   static const getDiscount = "/Discounts/Updated?start=";
   static const deleteDiscount = "/Discounts/Deleted?start=";
