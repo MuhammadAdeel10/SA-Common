@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PrefUtils {
   static SharedPreferences? _sharedPreferences;
-
+  final String _keyIsLoggedIn = 'isLoggedIn';
   PrefUtils() {
     SharedPreferences.getInstance().then((value) {
       _sharedPreferences = value;
@@ -19,6 +19,14 @@ class PrefUtils {
   ///will clear all the data stored in preference
   void clearPreferencesData() async {
     _sharedPreferences!.clear();
+  }
+
+  void setLoginTrue(bool isLoggedIn) {
+    _sharedPreferences?.setBool(_keyIsLoggedIn, isLoggedIn);
+  }
+
+  bool getLoginTrue() {
+    return _sharedPreferences?.getBool(_keyIsLoggedIn) ?? false;
   }
 
   void clearPreferencesDataKey(String key) async {
