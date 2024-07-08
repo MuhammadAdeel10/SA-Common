@@ -26,7 +26,7 @@ class Tables {
   static const WareHouse = "WareHouses";
   static const PosCashRegister = "PosCashRegisters";
   static const POSInvoice = "POSInvoices";
-  static const POSInvoiceDetail = "POSInvoiceDetails";
+  static const POSInvoiceDetail = "invoiceDetails";
   static const POSInvoiceDetailDiscount = "POSInvoiceDetailDiscounts";
   static const NumberSerials = "NumberSerials";
   static const Schemes = "Schemes";

@@ -241,15 +241,15 @@
 //       List<Map<String, dynamic>> lstModel = [];
 //       // List<SalesInvoiceModel> lstModel = [];
 //       SalesInvoiceModel model =
-//           SalesInvoiceModel(posInvoiceDetails: [], posPaymentDetails: []);
+//           SalesInvoiceModel(invoiceDetails: [], posPaymentDetails: []);
 //       List<SalesInvoiceDetailModel> detailModel = [];
 
 //       for (var posInvoice in posInvoices) {
-//         model = SalesInvoiceModel(posInvoiceDetails: [], posPaymentDetails: []);
+//         model = SalesInvoiceModel(invoiceDetails: [], posPaymentDetails: []);
 //         detailModel = [];
-//         var posInvoiceDetails = await POSInvoiceDetailDatabase.dao
+//         var invoiceDetails = await POSInvoiceDetailDatabase.dao
 //             .SelectList("saleInvoiceId = ${posInvoice.id} order by id desc");
-//         if (posInvoiceDetails == null) {
+//         if (invoiceDetails == null) {
 //           Logger.InfoLog("POS Invoice Details no invoice found");
 //           return false;
 //         }
@@ -259,7 +259,7 @@
 //         var schemeDiscounts = await schemeInvoiceDiscountDatabase.dao
 //             .SelectList("sourceId = ${posInvoice.id}");
 
-//         for (var posInvoiceDetail in posInvoiceDetails) {
+//         for (var posInvoiceDetail in invoiceDetails) {
 //           var salesInvoiceDetail = SalesInvoiceDetailModel.fromMap(
 //               posInvoiceDetail.toMap(),
 //               slug: user.companyId);
@@ -283,20 +283,20 @@
 //           detailModel.add(salesInvoiceDetail);
 //         }
 //         if (schemeDiscounts != null) {
-//           if (model.posInvoiceDiscounts == null) {
-//             model.posInvoiceDiscounts = [];
+//           if (model.invoiceDiscounts == null) {
+//             model.invoiceDiscounts = [];
 //           }
 //           for (var schemeDiscount in schemeDiscounts) {
 //             var schemeInvoiceDiscountDto =
 //                 SchemeInvoiceDiscountDto.fromMap(schemeDiscount.toMap());
 //             schemeInvoiceDiscountDto.Id = 0;
-//             model.posInvoiceDiscounts?.add(schemeInvoiceDiscountDto);
+//             model.invoiceDiscounts?.add(schemeInvoiceDiscountDto);
 //           }
 //         }
-//         if (model.posInvoiceDiscounts == null) {
-//           model.posInvoiceDiscounts = [];
+//         if (model.invoiceDiscounts == null) {
+//           model.invoiceDiscounts = [];
 //         }
-//         model.posInvoiceDetails.addAll(detailModel);
+//         model.invoiceDetails.addAll(detailModel);
 //         model.posPaymentDetails.addAll(posInvoicePayment);
 //         model.fbrPosInvoiceNumber = posInvoice.fbrPosInvoiceNumber ?? "";
 //         model.number = posInvoice.number;
