@@ -1,19 +1,19 @@
 import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../Controller/BaseRepository.dart';
-import '../../schemes/models/posPaymentDetailModel.dart';
+import '../models/paymentDetailModel.dart';
 import '../../utils/DatabaseHelper.dart';
 
 class POSInvoicePaymentDatabase {
-  static final dao = BaseRepository<PosPaymentModel>(PosPaymentModel(), tableName: Tables.PosInvoicePayment);
-  Future<PosPaymentModel> find(int id) => dao.find(id);
-  Future<List<PosPaymentModel>> getAll() => dao.getAll();
-  Future<int> insert(PosPaymentModel model) => dao.insert(model);
-  Future<void> update(PosPaymentModel model) => dao.update(model);
-  Future<void> delete(PosPaymentModel model) => dao.delete(model);
+  static final dao = BaseRepository<PaymentModel>(PaymentModel(), tableName: Tables.PosInvoicePayment);
+  Future<PaymentModel> find(int id) => dao.find(id);
+  Future<List<PaymentModel>> getAll() => dao.getAll();
+  Future<int> insert(PaymentModel model) => dao.insert(model);
+  Future<void> update(PaymentModel model) => dao.update(model);
+  Future<void> delete(PaymentModel model) => dao.delete(model);
   Future<void> deleteById(int id) => dao.deleteById(id);
 
-  static Future<void> bulkInsert(List<PosPaymentModel> model) async {
+  static Future<void> bulkInsert(List<PaymentModel> model) async {
     final db = await DatabaseHelper.instance.database;
     var getAll = await POSInvoicePaymentDatabase.dao.getAll();
     Batch batch = db.batch();
@@ -33,10 +33,10 @@ class POSInvoicePaymentDatabase {
     await batch.commit();
   }
 
-  static Future<List<PosPaymentModel>> Get(int posInvoiceId) async {
+  static Future<List<PaymentModel>> Get(int posInvoiceId) async {
     final db = await DatabaseHelper.instance.database;
     var map = await db.rawQuery('select * from ${Tables.PosInvoicePayment} where ${PosPaymentField.posInvoiceId}  = $posInvoiceId');
 
-    return List.generate(map.length, (index) => PosPaymentModel.fromMap(map[index]));
+    return List.generate(map.length, (index) => PaymentModel.fromMap(map[index]));
   }
 }

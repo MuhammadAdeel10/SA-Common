@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:sa_common/schemes/models/schemeInvoiceDetailModel.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../Controller/BaseController.dart';
 import '../../HttpService/Basehttp.dart';
@@ -19,8 +20,8 @@ import '../Database/product_database.dart';
 import '../Database/schemes_database.dart';
 import '../Database/subArea_database.dart';
 import '../Database/tax_database.dart';
-import '../models/POSInvoiceDetailTaxModel.dart';
-import '../models/POSInvoiceDiscountModel.dart';
+import '../models/invoiceDetailTaxModel.dart';
+import '../models/invoiceDiscountModel.dart';
 import '../models/SPModels/SchemeInvoiceBonusItemModel.dart';
 import '../models/SPModels/SchemeInvoiceBonusParamsModel.dart';
 import '../models/SPModels/SchemeInvoiceDiscountItemModel.dart';
@@ -33,11 +34,9 @@ import '../models/SPModels/SchemeProductCategoryDiscountItemModel.dart';
 import '../models/SPModels/SchemeProductCategoryDiscountParamsModel.dart';
 import '../models/SPModels/schemeParamModel.dart';
 import '../models/SchemeInvoiceDiscountDtoModel.dart';
-import '../models/posInvoiceModel.dart';
+import '../models/invoiceModel.dart';
 import '../models/schemeGetModel.dart';
 import 'package:collection/collection.dart';
-
-import '../models/schemePosInvoiceDetailModel.dart';
 import '../models/tax_model.dart';
 
 class SchemesController extends BaseController {
@@ -79,12 +78,12 @@ class SchemesController extends BaseController {
     }
   }
 
-  Future<SchemePOSInvoiceModel> MapCartToInvoice(int customerId, {List<dynamic>? cartModelList, int? screenType}) async {
+  Future<SchemeInvoiceModel> MapCartToInvoice(int customerId, {List<dynamic>? cartModelList, int? screenType}) async {
     var user = Helper.user;
 
-    SchemePOSInvoiceModel schemeModel = SchemePOSInvoiceModel(posInvoiceDetails: [], posInvoiceDiscounts: []);
+    SchemeInvoiceModel schemeModel = SchemeInvoiceModel(invoiceDetails: [], invoiceDiscounts: []);
 
-    List<POSInvoiceDetailDiscountModel> discounts = [];
+    List<InvoiceDetailDiscountModel> discounts = [];
     var currencyModel = await CurrencyDatabase().GetDefaultCurrency();
 
     if (currencyModel != null) {
@@ -99,7 +98,7 @@ class SchemesController extends BaseController {
 
     List<LineItemTaxModel> taxesAll = [];
     for (var element in cartModel!.where((element) => element.isAppliedScheme == false)) {
-      var detail = SchemePOSInvoiceDetailModel();
+      var detail = SchemeInvoiceDetailModel();
       discounts = [];
       taxesAll = [];
 
@@ -114,7 +113,7 @@ class SchemesController extends BaseController {
       if (element.cartDiscounts != null) {
         for (var cartDiscount in element.cartDiscounts!) {
           var map = cartDiscount.toMap();
-          var discountDiscount = POSInvoiceDetailDiscountModel.fromMap(map, slug: user.companyId);
+          var discountDiscount = InvoiceDetailDiscountModel.fromMap(map, slug: user.companyId);
           discountDiscount.branchId = user.branchId;
           discounts.add(discountDiscount);
         }
@@ -152,7 +151,7 @@ class SchemesController extends BaseController {
         detail.taxes = [];
       }
       detail.taxes?.addAll(taxesAll);
-      schemeModel.posInvoiceDetails.add(detail);
+      schemeModel.invoiceDetails.add(detail);
     }
     var date = Helper.OnlyDateToday();
     if (Helper.requestContext.manuallyManageEOD == true) {
@@ -185,7 +184,7 @@ class SchemesController extends BaseController {
     return scheme;
   }
 
-  Future<SchemePOSInvoiceModel> GetPosInvoiceScheme(SchemePOSInvoiceModel model, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetPosInvoiceScheme(SchemeInvoiceModel model, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     try {
       var db = await DatabaseHelper.instance.database;
       CompanySettingModel companySetting = Helper.requestContext;
@@ -193,7 +192,7 @@ class SchemesController extends BaseController {
       // Logger.WarningLog("dateTime 1 ${DateTime.now().toIso8601String()}");
       print("GetPosInvoiceScheme Main Method Start ${DateTime.now().toIso8601String()}");
       RemovePosInvoiceScheme(model);
-      model.posInvoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Scheme);
+      model.invoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Scheme);
 
       if (Helper.requestContext.enableScheme) {
         await GetProductDiscountScheme(model, db, companySetting, user, callback: callback);
@@ -218,24 +217,24 @@ class SchemesController extends BaseController {
     }
   }
 
-  void RemovePosInvoiceScheme(SchemePOSInvoiceModel posInvoice) {
-    posInvoice.posInvoiceDetails.removeWhere((x) => x.isBonusProduct == true);
-    posInvoice.posInvoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Scheme);
-    posInvoice.posInvoiceDetails.forEach((x) => x.discounts?.where((o) => o.schemeId == null));
+  void RemovePosInvoiceScheme(SchemeInvoiceModel invoice) {
+    invoice.invoiceDetails.removeWhere((x) => x.isBonusProduct == true);
+    invoice.invoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Scheme);
+    invoice.invoiceDetails.forEach((x) => x.discounts?.where((o) => o.schemeId == null));
   }
 
-  SchemePOSInvoiceModel SchemeCalculateAmount(SchemePOSInvoiceModel model) {
+  SchemeInvoiceModel SchemeCalculateAmount(SchemeInvoiceModel model) {
     var taxDb = Helper.taxModel;
     var productDb = Helper.allProductModel;
 
-    // var productIds = model.posInvoiceDetails.map((e) => e.productId).toList();
+    // var productIds = model.invoiceDetails.map((e) => e.productId).toList();
 
     // var products = ( productDb.getAll())
     //     .where((element) =>
     //         productIds != null ? productIds.contains(element.id) : false)
     //     .toList();
 
-    for (var item in model.posInvoiceDetails) {
+    for (var item in model.invoiceDetails) {
       item.grossAmount = item.quantity! * item.price!;
       if (item.discounts == null) {
         item.discounts = [];
@@ -321,8 +320,8 @@ class SchemesController extends BaseController {
 
       item.netAmount = netAmount;
     }
-    num totalGrossAmount = model.posInvoiceDetails.fold(0.0, (previousValue, element) => previousValue + element.grossAmount!) - model.posInvoiceDetails.fold(0, (previousValue, element) => previousValue + element.discountAmount!);
-    var totalTaxAmount = model.posInvoiceDetails.fold(0.0, (previousValue, element) => previousValue + (element.taxAmount ?? 0));
+    num totalGrossAmount = model.invoiceDetails.fold(0.0, (previousValue, element) => previousValue + element.grossAmount!) - model.invoiceDetails.fold(0, (previousValue, element) => previousValue + element.discountAmount!);
+    var totalTaxAmount = model.invoiceDetails.fold(0.0, (previousValue, element) => previousValue + (element.taxAmount ?? 0));
 
     num totalDiscountAmount = 0;
     if (model.discountPercent != null && (model.discountPercent ?? 0) > 0) {
@@ -331,7 +330,7 @@ class SchemesController extends BaseController {
       if (model.discountAmount == null && (model.discountPercent ?? 0) > 0) totalDiscountAmount = model.discountAmount!;
     }
 
-    num totalSchemeDiscount = model.posInvoiceDiscounts.where((w) => w.discountType == DiscountInvoiceType.Scheme).fold(0, (previousValue, element) => previousValue + element.discountAmount!);
+    num totalSchemeDiscount = model.invoiceDiscounts.where((w) => w.discountType == DiscountInvoiceType.Scheme).fold(0, (previousValue, element) => previousValue + element.discountAmount!);
 
     num totalNetAmount = (totalGrossAmount + totalTaxAmount) - (totalDiscountAmount + totalSchemeDiscount);
 
@@ -345,9 +344,9 @@ class SchemesController extends BaseController {
     return model;
   }
 
-  Future<SchemePOSInvoiceModel> GetProductDiscountScheme(SchemePOSInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetProductDiscountScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetProductDiscountScheme Start ${DateTime.now().toIso8601String()}");
-    for (var posInvoiceDetail in posInvoice.posInvoiceDetails.where((e) => e.isBonusProduct == false)) {
+    for (var posInvoiceDetail in posInvoice.invoiceDetails.where((e) => e.isBonusProduct == false)) {
       var qty = posInvoiceDetail.quantity?.abs();
       List<SchemeItemModel> discProductSchemeData = (await GetSchemeDiscount(posInvoiceDetail.productId!, posInvoice.currencyId!, qty!, db, companySetting, user, date: posInvoice.date, customerId: posInvoice.customerId))!.toList();
       if (posInvoiceDetail.discounts == null) {
@@ -368,7 +367,7 @@ class SchemesController extends BaseController {
         posInvoice.isAppliedScheme = true;
         for (var item in discProductSchemeData) {
           // var discount = discountService.Get(item.DiscountId); // object Not Mapped
-          var data = POSInvoiceDetailDiscountModel(
+          var data = InvoiceDetailDiscountModel(
               discountInPercent: item.DiscountRate,
               schemeId: item.SchemeId,
               discountId: item.DiscountId ?? 0,
@@ -524,10 +523,10 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
     return result;
   }
 
-  Future<SchemePOSInvoiceModel> GetProductBonusScheme(SchemePOSInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetProductBonusScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetProductBonusScheme Start ${DateTime.now().toIso8601String()}");
-    List<SchemePOSInvoiceDetailModel> posInvoiceDetailSchemes = [];
-    var detailList = posInvoice.posInvoiceDetails.toList();
+    List<SchemeInvoiceDetailModel> invoiceDetailschemes = [];
+    var detailList = posInvoice.invoiceDetails.toList();
     for (var posInvoiceDetail in detailList.where((w) => w.isBonusProduct == false)) {
       var qty = posInvoiceDetail.quantity?.abs() ?? 0;
       List<SchemeProductBonusItemModel> bonusProductSchemeData = (await GetSchemeProductBonus(posInvoiceDetail.productId!, posInvoice.currencyId!, qty, db, companySetting, user, date: posInvoice.date, customerId: posInvoice.customerId))!.toList();
@@ -536,11 +535,11 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 
       if (isBonusProductSchemeData) {
         for (var item in bonusProductSchemeData) {
-          posInvoiceDetailSchemes = [];
+          invoiceDetailschemes = [];
           posInvoice.isAppliedScheme = true;
           var bonusQty = ((posInvoiceDetail.quantity ?? 0) ~/ (item.ProductQuantity ?? 0)).floor() * (item.Quantity ?? 0);
 
-          var data = new SchemePOSInvoiceDetailModel(
+          var data = new SchemeInvoiceDetailModel(
             discountType: DiscountType.Percent.value,
             productId: item.ProductId,
             price: item.ProductPrice ?? 0,
@@ -563,9 +562,9 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
             }
             data.taxes!.addAll(taxes);
           }
-          posInvoiceDetailSchemes.add(data);
+          invoiceDetailschemes.add(data);
         }
-        posInvoice.posInvoiceDetails.addAll(posInvoiceDetailSchemes);
+        posInvoice.invoiceDetails.addAll(invoiceDetailschemes);
       }
     }
     Logger.InfoLog("GetProductBonusScheme End ${DateTime.now().toIso8601String()}");
@@ -681,14 +680,14 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
     return List.generate(response.length, (i) => SchemeProductBonusItemModel.fromMap(response[i]));
   }
 
-  Future<SchemePOSInvoiceModel> GetProductCategoryDiscountScheme(SchemePOSInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetProductCategoryDiscountScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetProductCategoryDiscountScheme Start ${DateTime.now().toIso8601String()}");
-    for (var detail in posInvoice.posInvoiceDetails) {
+    for (var detail in posInvoice.invoiceDetails) {
       var product = await ProductDatabase.dao.find(detail.productId!);
       detail.product = product;
     }
     //This function copied by chatGPT
-    var groupedInvoiceProductCategories = groupBy(posInvoice.posInvoiceDetails.where((w) => (w.quantity ?? 0) > 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
+    var groupedInvoiceProductCategories = groupBy(posInvoice.invoiceDetails.where((w) => (w.quantity ?? 0) > 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
         .entries
         .map((entry) => {
               'productCategoryId': entry.key,
@@ -700,7 +699,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
       var productCategoryId = group["productCategoryId"]?.toInt();
       var quantity = group["quantity"];
       List<SchemeProductCategoryDiscountItemModel> schemeData = (await GetSchemeProductCategoryDiscount(productCategoryId!, posInvoice.currencyId!, quantity, db, companySetting, user, date: posInvoice.date, customerId: posInvoice.customerId))!.toList();
-      for (var posInvoiceDetail in posInvoice.posInvoiceDetails.where((w) => w.isBonusProduct == false && w.product?.productCategoryId != null)) {
+      for (var posInvoiceDetail in posInvoice.invoiceDetails.where((w) => w.isBonusProduct == false && w.product?.productCategoryId != null)) {
         if (productCategoryId == posInvoiceDetail.product?.productCategoryId) {
           if (posInvoiceDetail.discounts == null) {
             posInvoiceDetail.discounts = [];
@@ -708,7 +707,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
           if (schemeData.isNotEmpty) {
             posInvoice.isAppliedScheme = true;
             for (var item in schemeData) {
-              var data = POSInvoiceDetailDiscountModel(
+              var data = InvoiceDetailDiscountModel(
                   discountInPercent: item.DiscountRate,
                   discountType: item.DiscountAmount > 0 ? DiscountType.Amount : DiscountType.Percent,
                   schemeId: item.SchemeId,
@@ -730,7 +729,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
       }
     }
     // var groupedReturnProductCategories = groupBy(
-    //         posInvoice.posInvoiceDetails.where((w) =>
+    //         posInvoice.invoiceDetails.where((w) =>
     //             (w.quantity ?? 0) > 0 &&
     //             w.isBonusProduct == false &&
     //             w.product?.productCategoryId != null),
@@ -743,7 +742,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
     //               .reduce((a, b) => (a ?? 0) + (b ?? 0)),
     //         })
     //     .toList();
-    var groupedReturnProductCategories = groupBy(posInvoice.posInvoiceDetails.where((w) => (w.quantity?.abs() ?? 0) > 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
+    var groupedReturnProductCategories = groupBy(posInvoice.invoiceDetails.where((w) => (w.quantity?.abs() ?? 0) > 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
         .entries
         .map((entry) => {
               'productCategoryId': entry.key,
@@ -755,7 +754,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
       var productCategoryId = group["productCategoryId"]?.toInt();
       var quantity = group["quantity"]?.abs();
       List<SchemeProductCategoryDiscountItemModel> schemeData = (await GetSchemeProductCategoryDiscount(productCategoryId!, posInvoice.currencyId!, quantity, db, companySetting, user, date: posInvoice.date, customerId: posInvoice.customerId))!.toList();
-      for (var posInvoiceDetail in posInvoice.posInvoiceDetails.where((w) => w.isBonusProduct == false && (w.quantity ?? 0) < 0 && w.product?.productCategoryId != null)) {
+      for (var posInvoiceDetail in posInvoice.invoiceDetails.where((w) => w.isBonusProduct == false && (w.quantity ?? 0) < 0 && w.product?.productCategoryId != null)) {
         if (productCategoryId == posInvoiceDetail.product?.productCategoryId) {
           if (posInvoiceDetail.discounts == null) {
             posInvoiceDetail.discounts = [];
@@ -763,7 +762,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
           if (schemeData.isNotEmpty) {
             posInvoice.isAppliedScheme = true;
             for (var item in schemeData) {
-              var data = POSInvoiceDetailDiscountModel(
+              var data = InvoiceDetailDiscountModel(
                   discountInPercent: item.DiscountRate,
                   discountInAmount: ((posInvoiceDetail.quantity ?? 0) ~/ item.DiscountProductQuantity) * item.DiscountAmount,
                   discountType: item.DiscountAmount > 0 ? DiscountType.Amount : DiscountType.Percent,
@@ -921,14 +920,14 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
     return result;
   }
 
-  Future<SchemePOSInvoiceModel> GetProductCategoryBonusScheme(SchemePOSInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetProductCategoryBonusScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetProductCategoryBonusScheme Start ${DateTime.now().toIso8601String()}");
-    for (var detail in posInvoice.posInvoiceDetails) {
+    for (var detail in posInvoice.invoiceDetails) {
       var product = await ProductDatabase.dao.find(detail.productId!);
       detail.product = product;
     }
 
-    var groupedInvoiceProductCategories = groupBy(posInvoice.posInvoiceDetails.where((w) => w.quantity! > 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
+    var groupedInvoiceProductCategories = groupBy(posInvoice.invoiceDetails.where((w) => w.quantity! > 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
         .entries
         .map((entry) => {
               'productCategoryId': entry.key,
@@ -943,7 +942,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
         posInvoice.isAppliedScheme = true;
         for (var item in bonusProductCategorySchemeData) {
           var bonusQty = (quantity ~/ item.ProductQuantity!) * item.Quantity!;
-          var data = new SchemePOSInvoiceDetailModel(
+          var data = new SchemeInvoiceDetailModel(
             discountType: DiscountType.Percent.value,
             productId: item.ProductId,
             price: item.ProductPrice != null ? item.ProductPrice : 0,
@@ -968,12 +967,12 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
             }
             data.taxes?.addAll(taxes);
           }
-          posInvoice.posInvoiceDetails.add(data);
+          posInvoice.invoiceDetails.add(data);
         }
       }
     }
 
-    var groupedReturnProductCategories = groupBy(posInvoice.posInvoiceDetails.where((w) => w.quantity! < 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
+    var groupedReturnProductCategories = groupBy(posInvoice.invoiceDetails.where((w) => w.quantity! < 0 && w.isBonusProduct == false && w.product?.productCategoryId != null), (x) => x.product?.productCategoryId)
         .entries
         .map((entry) => {
               'productCategoryId': entry.key,
@@ -989,7 +988,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
         for (var item in bonusProductCategorySchemeData) {
           var qtyAdd = group["quantity"];
           var bonusQty = ((qtyAdd ?? 0) ~/ (item.ProductQuantity ?? 0)) * item.Quantity!;
-          var data = new SchemePOSInvoiceDetailModel(
+          var data = new SchemeInvoiceDetailModel(
             productId: item.ProductId,
             price: item.ProductPrice != null ? item.ProductPrice : 0,
             quantity: bonusQty,
@@ -1012,7 +1011,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
             }
             data.taxes?.addAll(taxes);
           }
-          posInvoice.posInvoiceDetails.add(data);
+          posInvoice.invoiceDetails.add(data);
         }
       }
     }
@@ -1121,12 +1120,12 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
     return List.generate(response.length, (i) => SchemeProductBonusItemModel.fromMap(response[i]));
   }
 
-  Future<SchemePOSInvoiceModel> GetInvoiceBonusScheme(SchemePOSInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetInvoiceBonusScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetInvoiceBonusScheme Start ${DateTime.now().toIso8601String()}");
     try {
-      var invoiceAmount = posInvoice.posInvoiceDetails.where((w) => (w.quantity ?? 0) > 0).fold<num>(0, (sum, s) => sum + ((s.grossAmount ?? 0) + (s.taxAmount ?? 0) - (s.discountAmount ?? 0)));
+      var invoiceAmount = posInvoice.invoiceDetails.where((w) => (w.quantity ?? 0) > 0).fold<num>(0, (sum, s) => sum + ((s.grossAmount ?? 0) + (s.taxAmount ?? 0) - (s.discountAmount ?? 0)));
 
-      var returnAmount = posInvoice.posInvoiceDetails.where((w) => w.quantity! < 0).map((s) => (s.grossAmount ?? 0) + (s.taxAmount ?? 0) - (s.discountAmount ?? 0)).fold<num>(0, (sum, value) => sum + value);
+      var returnAmount = posInvoice.invoiceDetails.where((w) => w.quantity! < 0).map((s) => (s.grossAmount ?? 0) + (s.taxAmount ?? 0) - (s.discountAmount ?? 0)).fold<num>(0, (sum, value) => sum + value);
 
       var returnNetAmount = returnAmount.abs();
       var sign = returnAmount.sign;
@@ -1140,7 +1139,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
       if (bonusInvoiceSchemeData.isNotEmpty) {
         posInvoice.isAppliedScheme = true;
         for (var item in bonusInvoiceSchemeData) {
-          var data = new SchemePOSInvoiceDetailModel(
+          var data = new SchemeInvoiceDetailModel(
             discountType: DiscountType.Percent.value,
             productId: item.ProductId,
             price: item.ProductPrice != null ? item.ProductPrice : 0,
@@ -1165,7 +1164,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
             }
             data.taxes?.addAll(taxes);
           }
-          posInvoice.posInvoiceDetails.add(data);
+          posInvoice.invoiceDetails.add(data);
         }
       }
 
@@ -1174,7 +1173,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
         posInvoice.isAppliedScheme = true;
         for (var item in bonusInvoiceSchemeData) {
           var qty = item.Quantity! * sign;
-          var data = new SchemePOSInvoiceDetailModel(
+          var data = new SchemeInvoiceDetailModel(
             discountType: DiscountType.Percent.value,
             productId: item.ProductId,
             price: item.ProductPrice != null ? item.ProductPrice : 0,
@@ -1199,7 +1198,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
             }
             data.taxes?.addAll(taxes);
           }
-          posInvoice.posInvoiceDetails.add(data);
+          posInvoice.invoiceDetails.add(data);
         }
       }
     } catch (ex) {
@@ -1312,20 +1311,20 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
     return result;
   }
 
-  Future<SchemePOSInvoiceModel> GetInvoiceDiscountScheme(SchemePOSInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemePOSInvoiceModel)? callback = null}) async {
+  Future<SchemeInvoiceModel> GetInvoiceDiscountScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetInvoiceDiscountScheme Start ${DateTime.now().toIso8601String()}");
     num saleInvoiceDiscount = 0.0;
     num saleReturnDiscount = 0.0;
-    var invoiceAmount = posInvoice.posInvoiceDetails.where((w) => w.quantity! > 0).fold<num>(0, (sum, s) => sum + ((s.grossAmount ?? 0) - (s.discountAmount ?? 0)));
+    var invoiceAmount = posInvoice.invoiceDetails.where((w) => w.quantity! > 0).fold<num>(0, (sum, s) => sum + ((s.grossAmount ?? 0) - (s.discountAmount ?? 0)));
 
-    var returnAmount = posInvoice.posInvoiceDetails.where((w) => w.quantity! < 0).map((s) => (s.grossAmount ?? 0) - (s.discountAmount ?? 0)).fold<num>(0, (sum, value) => sum + value);
+    var returnAmount = posInvoice.invoiceDetails.where((w) => w.quantity! < 0).map((s) => (s.grossAmount ?? 0) - (s.discountAmount ?? 0)).fold<num>(0, (sum, value) => sum + value);
     if (posInvoice.discountPercent != null && posInvoice.discountPercent! > 0) {
-      posInvoice.posInvoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Normal);
+      posInvoice.invoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Normal);
       saleInvoiceDiscount = (invoiceAmount * posInvoice.discountPercent!) / 100;
       saleReturnDiscount = (returnAmount * posInvoice.discountPercent!) / 100;
     } else {
       if (posInvoice.discountAmount != null && posInvoice.discountAmount! > 0) {
-        posInvoice.posInvoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Normal);
+        posInvoice.invoiceDiscounts.removeWhere((x) => x.discountType == DiscountInvoiceType.Normal);
         saleInvoiceDiscount = posInvoice.discountAmount!;
         saleReturnDiscount = posInvoice.discountAmount!;
       }
@@ -1339,7 +1338,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
         num discountRate = 0.0;
         num discountAmount = 0.0;
         if (saleInvoiceDiscount > 0) {
-          posInvoice.posInvoiceDiscounts.add(SchemeInvoiceDiscountDto(
+          posInvoice.invoiceDiscounts.add(SchemeInvoiceDiscountDto(
             discountType: DiscountInvoiceType.Normal,
             discountPercent: posInvoice.discountPercent,
             discountAmount: saleInvoiceDiscount,
@@ -1351,7 +1350,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
           discountRate = discInvoiceScheme.DiscountRate!;
           discountAmount = (invoiceAmount * discountRate) / 100;
 
-          posInvoice.posInvoiceDiscounts.add(new SchemeInvoiceDiscountDto(
+          posInvoice.invoiceDiscounts.add(new SchemeInvoiceDiscountDto(
             discountType: DiscountInvoiceType.Scheme,
             discountPercent: discInvoiceScheme.DiscountRate,
             discountAmount: discountAmount,
@@ -1360,7 +1359,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
             discountId: discInvoiceScheme.DiscountId,
           ));
         } else {
-          posInvoice.posInvoiceDiscounts.addAll(discInvoiceSchemeData.map((discount) => SchemeInvoiceDiscountDto()
+          posInvoice.invoiceDiscounts.addAll(discInvoiceSchemeData.map((discount) => SchemeInvoiceDiscountDto()
             ..discountType = DiscountInvoiceType.Scheme
             ..discountPercent = discount.DiscountRate
             ..discountAmount = (invoiceAmount * (discount.DiscountRate ?? 0)) / 100
@@ -1378,7 +1377,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
         num discountRate = 0.0;
         num discountAmount = 0.0;
         if (saleReturnDiscount.abs() > 0) {
-          posInvoice.posInvoiceDiscounts.add(SchemeInvoiceDiscountDto()
+          posInvoice.invoiceDiscounts.add(SchemeInvoiceDiscountDto()
             ..discountType = DiscountInvoiceType.Normal
             ..discountPercent = posInvoice.discountPercent
             ..discountAmount = saleReturnDiscount
@@ -1388,7 +1387,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
           var discInvoiceScheme = discInvoiceSchemeData[0];
           discountRate = discInvoiceScheme.DiscountRate!;
           discountAmount = (returnAmount * discountRate) / 100;
-          posInvoice.posInvoiceDiscounts.add(SchemeInvoiceDiscountDto(
+          posInvoice.invoiceDiscounts.add(SchemeInvoiceDiscountDto(
             discountType: DiscountInvoiceType.Scheme,
             discountPercent: discInvoiceScheme.DiscountRate,
             discountAmount: discountAmount,
@@ -1397,7 +1396,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
             discountId: discInvoiceScheme.DiscountId,
           ));
         } else {
-          posInvoice.posInvoiceDiscounts.addAll(discInvoiceSchemeData.map(
+          posInvoice.invoiceDiscounts.addAll(discInvoiceSchemeData.map(
             (discount) => SchemeInvoiceDiscountDto(
               discountType: DiscountInvoiceType.Scheme,
               discountPercent: discount.DiscountRate,
@@ -1540,8 +1539,8 @@ WHERE rowId = 1;
     return result;
   }
 
-  void UpdateBatches(SchemePOSInvoiceModel posInvoice, List<SchemePOSInvoiceDetailModel> existingDetails) {
-    var newDetails = posInvoice.posInvoiceDetails.where((x) => x.batchId == null || x.serialNumber!.isNotEmpty).toList();
+  void UpdateBatches(SchemeInvoiceModel posInvoice, List<SchemeInvoiceDetailModel> existingDetails) {
+    var newDetails = posInvoice.invoiceDetails.where((x) => x.batchId == null || x.serialNumber!.isNotEmpty).toList();
     if (newDetails.isNotEmpty && existingDetails.isNotEmpty) {
       for (var item in newDetails) {
         var existingItem = existingDetails.firstWhere((w) => w.productId == item.productId);
