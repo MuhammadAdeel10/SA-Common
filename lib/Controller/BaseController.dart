@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:sa_common/HttpService/Basehttp.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/app_routes.dart';
-import 'package:sa_common/utils/pref_utils.dart';
 import '../HttpService/AppExceptions.dart';
 
 enum Status { idle, loading, success, error }
@@ -29,7 +28,6 @@ abstract class BaseController extends GetxController {
       if (goLoginPage != null) {
         goLoginPage();
       }
-      PrefUtils().clearPreferencesData();
       Get.offNamedUntil(Routes.LOGIN, (route) => false);
       Helper.infoMsg('${error.message}', 'Session Expired', context!);
     } else if (error is NotFoundException) {
@@ -38,7 +36,6 @@ abstract class BaseController extends GetxController {
       if (goLoginPage != null) {
         goLoginPage();
       }
-      PrefUtils().clearPreferencesData();
       Get.offNamedUntil(Routes.LOGIN, (route) => false);
       Helper.infoMsg('Session Expired', 'You are already logged in another session', context!);
     } else {
