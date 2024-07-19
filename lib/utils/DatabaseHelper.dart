@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
+import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
 import 'package:sa_common/SyncSetting/model.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -1306,6 +1305,23 @@ class DatabaseHelper implements DBHelper {
   ${EndOfTheDayFields.companySlug} $textTypeNotNull,
   ${EndOfTheDayFields.endOfDayDate} $dateTimeType,
   ${BranchProductTaxField.branchId} $integerType
+)''');
+batch.execute('''
+  CREATE TABLE ${Tables.TravelLogs} (
+  ${TravelLogFiles.id} $idTypeNoAutoIncrement,
+  ${TravelLogFiles.companySlug} $textTypeNotNull,
+  ${TravelLogFiles.branchId} $integerType,
+  ${TravelLogFiles.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
+  ${TravelLogFiles.syncDate} $dateTimeType,
+  ${TravelLogFiles.serverDateTime} $dateTimeType,
+  ${TravelLogFiles.locationDateTime} $dateTimeType,
+  ${TravelLogFiles.applicationUserId} $dateTimeType,
+  ${TravelLogFiles.altitude} $decimalType,
+  ${TravelLogFiles.heading} $decimalType,
+  ${TravelLogFiles.speed} $decimalType,
+  ${TravelLogFiles.altitudeAccuracy} $decimalType,
+  ${TravelLogFiles.longitude} $decimalType,
+  ${TravelLogFiles.latitude} $decimalType
 )''');
     batch.execute(''' 
     CREATE INDEX Products_id_IDX ON Products (id);

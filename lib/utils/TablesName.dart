@@ -60,4 +60,5 @@ class Tables {
   static const BranchProductTaxes = "BranchProductTaxes";
   static const CustomerLoyaltyPointBalance = "CustomerLoyaltyPointBalance";
   static const EndOfTheDay = "EndOfTheDay";
+  static const TravelLogs = "TravelLogs";
 }
