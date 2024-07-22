@@ -27,12 +27,12 @@ class TravelLogModel extends BaseModel<int> {
   String? applicationUserId;
   DateTime? serverDateTime;
   DateTime? locationDateTime;
-  num altitude;
-  num heading;
-  num speed;
-  num altitudeAccuracy;
-  num longitude;
-  num latitude;
+  double altitude;
+  double heading;
+  double speed;
+  double altitudeAccuracy;
+  double longitude;
+  double latitude;
   bool isSync;
   DateTime? syncDate;
   TravelLogModel({
@@ -79,12 +79,12 @@ class TravelLogModel extends BaseModel<int> {
       applicationUserId: map['applicationUserId'] != null ? map['applicationUserId'] as String : null,
       serverDateTime: map['serverDateTime'] != null ? DateTime.parse(map['serverDateTime']) : null,
       locationDateTime: map['locationDateTime'] != null ? DateTime.parse(map['locationDateTime']) : null,
-      altitude: map['altitude'] as num,
-      heading: map['heading'] as num,
-      speed: map['speed'] as num,
-      altitudeAccuracy: map['altitudeAccuracy'] as num,
-      longitude: map['longitude'] as num,
-      latitude: map['latitude'] as num,
+      altitude: map['altitude'] as double,
+      heading: map['heading'] as double,
+      speed: map['speed'] as double,
+      altitudeAccuracy: map['altitudeAccuracy'] as double,
+      longitude: map['longitude'] as double,
+      latitude: map['latitude'] as double,
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
       syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate'] ) : null,
     );
@@ -103,7 +103,7 @@ class TravelLogModel extends BaseModel<int> {
 
   List<TravelLogModel> FromJson(String str, String slug) => List<TravelLogModel>.from(json.decode(str).map((x) => TravelLogModel().fromJson(x, slug: slug)));
 
-  String ToJson(List<TravelLogModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  String ToJson({required List<TravelLogModel> data}) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
  
 }
 
