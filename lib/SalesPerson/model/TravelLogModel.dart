@@ -48,7 +48,7 @@ class TravelLogModel extends BaseModel<int> {
     this.altitudeAccuracy = 0,
     this.longitude = 0,
     this.latitude = 0,
-     this.isSync = false,
+    this.isSync = false,
     this.syncDate,
   });
 
@@ -79,12 +79,12 @@ class TravelLogModel extends BaseModel<int> {
       applicationUserId: map['applicationUserId'] != null ? map['applicationUserId'] as String : null,
       serverDateTime: map['serverDateTime'] != null ? DateTime.parse(map['serverDateTime']) : null,
       locationDateTime: map['locationDateTime'] != null ? DateTime.parse(map['locationDateTime']) : null,
-      altitude: map['altitude'] as double,
-      heading: map['heading'] as double,
-      speed: map['speed'] as double,
-      altitudeAccuracy: map['altitudeAccuracy'] as double,
-      longitude: map['longitude'] as double,
-      latitude: map['latitude'] as double,
+      altitude: double.parse(map['altitude'].toString()),
+      heading: double.parse(map['heading'].toString()),
+      speed: double.parse(map['speed'].toString()),
+      altitudeAccuracy: double.parse(map['altitudeAccuracy'].toString()),
+      longitude: double.parse(map['longitude'].toString()),
+      latitude: double.parse(map['latitude'].toString()),
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
       syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate'] ) : null,
     );

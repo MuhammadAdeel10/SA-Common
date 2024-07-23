@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get_cli/extensions/list.dart';
 import 'package:sa_common/Controller/BaseController.dart';
 import 'package:location/location.dart' as l;
 import 'package:permission_handler/permission_handler.dart';
@@ -105,14 +106,21 @@ class TravelLogController extends BaseController {
         altitudeAccuracy: event.speedAccuracy ?? 0.0,
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
+        serverDateTime: DateTime.now().toUtc()
       );
       await TravelLogDatabase.dao.insert(travelLog);
   }
   Future <void> SyncToServerTravelLog() async {
     var logs = await TravelLogDatabase.dao.SelectList("isSync = 0");
     if(logs != null && logs.isNotEmpty){
-    //  var losModel = TravelLogModel().ToJson(data: logs);
-    //  var response = await this.baseClient.post(ApiEndPoint.baseUrl, "the-next-generation/1898/", logs);
+     logs.forEach((element) {
+      element.id = 0;
+      });
+      var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
+      if(response != null && response.statusCode == 200)
+      {
+         await TravelLogDatabase.bulkUpdate();
+      }
     }
   }
  }

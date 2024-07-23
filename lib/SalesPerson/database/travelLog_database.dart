@@ -3,6 +3,7 @@
 import 'package:sa_common/Controller/BaseRepository.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
 import 'package:sa_common/utils/DatabaseHelper.dart';
+import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -32,6 +33,14 @@ class TravelLogDatabase {
         batch.insert(Tables.TravelLogs, val.toMap());
       }
     });
+    await batch.commit();
+  }
+  static Future<void> bulkUpdate() async {
+     final db = await DatabaseHelper.instance.database;
+    var companySlug = Helper.user.companyId;
+    var branchId = Helper.user.branchId;
+    Batch batch = db.batch();
+    batch.rawQuery(''' update ${Tables.TravelLogs} set IsSync = 1 where companySlug = '$companySlug' and branchId = $branchId ''');
     await batch.commit();
   }
 
