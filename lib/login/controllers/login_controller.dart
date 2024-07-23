@@ -235,6 +235,7 @@ class LoginController extends BaseController {
       if (token.isNotEmpty && token != "") {
         var response = await BaseClient().post(baseUrl, ApiEndPoint.refreshToken, null).catchError((error) {
           handleError(error);
+          throw error;
         });
         if (response != null && response.statusCode == 200) {
           {
