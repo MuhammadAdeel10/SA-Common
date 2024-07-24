@@ -33,7 +33,6 @@ class TravelLogController extends BaseController {
     permissionGranted = _permissionGranted;
     gpsEnabled = _gpsEnabled;
     isEnableBackground = _isEnableBackground;
-    
   }
 
   Future<bool> isPermissionGranted() async {
@@ -52,14 +51,17 @@ class TravelLogController extends BaseController {
     if (!(await isGpsEnabled())) {
       return;
     }
+
     if (!(await isPermissionGranted())) {
       return;
     }
+
     location.enableBackgroundMode();
     location.changeSettings(distanceFilter: 25);
     subscription = location.onLocationChanged.listen((event) async {
-     await CreateTravelLog(event);
+      await CreateTravelLog(event);
     });
+
     trackingEnabled = true;
   }
 
@@ -97,8 +99,9 @@ class TravelLogController extends BaseController {
       permissionGranted = false;
     }
   }
+
   Future<void> CreateTravelLog(l.LocationData event) async {
-     TravelLogModel travelLog = TravelLogModel(
+    TravelLogModel travelLog = TravelLogModel(
         speed: event.speed ?? 0.0,
         latitude: event.latitude ?? 0.0,
         longitude: event.longitude ?? 0.0,
@@ -108,24 +111,26 @@ class TravelLogController extends BaseController {
         altitudeAccuracy: event.speedAccuracy ?? 0.0,
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
-        serverDateTime: DateTime.now().toUtc()
-      );
-      await TravelLogDatabase.dao.insert(travelLog);
+        serverDateTime: DateTime.now().toUtc());
+    await TravelLogDatabase.dao.insert(travelLog);
   }
-  Future <void> SyncToServerTravelLog() async {
+
+  Future<void> SyncToServerTravelLog() async {
     var logs = await TravelLogDatabase.dao.SelectList("isSync = 0");
-    if(logs != null && logs.isNotEmpty){
-     logs.forEach((element) {
-      element.id = 0;
+    if (logs != null && logs.isNotEmpty) {
+      logs.forEach((element) {
+        element.id = 0;
       });
-      var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
-      if(response != null && response.statusCode == 200)
-      {
-         await TravelLogDatabase.bulkUpdate();
+      var response = await this.baseClient.post(ApiEndPoint.baseUrl,
+          "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
+      if (response != null && response.statusCode == 200) {
+        await TravelLogDatabase.bulkUpdate();
       }
     }
   }
-  Future<TravelLogModel?> CheckLastStatus() async{
-  return await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc");
-}
+
+  Future<TravelLogModel?> CheckLastStatus() async {
+    return await TravelLogDatabase.dao
+        .SelectSingle("branchId = ${Helper.user.branchId} order by id desc");
+  }
 }
