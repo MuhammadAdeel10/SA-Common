@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:get_cli/extensions/list.dart';
 import 'package:sa_common/Controller/BaseController.dart';
 import 'package:location/location.dart' as l;
 import 'package:permission_handler/permission_handler.dart';
@@ -13,10 +12,12 @@ import 'package:sa_common/utils/Helper.dart';
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
   bool permissionGranted = false;
+  bool isEnableBackground = false;
   l.Location location = l.Location();
   late StreamSubscription subscription;
   bool trackingEnabled = false;
   List<l.LocationData> locations = [];
+  DateTime? dateTime = null;
 
   @override
   Future<void> onInit() async {
@@ -27,8 +28,11 @@ class TravelLogController extends BaseController {
   checkStatus() async {
     bool _permissionGranted = await isPermissionGranted();
     bool _gpsEnabled = await isGpsEnabled();
+    await requestLocationPermission();
+    bool _isEnableBackground = await location.enableBackgroundMode();
     permissionGranted = _permissionGranted;
     gpsEnabled = _gpsEnabled;
+    isEnableBackground = _isEnableBackground;
     
   }
 
@@ -44,7 +48,7 @@ class TravelLogController extends BaseController {
     locations.insert(0, data);
   }
 
-  void startTracking() async {
+  Future<void> startTracking() async {
     if (!(await isGpsEnabled())) {
       return;
     }
@@ -55,7 +59,6 @@ class TravelLogController extends BaseController {
     location.changeSettings(distanceFilter: 25);
     subscription = location.onLocationChanged.listen((event) async {
      await CreateTravelLog(event);
-     
     });
     trackingEnabled = true;
   }
@@ -75,7 +78,6 @@ class TravelLogController extends BaseController {
       log("Already open");
     } else {
       bool isGpsActive = await location.requestService();
-      location.enableBackgroundMode();
       if (!isGpsActive) {
         gpsEnabled = false;
         log("User did not turn on GPS");
@@ -86,7 +88,7 @@ class TravelLogController extends BaseController {
     }
   }
 
-  void requestLocationPermission() async {
+  Future<void> requestLocationPermission() async {
     PermissionStatus permissionStatus =
         await Permission.locationWhenInUse.request();
     if (permissionStatus == PermissionStatus.granted) {
@@ -123,4 +125,7 @@ class TravelLogController extends BaseController {
       }
     }
   }
- }
+  Future<TravelLogModel?> CheckLastStatus() async{
+  return await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc");
+}
+}
