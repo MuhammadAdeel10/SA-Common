@@ -1,8 +1,6 @@
 class ApiEndPoint {
-  //static const baseUrl = "https://qa.splendidaccounts.com/api/";
-  //static String baseUrl = "";
-  //static const ImageBaseUrl = "https://qa.splendidaccounts.com/";
-  //static String ImageBaseUrl = "";
+  static const baseUrl = "https://app.splendidaccounts.com/api/";
+  static const ImageBaseUrl = "https://app.splendidaccounts.com/";
 
   static const logIn = "auth/login";
   static const refreshToken = "auth/refreshToken";
