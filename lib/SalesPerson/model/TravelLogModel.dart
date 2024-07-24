@@ -18,6 +18,7 @@ class TravelLogFiles {
   static final String longitude = 'longitude';
   static final String latitude = 'latitude';
   }
+  
 class TravelLogModel extends BaseModel<int> {
   @override
   int? id;
