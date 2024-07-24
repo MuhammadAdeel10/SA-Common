@@ -78,12 +78,14 @@ class TravelLogController extends BaseController {
   void requestEnableGps() async {
     if (gpsEnabled) {
       log("Already open");
-    } else {
+    } 
+    else {
       bool isGpsActive = await location.requestService();
       if (!isGpsActive) {
         gpsEnabled = false;
         log("User did not turn on GPS");
-      } else {
+      } 
+      else {
         log("gave permission to the user and opened it");
         gpsEnabled = true;
       }
@@ -91,11 +93,11 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> requestLocationPermission() async {
-    PermissionStatus permissionStatus =
-        await Permission.locationWhenInUse.request();
+    PermissionStatus permissionStatus = await Permission.locationWhenInUse.request();
     if (permissionStatus == PermissionStatus.granted) {
       permissionGranted = true;
-    } else {
+    } 
+    else {
       permissionGranted = false;
     }
   }
@@ -130,7 +132,6 @@ class TravelLogController extends BaseController {
   }
 
   Future<TravelLogModel?> CheckLastStatus() async {
-    return await TravelLogDatabase.dao
-        .SelectSingle("branchId = ${Helper.user.branchId} order by id desc");
+    return await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc");
   }
 }
