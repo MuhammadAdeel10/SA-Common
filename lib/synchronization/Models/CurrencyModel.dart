@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../Controller/BaseRepository.dart';
+import '../../SalesPerson/model/SalesPersonModel.dart';
 
 class CurrencyField {
   static final String id = 'id';
@@ -11,7 +12,7 @@ class CurrencyField {
   static final String companySlug = 'companySlug';
 }
 
-class CurrencyModel extends BaseModel<int> {
+class CurrencyModel extends BaseModel<int> with DropDown {
   @override
   int? id;
   String name;
