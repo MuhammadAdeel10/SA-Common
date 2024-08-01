@@ -8,6 +8,8 @@ class LocalStorageKey {
   static const userId = "userGuid";
   static const companyName = "companyName";
   static const logo = "logo";
+  static const isCheckIn = "isCheckIn";
+  static const checkInDate = "checkInDate";
 
   static const screen1CustomerName = "screen1CustomerName";
   static const screen1CustomerId = "screen1CustomerId";

@@ -57,6 +57,14 @@ class PrefUtils {
     _sharedPreferences?.setString(key, value);
   }
 
+  void SetPreferencesBool(String key, bool value) {
+    _sharedPreferences?.setBool(key, value);
+  }
+
+  bool GetPreferencesBool(String key) {
+    return _sharedPreferences?.getBool(key) ?? false;
+  }
+
   int GetPreferencesInteger(String key) {
     return _sharedPreferences?.getInt(key) ?? 0;
   }

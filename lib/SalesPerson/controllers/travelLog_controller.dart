@@ -8,6 +8,8 @@ import 'package:sa_common/SalesPerson/database/travelLog_database.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
 import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/Helper.dart';
+import 'package:sa_common/utils/LocalStorageKey.dart';
+import 'package:sa_common/utils/pref_utils.dart';
 
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
@@ -61,13 +63,17 @@ class TravelLogController extends BaseController {
     subscription = location.onLocationChanged.listen((event) async {
       await CreateTravelLog(event);
     });
-
+    CheckInOut(isCheckIn: true);
     trackingEnabled = true;
   }
 
   void stopTracking() {
-    subscription.cancel();
+    subscription = location.onLocationChanged.listen((event) async {
+      await CreateTravelLog(event);
+    });
+    CheckInOut(isCheckIn: false);
     trackingEnabled = false;
+    subscription.cancel();
     clearLocation();
   }
 
@@ -131,7 +137,10 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<TravelLogModel?> CheckLastStatus() async {
-    return await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc");
+  void CheckInOut({required bool isCheckIn}){
+    var pref = PrefUtils();
+    var dateTime = DateTime.now();
+    pref.SetPreferencesBool("${Helper.user.companyId} ${LocalStorageKey.isCheckIn}", isCheckIn);
+    pref.SetPreferencesString("${Helper.user.companyId} ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
   }
 }
