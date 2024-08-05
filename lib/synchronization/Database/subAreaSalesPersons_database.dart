@@ -46,13 +46,24 @@ class SubAreaSalesPersonsDatabase {
   static Future<List<SubAreaSalesPersonsModel>> GetFilterSubAreas() async {
     var user = Helper.user;
     List<SubAreaSalesPersonsModel> subAreaList = [];
-    
-
+    List<Map<String, Object?>> map = List.empty();
     final db = await DatabaseHelper.instance.database;
-    var map = await db.rawQuery(
+    
+    if (Helper.requestContext.enableSalesGeography){
+
+     map = await db.rawQuery(
         '''select s.SubAreaId, sa.Name as subAreaName from SubAreaSalesPersons s
             left join  SubAreas sa on s.SubAreaId = sa.Id
-            where s.companySlug = '${user.companyId}' and s.branchId = ${user.branchId} ''');
+            join SalesPerson SP on SP.id = s.salesPersonId
+            where s.companySlug = '${user.companyId}' and s.branchId = ${user.branchId} and sp.applicationUserId = '${user.userId}' ''');
+    }
+
+    else{
+      map = await db.rawQuery(
+        '''select sa.id as SubAreaId, sa.Name as subAreaName from SubAreas sa
+        where sa.companySlug = '${user.companyId}' and sa.branchId = ${user.branchId}
+        ''');
+    }
     map.forEach((val) {
       if (val.length > 0) {
         var model = SubAreaSalesPersonsModel().fromJson(val) as SubAreaSalesPersonsModel;
