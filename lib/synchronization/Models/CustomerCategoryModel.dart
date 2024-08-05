@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import '../../SalesPerson/model/SalesPersonModel.dart';
 import '../../Controller/BaseRepository.dart';
 
 class CustomerCategoryFields {
@@ -12,7 +12,7 @@ class CustomerCategoryFields {
   static final String isSync = 'isSync';
 }
 
-class CustomerCategoryModel extends BaseModel<int> {
+class CustomerCategoryModel extends BaseModel<int> with DropDown {
   @override
   int? id;
   int contactType;
