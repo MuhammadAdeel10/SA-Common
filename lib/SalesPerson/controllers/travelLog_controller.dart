@@ -57,9 +57,8 @@ class TravelLogController extends BaseController {
     if (!(await isPermissionGranted())) {
       return;
     }
-
-    location.enableBackgroundMode();
-    location.changeSettings(distanceFilter: 25);
+    await location.enableBackgroundMode();
+    await location.changeSettings(distanceFilter: 25);
     subscription = location.onLocationChanged.listen((event) async {
       await CreateTravelLog(event);
     });
@@ -109,6 +108,7 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> CreateTravelLog(l.LocationData event) async {
+    try{
     TravelLogModel travelLog = TravelLogModel(
         speed: event.speed ?? 0.0,
         latitude: event.latitude ?? 0.0,
@@ -121,6 +121,14 @@ class TravelLogController extends BaseController {
         branchId: Helper.user.branchId,
         serverDateTime: DateTime.now().toUtc());
     await TravelLogDatabase.dao.insert(travelLog);
+    
+    if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+      await SyncToServerTravelLog();
+    }
+    }
+    catch(ex){
+      log("Exception Background Create Travel $ex");
+    }
   }
 
   Future<void> SyncToServerTravelLog() async {
@@ -139,8 +147,20 @@ class TravelLogController extends BaseController {
 
   void CheckInOut({required bool isCheckIn}){
     var pref = PrefUtils();
+    var slug =  pref.GetPreferencesString(LocalStorageKey.companySlug);
     var dateTime = DateTime.now();
-    pref.SetPreferencesBool("${Helper.user.companyId} ${LocalStorageKey.isCheckIn}", isCheckIn);
-    pref.SetPreferencesString("${Helper.user.companyId} ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
+    pref.SetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}", isCheckIn);
+    pref.SetPreferencesString("$slug ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
+  }
+
+  Future <void> BackgroundTracking() async {
+    var pref = PrefUtils();
+    var slug =  pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
+
+    if(isCheckIn) {
+    var locationDate = await location.getLocation();
+    await CreateTravelLog(locationDate);
+    }
   }
 }
