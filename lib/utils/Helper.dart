@@ -193,6 +193,9 @@ class Helper extends BaseController {
     if (currencyModel != null) {
       homeCurrency = !Helper.requestContext.currencySymbol ? currencyModel.code : currencyModel.symbol;
     }
+    else{
+      homeCurrency = "";
+    }
     endOfTheDayModel = getLastEndOfDay;
   }
 
