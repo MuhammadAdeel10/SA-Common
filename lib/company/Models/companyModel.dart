@@ -87,8 +87,9 @@ class Branches {
   int? _id;
   String? _prefix;
   int? _defaultPOSCustomerId;
+  bool _isActive;
 
-  Branches({String? name, int? id, String? prefix, int? defaultPOSCustomerId}) {
+  Branches({String? name, int? id, String? prefix, int? defaultPOSCustomerId, bool isActive = false}) : _isActive = isActive {
     if (name != null) {
       this._name = name;
     }
@@ -111,15 +112,16 @@ class Branches {
   set id(int? id) => _id = id;
 
   int? get defaultPOSCustomerId => _defaultPOSCustomerId;
-  set defaultPOSCustomerId(int? defaultPOSCustomerId) =>
-      _defaultPOSCustomerId = defaultPOSCustomerId;
+  set defaultPOSCustomerId(int? defaultPOSCustomerId) => _defaultPOSCustomerId = defaultPOSCustomerId;
+  bool get isActive => _isActive;
+  set isActive(bool isActive) => _isActive = isActive;
 
-  Branches.fromJson(Map<String, dynamic> json) {
-    _name = json['name'];
-    _id = json['id'];
-    _prefix = json['prefix'];
-    _defaultPOSCustomerId = json['defaultPOSCustomerId'];
-  }
+  Branches.fromJson(Map<String, dynamic> json)
+      : _isActive = json['isActive'],
+        _name = json['name'],
+        _id = json['id'],
+        _prefix = json['prefix'],
+        _defaultPOSCustomerId = json['defaultPOSCustomerId'];
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -127,6 +129,7 @@ class Branches {
     data['id'] = this._id;
     data['prefix'] = this.prefix;
     data['defaultPOSCustomerId'] = this.defaultPOSCustomerId;
+    data['_isActive'] = this._isActive;
     return data;
   }
 

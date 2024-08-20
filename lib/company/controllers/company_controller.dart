@@ -265,6 +265,7 @@ class CompanyController extends BaseController {
     });
     if (response != null) {
       lstBranches = Branches().FromJson(response.body);
+      lstBranches = lstBranches.where((element) => element.isActive == true).toList();
       var pref = await SharedPreferences.getInstance();
       pref.setInt(LocalStorageKey.brachCount, lstBranches.length);
       return lstBranches;
