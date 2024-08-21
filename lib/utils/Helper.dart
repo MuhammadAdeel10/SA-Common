@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -233,5 +234,28 @@ class Helper extends BaseController {
     // Format the result with the desired number of decimal places
     var returnAmount = roundedValue.toStringAsFixed(decimalPlaces);
     return num.parse(returnAmount == "" ? "0" : returnAmount);
+  }
+
+   static const _pageSize = 50;
+  static Future<void> fetchPage<T>(
+    int pageKey, {
+    required Future<List<T>?> fetchFunction,
+    required PagingController<int, T> pagingController,
+  }) async {
+    try {
+      final newItems = await fetchFunction.then(
+        (value) {
+          final isLastPage = value!.length < _pageSize;
+          if (isLastPage) {
+            pagingController.appendLastPage(value);
+          } else {
+            final nextPageKey = pageKey + 1;
+            pagingController.appendPage(value, nextPageKey);
+          }
+        },
+      );
+    } catch (error) {
+      pagingController.error = error;
+    }
   }
 }
