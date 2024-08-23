@@ -4,60 +4,68 @@
 
 import 'dart:convert';
 
-ProductImages productImagesFromJson(String str) => ProductImages.fromJson(json.decode(str));
+import 'package:sa_common/Controller/BaseRepository.dart';
 
 String productImagesToJson(ProductImages data) => json.encode(data.toJson());
+
 class ProductImagesFields {
   static final String id = 'id';
-  static final String companySlug= 'companySlug';
+  static final String companySlug = 'companySlug';
   static final String imageUrl = 'imageUrl';
   static final String base64ImageString = 'base64ImageString';
   static final String productId = 'productId';
   static final String updatedOn = 'updatedOn';
 }
-class ProductImages {
-    String? imageUrl;
-    dynamic base64ImageString;
-    int? productId;
-    DateTime? updatedOn;
-    int? id;
 
-    ProductImages({
-        this.imageUrl,
-        this.base64ImageString,
-        this.productId,
-        this.updatedOn,
-        this.id,
-    });
+class ProductImages extends BaseModel<int> {
+  @override
+  String? companySlug;
+  String? imageUrl;
+  int? productId;
+  DateTime? updatedOn;
+  int? id;
 
-    ProductImages copyWith({
-        String? imageUrl,
-        dynamic base64ImageString,
-        int? productId,
-        DateTime? updatedOn,
-        int? id,
-    }) => 
-        ProductImages(
-            imageUrl: imageUrl ?? this.imageUrl,
-            base64ImageString: base64ImageString ?? this.base64ImageString,
-            productId: productId ?? this.productId,
-            updatedOn: updatedOn ?? this.updatedOn,
-            id: id ?? this.id,
-        );
+  ProductImages({
+    this.imageUrl,
+    this.companySlug,
+    this.productId,
+    this.updatedOn,
+    this.id,
+  });
 
-    factory ProductImages.fromJson(Map<String, dynamic> json) => ProductImages(
+  factory ProductImages.fromMap(Map<String, dynamic> json, {String? slug}) =>
+      ProductImages(
         imageUrl: json["imageUrl"],
-        base64ImageString: json["base64ImageString"],
+        companySlug: slug ?? json['companySlug'],
         productId: json["productId"],
-        updatedOn: json["updatedOn"] == null ? null : DateTime.parse(json["updatedOn"]),
+        updatedOn: json["updatedOn"] == null
+            ? null
+            : DateTime.parse(json["updatedOn"]),
         id: json["id"],
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
+        'companySlug': companySlug,
         "imageUrl": imageUrl,
-        "base64ImageString": base64ImageString,
         "productId": productId,
         "updatedOn": updatedOn?.toIso8601String(),
         "id": id,
-    };
+      };
+
+  @override
+  BaseModel fromJson(Map<String, dynamic> json, {String? slug}) {
+    return ProductImages.fromMap(json, slug: slug);
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return toMap();
+  }
+
+  List<ProductImages> FromJson(String str, String slug) =>
+      List<ProductImages>.from(
+          json.decode(str).map((x) => ProductImages().fromJson(x, slug: slug)));
+
+  String ToJson(List<ProductImages> data) =>
+      json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 }

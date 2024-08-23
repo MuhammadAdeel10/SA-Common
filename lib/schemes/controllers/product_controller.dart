@@ -3,6 +3,8 @@ import 'package:sa_common/Controller/BaseController.dart';
 import 'package:sa_common/HttpService/Basehttp.dart';
 import 'package:sa_common/schemes/Database/productSalesTax_database.dart';
 import 'package:sa_common/schemes/Database/product_database.dart';
+import 'package:sa_common/schemes/Database/product_images_database.dart';
+import 'package:sa_common/schemes/models/product_images_mode.dart';
 import 'package:sa_common/schemes/models/product_model.dart';
 import 'package:sa_common/synchronization/Database/BranchProductTax_database.dart';
 import 'package:sa_common/synchronization/Models/BranchProductTaxModel.dart';
@@ -193,4 +195,46 @@ class ProductController extends BaseController {
   //   }
   //   return lstBrands;
   // }
+
+  Future<void> PullProductImages(String baseUrl, String slug, {int page = 1}) async {
+    var getSyncSetting = await SyncSettingDatabase.GetByTableName(
+      Tables.productImages,
+      slug: slug,
+    );
+    DateTime syncDate = DateTime.now().toUtc();
+    var syncDateString = Helper.DateTimeRemoveZ(getSyncSetting.syncDate!);
+    var response = await BaseClient()
+        .get(
+      baseUrl,
+      "${slug}${ApiEndPoint.productImages}"
+      "${syncDateString}"
+      "?page=${page}&pageSize=5000",
+    )
+        .catchError(
+      (error) {
+        handleError(error);
+      },
+    );
+    if (response != null) {
+      var decode = json.decode(response.body);
+      //as List<Map<String, dynamic>>;
+      if (decode.length > 0) {
+        var currentPage = decode['page'];
+        var totalPages = decode['pages'];
+        var productImages = decode['results'];
+        var pullData = List<ProductImages>.from(productImages.map((x) => ProductImages().fromJson(x, slug: slug)));
+
+        await ProductImagesDatabase.bulkInsert(pullData);
+        if (currentPage <= totalPages) {
+          print("Pages" + "$currentPage");
+          await PullProductImages(baseUrl, slug, page: currentPage + 1);
+        }
+      }
+      getSyncSetting.companySlug = slug;
+      getSyncSetting.syncDate = syncDate;
+      getSyncSetting.isSync = true;
+      await SyncSettingDatabase.dao.update(getSyncSetting);
+    }
+  }
+
 }
