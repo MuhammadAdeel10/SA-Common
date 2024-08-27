@@ -66,11 +66,12 @@ class TravelLogController extends BaseController {
     trackingEnabled = true;
   }
 
-  void stopTracking() {
+  Future<void> stopTracking() async {
     subscription = location.onLocationChanged.listen((event) async {
       await CreateTravelLog(event);
     });
     CheckInOut(isCheckIn: false);
+    await SyncToServerTravelLog();
     trackingEnabled = false;
     subscription.cancel();
     clearLocation();
