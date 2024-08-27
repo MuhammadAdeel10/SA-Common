@@ -78,7 +78,7 @@ class SchemesController extends BaseController {
     }
   }
 
-  Future<SchemeInvoiceModel> MapCartToInvoice(int customerId, {List<dynamic>? cartModelList, int? screenType}) async {
+  Future<SchemeInvoiceModel> MapCartToInvoice(int customerId, {List<dynamic>? cartModelList, int? screenType, List<LineItemTaxModel>? taxModel}) async {
     var user = Helper.user;
 
     SchemeInvoiceModel schemeModel = SchemeInvoiceModel(invoiceDetails: [], invoiceDiscounts: []);
@@ -96,7 +96,7 @@ class SchemesController extends BaseController {
 
     schemeModel.amountBeforeDiscount = cartModel?.fold(0, (num previousValue, element) => previousValue + element.qty * element.price).toDouble();
 
-    List<LineItemTaxModel> taxesAll = [];
+    List<LineItemTaxModel> taxesAll = taxModel ?? [];
     for (var element in cartModel!.where((element) => element.isAppliedScheme == false)) {
       var detail = SchemeInvoiceDetailModel();
       discounts = [];
@@ -107,6 +107,9 @@ class SchemesController extends BaseController {
       detail.grossAmount = element.grossAmount;
       detail.netAmount = element.netAmount;
       detail.price = element.price;
+      detail.taxAmount = element.totalTaxAmonut;
+      detail.purchasePrice = element.purchasePrice;
+      detail.maximumRetailPrice = element.maximumRetailPrice;
       detail.serialNumber = element.serialNumber;
       detail.batchId = element.batchId;
       detail.quantity = element.qty;
