@@ -247,6 +247,7 @@ class DatabaseHelper implements DBHelper {
       ${ProductFields.sku} $textType,
       ${ProductFields.name} $textTypeNotNull,
       ${ProductFields.description} $textType,
+      ${ProductFields.catalogContent} $textType,
       ${ProductFields.shortName} $textType,
       ${ProductFields.productCategoryId} $integerType,
       ${ProductFields.brandName} $textType,
@@ -287,7 +288,6 @@ class DatabaseHelper implements DBHelper {
   CREATE TABLE ${Tables.productImages} (
   ${ProductImagesFields.id} $idTypeNoAutoIncrement,
   ${ProductImagesFields.companySlug} $textTypeNotNull,
-  ${ProductImagesFields.base64ImageString} $textTypeNotNull,
   ${ProductImagesFields.imageUrl} $textTypeNotNull,
   ${ProductImagesFields.productId} $integerType
   )''');

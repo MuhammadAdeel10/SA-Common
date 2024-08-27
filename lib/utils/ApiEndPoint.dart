@@ -45,7 +45,7 @@ class ApiEndPoint {
   static const zones = "/Zones/ModifiedBetween/";
   static const areas = "/Areas/ModifiedBetween/";
   static const subareas = "/SubAreas/ModifiedBetween/";
-  static const productImages = "/Product/ModifiedBetweenProductImages/";
+  static const productImages = "/Products/ModifiedBetweenProductImages/";
   static const territories = "/Territories/ModifiedBetween/";
   static const bulkUpdate = "/PosInvoices/SaveAndApprove";
   static const getBatches = "/Batches/ModifiedBetween/";

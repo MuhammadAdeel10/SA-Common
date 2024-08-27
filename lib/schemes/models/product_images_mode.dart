@@ -48,7 +48,6 @@ class ProductImages extends BaseModel<int> {
         'companySlug': companySlug,
         "imageUrl": imageUrl,
         "productId": productId,
-        "updatedOn": updatedOn?.toIso8601String(),
         "id": id,
       };
 

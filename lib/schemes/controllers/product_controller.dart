@@ -15,6 +15,7 @@ import 'package:sa_common/utils/TablesName.dart';
 import '../../SyncSetting/Database.dart';
 
 class ProductController extends BaseController {
+  List<ProductImages> productImagesList = [];
   Future<void> GetAllProduct(String baseUrl, String imageBaseUrl, String slug, int branchId, int page) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.products, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
@@ -70,6 +71,14 @@ class ProductController extends BaseController {
       getSyncSetting.syncDate = syncDate;
       getSyncSetting.isSync = true;
       await SyncSettingDatabase.dao.update(getSyncSetting);
+    }
+  }
+
+  GetAllProductImagesById(int? id) async {
+    if (id != null) {
+      productImagesList = (await ProductImagesDatabase.dao.SelectList('productId = $id') ?? []);
+      update();
+      return productImagesList;
     }
   }
 
@@ -196,7 +205,7 @@ class ProductController extends BaseController {
   //   return lstBrands;
   // }
 
-  Future<void> PullProductImages(String baseUrl, String slug, {int page = 1}) async {
+  Future<void> PullProductImages(String baseUrl, String slug, int branchId, {int page = 1}) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(
       Tables.productImages,
       slug: slug,
@@ -206,7 +215,7 @@ class ProductController extends BaseController {
     var response = await BaseClient()
         .get(
       baseUrl,
-      "${slug}${ApiEndPoint.productImages}"
+      "${slug}/$branchId${ApiEndPoint.productImages}"
       "${syncDateString}"
       "?page=${page}&pageSize=5000",
     )
@@ -223,11 +232,10 @@ class ProductController extends BaseController {
         var totalPages = decode['pages'];
         var productImages = decode['results'];
         var pullData = List<ProductImages>.from(productImages.map((x) => ProductImages().fromJson(x, slug: slug)));
-
-        await ProductImagesDatabase.bulkInsert(pullData);
+        await ProductImagesDatabase.bulkInsert(pullData,ApiEndPoint.ImageBaseUrl);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
-          await PullProductImages(baseUrl, slug, page: currentPage + 1);
+          await PullProductImages(baseUrl, slug, branchId, page: currentPage + 1);
         }
       }
       getSyncSetting.companySlug = slug;
@@ -236,5 +244,4 @@ class ProductController extends BaseController {
       await SyncSettingDatabase.dao.update(getSyncSetting);
     }
   }
-
 }

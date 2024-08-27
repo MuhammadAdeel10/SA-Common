@@ -11,6 +11,7 @@ class ProductFields {
   static final String sku = 'sku';
   static final String name = 'name';
   static final String description = 'description';
+  static final String catalogContent = 'catalogContent';
   static final String shortName = 'shortName';
   static final String productCategoryId = 'productCategoryId';
   static final String brandName = 'brandName';
@@ -45,6 +46,7 @@ class ProductModel extends BaseModel<int> {
   String sku;
   String name;
   String description;
+  String catalogContent;
   String shortName;
   int? productCategoryId;
   String brandName;
@@ -76,6 +78,7 @@ class ProductModel extends BaseModel<int> {
       this.sku = "",
       this.name = "",
       this.description = "",
+      this.catalogContent = "",
       this.shortName = "",
       this.productCategoryId,
       this.brandName = "",
@@ -108,6 +111,7 @@ class ProductModel extends BaseModel<int> {
       String? barcode,
       String? name,
       String? description,
+      String? catalogContent,
       String? shortName,
       int? productCategoryId,
       String? brandName,
@@ -136,6 +140,7 @@ class ProductModel extends BaseModel<int> {
         barcode: barcode ?? this.barcode,
         name: name ?? this.name,
         description: description ?? this.description,
+        catalogContent: catalogContent ?? this.catalogContent,
         shortName: shortName ?? this.shortName,
         productCategoryId: productCategoryId ?? this.productCategoryId,
         brandName: brandName ?? this.brandName,
@@ -169,6 +174,7 @@ class ProductModel extends BaseModel<int> {
       'sku': sku,
       'name': name,
       'description': description,
+      'catalogContent': catalogContent,
       'shortName': shortName,
       'productCategoryId': productCategoryId,
       'brandName': brandName,
@@ -205,6 +211,7 @@ class ProductModel extends BaseModel<int> {
       sku: map['sku'] ?? '',
       name: map['name'] ?? '',
       description: map['description'] ?? '',
+      catalogContent: map['catalogContent'] ?? '',
       shortName: map['shortName'] ?? '',
       productCategoryId: map['productCategoryId']?.toInt(),
       brandName: map['brandName'] ?? '',
@@ -260,7 +267,7 @@ class ProductModel extends BaseModel<int> {
 
   @override
   String toString() {
-    return 'ProductModel(code: $code, number: $number, barcode: $barcode, name: $name, description: $description, shortName: $shortName, productCategoryId: $productCategoryId, brandName: $brandName, symbol: $symbol, isOpening: $isOpening, purchasePrice: $purchasePrice, maximumRetailPrice: $maximumRetailPrice, isMRPExclusiveTax: $isMRPExclusiveTax, baseProductId: $baseProductId, productType: $productType, precision: $precision, unitId: $unitId, salePrice: $salePrice, imageUrl: $imageUrl, isActive: $isActive, isSync: $isSync, fractionalUnit: $fractionalUnit, syncDate: $syncDate)';
+    return 'ProductModel(code: $code, number: $number, barcode: $barcode, name: $name, description: $description,  catalogContent: $catalogContent,shortName: $shortName, productCategoryId: $productCategoryId, brandName: $brandName, symbol: $symbol, isOpening: $isOpening, purchasePrice: $purchasePrice, maximumRetailPrice: $maximumRetailPrice, isMRPExclusiveTax: $isMRPExclusiveTax, baseProductId: $baseProductId, productType: $productType, precision: $precision, unitId: $unitId, salePrice: $salePrice, imageUrl: $imageUrl, isActive: $isActive, isSync: $isSync, fractionalUnit: $fractionalUnit, syncDate: $syncDate)';
   }
 
   @override
@@ -273,6 +280,7 @@ class ProductModel extends BaseModel<int> {
         other.barcode == barcode &&
         other.name == name &&
         other.description == description &&
+        other.catalogContent == catalogContent &&
         other.shortName == shortName &&
         other.productCategoryId == productCategoryId &&
         other.brandName == brandName &&
@@ -300,6 +308,7 @@ class ProductModel extends BaseModel<int> {
         barcode.hashCode ^
         name.hashCode ^
         description.hashCode ^
+        catalogContent.hashCode ^
         shortName.hashCode ^
         productCategoryId.hashCode ^
         brandName.hashCode ^
