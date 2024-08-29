@@ -163,6 +163,7 @@ class Helper extends BaseController {
 
   static DateFormat onlyDateFormatter = DateFormat('MM-dd-yyyy');
   static DateFormat onlyDateFormatterDateMonth = DateFormat('dd-MM-yyyy');
+  static DateFormat onlyDateFormatterYearMonth = DateFormat('yyyy-MM-dd');
   static DateFormat onlyTimeFormatter = DateFormat.jm();
 
   static String DateTimeRemoveZ(DateTime date) {
