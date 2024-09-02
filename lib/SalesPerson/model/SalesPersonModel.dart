@@ -12,7 +12,7 @@ class SalesPersonFiles {
   static final String isDeliveryPerson = 'isDeliveryPerson';
   static final String isSalesman = 'isSalesman';
   static final String CanChangePrice = 'canChangePrice';
-  static final String CanAddDiscount = 'CanAddDiscount';
+  static final String CanAddDiscount = 'canAddDiscount';
   static final String applicationUserId = 'applicationUserId';
   static final String cashAccountId = 'cashAccountId';
   static final String receiveMoneySeries = 'receiveMoneySeries';

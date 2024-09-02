@@ -11,6 +11,7 @@ import 'package:sa_common/schemes/models/SubAreasModel.dart';
 import 'package:sa_common/schemes/models/ZonesModel.dart';
 import 'package:sa_common/schemes/models/areasModel.dart';
 import 'package:sa_common/schemes/models/discount_model.dart';
+import 'package:sa_common/schemes/models/product_images_mode.dart';
 import 'package:sa_common/schemes/models/product_model.dart';
 import 'package:sa_common/schemes/models/schemeCustomerCategoriesModel.dart';
 import 'package:sa_common/schemes/models/schemeDetailsModel.dart';
@@ -246,6 +247,7 @@ class DatabaseHelper implements DBHelper {
       ${ProductFields.sku} $textType,
       ${ProductFields.name} $textTypeNotNull,
       ${ProductFields.description} $textType,
+      ${ProductFields.catalogContent} $textType,
       ${ProductFields.shortName} $textType,
       ${ProductFields.productCategoryId} $integerType,
       ${ProductFields.brandName} $textType,
@@ -281,6 +283,14 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
 
+
+  batch.execute('''
+  CREATE TABLE ${Tables.productImages} (
+  ${ProductImagesFields.id} $idTypeNoAutoIncrement,
+  ${ProductImagesFields.companySlug} $textTypeNotNull,
+  ${ProductImagesFields.imageUrl} $textTypeNotNull,
+  ${ProductImagesFields.productId} $integerType
+  )''');
     batch.execute('''
   CREATE TABLE ${Tables.Currency} (
   ${CurrencyField.id} $idTypeNoAutoIncrement, 

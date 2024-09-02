@@ -1,5 +1,6 @@
 class Tables {
   static const user = 'Users';
+  static const productImages = "ProductImages";
   static const productsCategories = "ProductsCategories";
   static const products = "Products";
   static const contacts = "Contacts";
