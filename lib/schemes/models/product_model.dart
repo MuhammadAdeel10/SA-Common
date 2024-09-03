@@ -35,6 +35,7 @@ class ProductFields {
   static final String hasSerialNumber = 'hasSerialNumber';
   static final String basePackingId = 'basePackingId';
   static final String baseVariantId = 'baseVariantId';
+  static final String isForSale = 'isForSale';
 }
 
 class ProductModel extends BaseModel<int> {
@@ -68,6 +69,7 @@ class ProductModel extends BaseModel<int> {
   String? companySlug;
   bool? hasSerialNumber;
   bool? hasBatch;
+  bool? isForSale;
   int? baseVariantId;
   int? basePackingId;
   List<ProductSalesTaxModel>? saleTaxes;
@@ -101,6 +103,7 @@ class ProductModel extends BaseModel<int> {
       this.companySlug = "",
       this.saleTaxes,
       this.hasBatch,
+      this.isForSale,
       this.hasSerialNumber,
       this.basePackingId,
       this.baseVariantId});
@@ -133,6 +136,7 @@ class ProductModel extends BaseModel<int> {
       String? companySlug,
       List<ProductSalesTaxModel>? saleTaxes,
       bool? hasSerialNumber,
+      bool? isForSale,
       bool? hasBatch}) {
     return ProductModel(
         code: code ?? this.code,
@@ -162,6 +166,7 @@ class ProductModel extends BaseModel<int> {
         companySlug: companySlug ?? this.companySlug,
         saleTaxes: saleTaxes ?? this.saleTaxes,
         hasBatch: hasBatch ?? this.hasBatch,
+        isForSale: isForSale ?? this.isForSale,
         hasSerialNumber: hasSerialNumber ?? this.hasSerialNumber);
   }
 
@@ -196,6 +201,7 @@ class ProductModel extends BaseModel<int> {
       'syncDate':
           syncDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'hasBatch': hasBatch,
+      'isForSale': isForSale == true ? 1 : 0,
       'hasSerialNumber': hasSerialNumber,
       'baseVariantId': baseVariantId,
       'basePackingId': basePackingId,
@@ -235,6 +241,7 @@ class ProductModel extends BaseModel<int> {
       isActive:
           (map['isActive'] == 0 || map['isActive'] == false) ? false : true,
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
+      isForSale: (map['isForSale'] == 0 || map['isForSale'] == false) ? false : true,
       fractionalUnit:
           (map['fractionalUnit'] == 0 || map['fractionalUnit'] == false)
               ? false
@@ -267,7 +274,7 @@ class ProductModel extends BaseModel<int> {
 
   @override
   String toString() {
-    return 'ProductModel(code: $code, number: $number, barcode: $barcode, name: $name, description: $description,  catalogContent: $catalogContent,shortName: $shortName, productCategoryId: $productCategoryId, brandName: $brandName, symbol: $symbol, isOpening: $isOpening, purchasePrice: $purchasePrice, maximumRetailPrice: $maximumRetailPrice, isMRPExclusiveTax: $isMRPExclusiveTax, baseProductId: $baseProductId, productType: $productType, precision: $precision, unitId: $unitId, salePrice: $salePrice, imageUrl: $imageUrl, isActive: $isActive, isSync: $isSync, fractionalUnit: $fractionalUnit, syncDate: $syncDate)';
+    return 'ProductModel(code: $code, number: $number, barcode: $barcode, name: $name, description: $description,  catalogContent: $catalogContent,shortName: $shortName, productCategoryId: $productCategoryId, brandName: $brandName, symbol: $symbol, isOpening: $isOpening, purchasePrice: $purchasePrice, maximumRetailPrice: $maximumRetailPrice, isMRPExclusiveTax: $isMRPExclusiveTax, baseProductId: $baseProductId, productType: $productType, precision: $precision, unitId: $unitId, salePrice: $salePrice, imageUrl: $imageUrl, isActive: $isActive, isSync: $isSync, isForSale: $isForSale, fractionalUnit: $fractionalUnit, syncDate: $syncDate)';
   }
 
   @override
@@ -297,6 +304,7 @@ class ProductModel extends BaseModel<int> {
         other.imageUrl == imageUrl &&
         other.isActive == isActive &&
         other.isSync == isSync &&
+        other.isForSale == isForSale &&
         other.fractionalUnit == fractionalUnit &&
         other.syncDate == syncDate;
   }
@@ -325,6 +333,7 @@ class ProductModel extends BaseModel<int> {
         imageUrl.hashCode ^
         isActive.hashCode ^
         isSync.hashCode ^
+        isForSale.hashCode ^
         fractionalUnit.hashCode ^
         syncDate.hashCode;
   }
