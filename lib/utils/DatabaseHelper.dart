@@ -268,6 +268,7 @@ class DatabaseHelper implements DBHelper {
       ${ProductFields.hasBatch} $boolType CHECK(${ProductFields.hasBatch} IN (0,1)),
       ${ProductFields.hasSerialNumber} $boolType CHECK(${ProductFields.hasSerialNumber} IN (0,1)),
       ${ProductFields.isSync} $boolType CHECK(${ProductFields.isSync} IN (0,1)),
+      ${ProductFields.isForSale} $boolType CHECK(${ProductFields.isForSale} IN (0,1)),
       ${ProductFields.fractionalUnit} $boolType CHECK(${ProductFields.fractionalUnit} IN (0,1)),
       ${ProductFields.isMRPExclusiveTax} $boolType CHECK(${ProductFields.isMRPExclusiveTax} IN (0,1)),
       ${ProductFields.isOpening} $boolType CHECK(${ProductFields.isOpening} IN (0,1)),
