@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-
 import 'package:sa_common/Controller/BaseController.dart';
 import 'package:location/location.dart' as l;
 import 'package:permission_handler/permission_handler.dart';
@@ -14,7 +13,6 @@ import 'package:sa_common/utils/pref_utils.dart';
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
   bool permissionGranted = false;
-  bool isEnableBackground = false;
   l.Location location = l.Location();
   late StreamSubscription subscription;
   bool trackingEnabled = false;
@@ -23,7 +21,6 @@ class TravelLogController extends BaseController {
 
   @override
   Future<void> onInit() async {
-    location.isBackgroundModeEnabled();
     super.onInit();
   }
 
@@ -31,10 +28,8 @@ class TravelLogController extends BaseController {
     bool _permissionGranted = await isPermissionGranted();
     bool _gpsEnabled = await isGpsEnabled();
     await requestLocationPermission();
-    bool _isEnableBackground = await location.enableBackgroundMode();
     permissionGranted = _permissionGranted;
     gpsEnabled = _gpsEnabled;
-    isEnableBackground = _isEnableBackground;
   }
 
   Future<bool> isPermissionGranted() async {
@@ -57,7 +52,6 @@ class TravelLogController extends BaseController {
     if (!(await isPermissionGranted())) {
       return;
     }
-    await location.enableBackgroundMode();
     await location.changeSettings(distanceFilter: 25);
     subscription = location.onLocationChanged.listen((event) async {
       await CreateTravelLog(event);

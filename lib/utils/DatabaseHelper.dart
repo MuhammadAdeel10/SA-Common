@@ -31,7 +31,6 @@ import 'package:sa_common/synchronization/Models/NumberSerialsModel.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
-
 import '../productCategory/product_categories_model.dart';
 import '../schemes/models/invoiceDetailTaxModel.dart';
 import '../schemes/models/SchemeInvoiceDiscountModel.dart';
@@ -61,7 +60,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 1;
+  int version = 2;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -1518,6 +1517,17 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
 
   @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < newVersion) {}
+    if (oldVersion < newVersion) {
+     await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
+    }
+  }
+  
+  Future<void> addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
+    final result = await db.rawQuery('PRAGMA table_info($tableName)');
+    bool columnExists = result.any((column) => column['name'] == columnName);
+
+    if (!columnExists) {
+      await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
+    }
   }
 }
