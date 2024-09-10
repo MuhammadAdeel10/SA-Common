@@ -65,7 +65,7 @@ class SchemeInvoiceDetailModel {
     this.maximumRetailPrice,
     this.consignmentId,
     this.branchId,
-    this.isBonusProduct,
+    this.isBonusProduct = false,
     this.tagPrice,
     this.totalSavedAmount,
     this.discountType,

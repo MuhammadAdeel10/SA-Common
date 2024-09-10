@@ -251,7 +251,7 @@ class SchemesController extends BaseController {
             detailDiscount.discountAmount = detailDiscount.discountInAmount;
             break;
           case DiscountType.Price:
-            detailDiscount.discountAmount = item.grossAmount! - (item.quantity! * detailDiscount.discountInPrice!);
+            detailDiscount.discountAmount = item.quantity! * detailDiscount.discountInAmount;
             break;
         }
       }
@@ -773,8 +773,6 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
                   discountId: item.DiscountId ?? 0,
                   schemeDetailId: item.SchemeDetailId,
                   discountAmount: item.DiscountAmount > 0 ? ((posInvoiceDetail.quantity ?? 0) ~/ item.DiscountProductQuantity) * item.DiscountAmount : ((posInvoiceDetail.grossAmount ?? 0) * (item.DiscountRate ?? 0)) / 100
-
-                  // discount = discount,
                   );
               posInvoiceDetail.discountInPercent = item.DiscountRate;
               posInvoiceDetail.discounts?.add(data);
@@ -1126,9 +1124,9 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
   Future<SchemeInvoiceModel> GetInvoiceBonusScheme(SchemeInvoiceModel posInvoice, Database db, CompanySettingModel? companySetting, UserModel user, {Function(SchemeInvoiceModel)? callback = null}) async {
     Logger.InfoLog("GetInvoiceBonusScheme Start ${DateTime.now().toIso8601String()}");
     try {
-      var invoiceAmount = posInvoice.invoiceDetails.where((w) => (w.quantity ?? 0) > 0).fold<num>(0, (sum, s) => sum + ((s.grossAmount ?? 0) + (s.taxAmount ?? 0) - (s.discountAmount ?? 0)));
+      var invoiceAmount = posInvoice.invoiceDetails.where((w) => (w.quantity ?? 0) > 0).fold<num>(0, (sum, s) => sum + ((s.grossAmount ?? 0) - (s.discountAmount ?? 0)));
 
-      var returnAmount = posInvoice.invoiceDetails.where((w) => w.quantity! < 0).map((s) => (s.grossAmount ?? 0) + (s.taxAmount ?? 0) - (s.discountAmount ?? 0)).fold<num>(0, (sum, value) => sum + value);
+      var returnAmount = posInvoice.invoiceDetails.where((w) => w.quantity! < 0).map((s) => (s.grossAmount ?? 0) - (s.discountAmount ?? 0)).fold<num>(0, (sum, value) => sum + value);
 
       var returnNetAmount = returnAmount.abs();
       var sign = returnAmount.sign;
@@ -1470,35 +1468,34 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
     SchemeDetailId int,
     DiscountId int,
     InvoiceAmount decimal (30,10));''');
-
-    await db.execute('''Insert into MaxInoviceDiscounts
-SELECT dtl.SchemeId, dtl.SchemeDetailId, dtl.DiscountId, dtl.InvoiceAmount
-FROM (
-    SELECT D.SchemeId, D.Id AS SchemeDetailId, S.DiscountId, D.InvoiceAmount,
-        ROW_NUMBER() OVER(PARTITION BY D.SchemeId ORDER BY D.InvoiceAmount DESC) AS rowId
-    FROM SchemeDetails D
-    INNER JOIN Schemes S ON D.SchemeId = S.Id AND S.IsActive = 1 AND S.Status = 20
-    LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
-    WHERE S.companySlug = '${companySetting?.slug}'
-        AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-        AND ('${date}' IS NULL OR
-            (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
-        AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL))
-       and (
-			S.IsTimeSensitiveScheme = 0
-			or 
-			(
-				(TIME(S.startTime) <=  '$utcTimeString')
-				AND 
-				(TIME(S.endTime) >= '$utcTimeString')
-			)
-		)
-        AND (D.InvoiceAmount <= ${params.amount})
-        AND (instr(S.WeekDays, $dayId) > 0)
-        AND (S.SchemeTypeId = 10)
-) dtl
-WHERE rowId = 1;
-''');
+    await db.execute('''
+    INSERT INTO MaxInoviceDiscounts
+    SELECT dtl.SchemeId, dtl.SchemeDetailId, dtl.DiscountId, dtl.InvoiceAmount
+    FROM (
+        SELECT D.SchemeId, D.Id AS SchemeDetailId, S.DiscountId, D.InvoiceAmount
+        FROM SchemeDetails D
+        INNER JOIN Schemes S ON D.SchemeId = S.Id AND S.IsActive = 1 AND S.Status = 20
+        LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
+        WHERE S.companySlug = '${companySetting?.slug}'
+            AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
+            AND ('${date}' IS NULL OR
+                (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
+            AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL))
+          AND (
+                S.IsTimeSensitiveScheme = 0
+                OR (
+                    (TIME(S.startTime) <= '$utcTimeString')
+                    AND 
+                    (TIME(S.endTime) >= '$utcTimeString')
+                )
+            )
+            AND (D.InvoiceAmount <= ${params.amount})
+            AND (instr(S.WeekDays, $dayId) > 0)
+            AND (S.SchemeTypeId = 10)
+        ORDER BY D.InvoiceAmount DESC
+        LIMIT 1
+    ) dtl;
+    ''');
     if (companySetting?.enableSalesGeography == true) {
       await db.execute(''' Insert into SchemeTable
 	SELECT DISTINCT D.SchemeId, D.Id AS SchemeDetailId, D.InvoiceAmount AS InvoiceAmount,D.DiscountRate, M.DiscountId, DiscountEffect 
