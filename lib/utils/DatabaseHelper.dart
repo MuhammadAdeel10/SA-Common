@@ -60,7 +60,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 2;
+  int version = 3;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -511,6 +511,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.enableDetailBGroups} $boolType CHECK(${CompanySettingField.enableDetailBGroups} IN (0,1)),
       ${CompanySettingField.enableDetailAGroups} $boolType CHECK(${CompanySettingField.enableDetailAGroups} IN (0,1)),
       ${CompanySettingField.currencySymbol} $boolType CHECK(${CompanySettingField.currencySymbol} IN (0,1)),
+      ${CompanySettingField.enableProductAddMultiple} $boolType CHECK(${CompanySettingField.enableProductAddMultiple} IN (0,1)),
       ${CompanySettingField.masterGroupCaption} $textType,
       ${CompanySettingField.detailAGroupCaption} $textType,
       ${CompanySettingField.detailBGroupCaption} $textType,
@@ -1519,6 +1520,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
      await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
+     await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.enableProductAddMultiple, boolType);
     }
   }
   
