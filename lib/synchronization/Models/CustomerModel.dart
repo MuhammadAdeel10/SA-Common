@@ -50,6 +50,8 @@ class CustomerFields {
   static final String email = 'email';
   static final String subAreaId = 'subAreaId';
   static final String branchId = 'branchId';
+  static final String longitude = 'longitude';
+  static final String latitude = 'latitude';
 }
 
 class CustomerModel extends BaseModel<int> with DropDown {
@@ -97,6 +99,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
   int? subAreaId;
   SubAreasModel? subArea;
   int? branchId;
+  double? longitude;
+  double? latitude;
 
   CustomerModel(
       {this.id,
@@ -126,6 +130,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
       this.dateOfBirth,
       this.sTN,
       this.exchangeRate,
+      this.latitude,
+      this.longitude,
       this.isSync = false,
       this.isNew = false,
       this.isEdit = false,
@@ -171,6 +177,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
       DateTime? dateOfBirth,
       String? sTN,
       double? ExchangeRate,
+      double? latitude,
+      double? longitude,
       bool? isSync,
       bool? isNew,
       bool? isDeleted,
@@ -213,6 +221,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
         dateOfBirth: dateOfBirth ?? this.dateOfBirth,
         sTN: sTN ?? this.sTN,
         exchangeRate: ExchangeRate ?? this.exchangeRate,
+        longitude: longitude ?? this.longitude,
+        latitude: latitude ?? this.latitude,
         isSync: isSync ?? this.isSync,
         isNew: isNew ?? this.isNew,
         isDeleted: isDeleted ?? this.isDeleted,
@@ -258,6 +268,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
       'dateOfBirth': dateOfBirth?.toIso8601String(),
       'sTN': sTN,
       'exchangeRate': exchangeRate,
+      'latitude': latitude,
+      'longitude': longitude,
       'isSync': isSync == false ? 0 : 1,
       'isNew': isNew == false ? 0 : 1,
       'isEdit': isEdit == false ? 0 : 1,
@@ -306,6 +318,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
       dateOfBirth: map['dateOfBirth'] != null ? DateTime.parse(map['dateOfBirth']) : null,
       sTN: map['sTN'],
       exchangeRate: map['exchangeRate']?.toDouble(),
+      longitude: map['longitude']?.toDouble(),
+      latitude: map['latitude']?.toDouble(),
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
 
       isNew: (map['isNew'] == 0 || map['isNew'] == false || map['isNew'] == null) ? false : true,
@@ -339,7 +353,7 @@ class CustomerModel extends BaseModel<int> with DropDown {
 
   @override
   String toString() {
-    return 'CustomerModel(id: $id, name: $name, code: $code, series: $series, contactType: $contactType, CustomerCategoryId: $customerCategoryId, categoryName: $categoryName, CountryId: $countryId, CurrencyId: $currencyId, companySlug: $companySlug, address1: $address1, Address2: $address2, city: $city, contactPerson: $contactPerson, phone: $phone, fax: $fax, opening: $opening, asOfDate: $asOfDate, creditLimit: $creditLimit, creditLimitDays: $creditLimitDays, displayName: $displayName, printName: $printName, cNIC: $cNIC, outstandingBalance: $outstandingBalance, dateOfBirth: $dateOfBirth, sTN: $sTN, ExchangeRate: $exchangeRate, isSync: $isSync, isNew: $isNew, isDeleted: $isDeleted, DiscountInPercent: $discountInPercent, syncDate: $syncDate, insertedDate: $insertedDate, isActive: $isActive, textField2Value: $textField2Value, textField1Value: $textField1Value)';
+    return 'CustomerModel(id: $id, name: $name, code: $code, series: $series, contactType: $contactType, CustomerCategoryId: $customerCategoryId, categoryName: $categoryName, CountryId: $countryId, CurrencyId: $currencyId, companySlug: $companySlug, address1: $address1, Address2: $address2, city: $city, contactPerson: $contactPerson, phone: $phone, fax: $fax, opening: $opening, asOfDate: $asOfDate, creditLimit: $creditLimit, creditLimitDays: $creditLimitDays, displayName: $displayName, printName: $printName, cNIC: $cNIC, outstandingBalance: $outstandingBalance, dateOfBirth: $dateOfBirth, sTN: $sTN, ExchangeRate: $exchangeRate, latitude: $latitude, longitude: $longitude, isSync: $isSync, isNew: $isNew, isDeleted: $isDeleted, DiscountInPercent: $discountInPercent, syncDate: $syncDate, insertedDate: $insertedDate, isActive: $isActive, textField2Value: $textField2Value, textField1Value: $textField1Value)';
   }
 
   @override
@@ -374,6 +388,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
         other.dateOfBirth == dateOfBirth &&
         other.sTN == sTN &&
         other.exchangeRate == exchangeRate &&
+        other.latitude == latitude &&
+        other.longitude == longitude &&
         other.isSync == isSync &&
         other.isNew == isNew &&
         other.isDeleted == isDeleted &&
@@ -414,6 +430,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
         dateOfBirth.hashCode ^
         sTN.hashCode ^
         exchangeRate.hashCode ^
+        longitude.hashCode ^
+        latitude.hashCode ^
         isSync.hashCode ^
         isNew.hashCode ^
         isDeleted.hashCode ^

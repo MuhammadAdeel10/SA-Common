@@ -363,6 +363,8 @@ class DatabaseHelper implements DBHelper {
     ${CustomerFields.dateOfBirth} $dateTimeType,
     ${CustomerFields.sTN} $textType,
     ${CustomerFields.exchangeRate} $decimalType,
+    ${CustomerFields.longitude} $decimalType,
+    ${CustomerFields.latitude} $decimalType,
     ${CustomerFields.isNew} $boolType CHECK(${CustomerFields.isNew} IN (0,1)),
     ${CustomerFields.isEdit} $boolType CHECK(${CustomerFields.isEdit} IN (0,1)),
     ${CustomerFields.isDeleted} $boolType CHECK(${CustomerFields.isDeleted} IN (0,1)),
