@@ -50,6 +50,11 @@ class ProductImagesDatabase {
       await batch.commit();
     }
   }
+   static Future<void> deleteByProductId (int? productId, Batch batch)async {
+    var companySlug = Helper.user.companyId;
+    batch.rawQuery('''delete from ${Tables.productImages} where companySlug = '${companySlug}' and productId = $productId  ''');
+
+  }
 
   Future close() async {
     final db = await DatabaseHelper.instance.database;
