@@ -15,7 +15,6 @@ import 'package:sa_common/utils/TablesName.dart';
 import '../../SyncSetting/Database.dart';
 
 class ProductController extends BaseController {
-  List<ProductImages> productImagesList = [];
   Future<void> GetAllProduct(String baseUrl, String imageBaseUrl, String slug, int branchId, int page) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.products, slug: slug, branchId: branchId, isBranch: true);
     DateTime syncDate = DateTime.now().toUtc();
@@ -74,13 +73,6 @@ class ProductController extends BaseController {
     }
   }
 
-  GetAllProductImagesById(int? id) async {
-    if (id != null) {
-      productImagesList = (await ProductImagesDatabase.dao.SelectList('productId = $id') ?? []);
-      update();
-      return productImagesList;
-    }
-  }
 
   Future<void> DeleteProduct(String baseUrl, String slug, int branchId) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.products, slug: slug, branchId: branchId, isBranch: true);
