@@ -60,7 +60,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 3;
+  int version = 4;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -1523,6 +1523,8 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
     if (oldVersion < newVersion) {
      await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.enableProductAddMultiple, boolType);
+     await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
+     await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
     }
   }
   
