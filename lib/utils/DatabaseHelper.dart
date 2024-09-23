@@ -513,7 +513,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.enableDetailBGroups} $boolType CHECK(${CompanySettingField.enableDetailBGroups} IN (0,1)),
       ${CompanySettingField.enableDetailAGroups} $boolType CHECK(${CompanySettingField.enableDetailAGroups} IN (0,1)),
       ${CompanySettingField.currencySymbol} $boolType CHECK(${CompanySettingField.currencySymbol} IN (0,1)),
-      ${CompanySettingField.enableProductAddMultiple} $boolType CHECK(${CompanySettingField.enableProductAddMultiple} IN (0,1)),
+      ${CompanySettingField.allowDuplicateProducts} $boolType CHECK(${CompanySettingField.allowDuplicateProducts} IN (0,1)),
       ${CompanySettingField.masterGroupCaption} $textType,
       ${CompanySettingField.detailAGroupCaption} $textType,
       ${CompanySettingField.detailBGroupCaption} $textType,
@@ -1522,7 +1522,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
      await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
-     await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.enableProductAddMultiple, boolType);
+     await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
     }

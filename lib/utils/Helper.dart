@@ -30,6 +30,7 @@ import '../synchronization/Database/EndOfTheDay_database.dart';
 import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
 import 'LocalStorageKey.dart';
+import 'package:flutter/src/services/text_formatter.dart';
 
 class Helper extends BaseController {
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
@@ -47,6 +48,17 @@ class Helper extends BaseController {
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
     return emailValid;
+  }
+
+  static DecimalCheckRegEx({int? length}) {
+    int decimalRange = Helper.requestContext.decimalPlaces;
+    String pattern = '^'
+        '(\\d{0,$length}(\\.\\d{0,$decimalRange})?)'
+        '|'
+        '(\\.\\d{0,$decimalRange})'
+        '(!.*\\.)';
+    RegExp exp = RegExp(pattern);
+    return FilteringTextInputFormatter.allow(exp);
   }
 
   static Color buttonColor(String colorCode) {
