@@ -203,7 +203,7 @@ class CompanyController extends BaseController {
       if (companySettings != null) {
         companyModel.defaultPOSCustomerId = companySettings.defaultPOSCustomerId;
         companyModel.printerName = companySettings.printerName;
-        companyModel.enableProductAddMultiple = companySettings.enableProductAddMultiple;
+        companyModel.allowDuplicateProducts = companySettings.allowDuplicateProducts;
       }
       await CompanySettingDatabase().newUpdate(companyModel);
       if (companySettings != null) {
@@ -232,7 +232,7 @@ class CompanyController extends BaseController {
       await CompanySettingDatabase.dao.insert(saveCompanySetting);
     else {
       saveCompanySetting.printerName = companySetting.printerName;
-      saveCompanySetting.enableProductAddMultiple = companySetting.enableProductAddMultiple;
+      saveCompanySetting.allowDuplicateProducts = companySetting.allowDuplicateProducts;
       await CompanySettingDatabase().newUpdate(saveCompanySetting);
     }
     var companySettings = await CompanySettingDatabase().GetCompany();

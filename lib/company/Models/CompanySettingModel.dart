@@ -41,7 +41,7 @@ class CompanySettingField {
   static final String customerLoyaltyProgramCategories = 'customerLoyaltyProgramCategories';
   static final String customerLoyaltyCalculationType = 'customerLoyaltyCalculationType';
   static final String currencySymbol = 'currencySymbol';
-  static final String enableProductAddMultiple = 'enableProductAddMultiple';
+  static final String allowDuplicateProducts = 'allowDuplicateProducts';
   static final String allowNegativeStock = 'allowNegativeStock';
 }
 
@@ -71,7 +71,7 @@ class CompanySettingModel extends BaseModel<Guid> {
   bool enableDetailAGroups;
   String? detailAGroupCaption;
   bool enableDetailBGroups;
-  bool enableProductAddMultiple;
+  bool allowDuplicateProducts;
   String? detailBGroupCaption;
   String? printerName;
   String? logo;
@@ -99,7 +99,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.allowOverallDiscountPos = false,
       this.manuallyManageEOD = false,
       this.enableFbrPos = false,
-      this.enableProductAddMultiple = false,
+      this.allowDuplicateProducts = false,
       this.enableFbrPosFee = false,
       this.fbrPosFeeAccountType = 0,
       this.enableSalesmansOnPos = false,
@@ -138,7 +138,7 @@ class CompanySettingModel extends BaseModel<Guid> {
     bool? manuallyManageEOD,
     bool? enableFbrPos,
     bool? enableFbrPosFee,
-    bool? enableProductAddMultiple,
+    bool? allowDuplicateProducts,
     int? fbrPosFeeAccountType,
     bool? enableSalesmansOnPos,
     bool? isSalesmanRequiredOnPos,
@@ -163,7 +163,7 @@ class CompanySettingModel extends BaseModel<Guid> {
         isSalesmanRequiredOnPos: isSalesmanRequiredOnPos ?? this.isSalesmanRequiredOnPos,
         syncDate: syncDate ?? this.syncDate,
         isSync: isSync ?? this.isSync,
-        enableProductAddMultiple: enableProductAddMultiple ?? this.enableProductAddMultiple,
+        allowDuplicateProducts: allowDuplicateProducts ?? this.allowDuplicateProducts,
         enableSalesGeography: enableSalesGeography ?? this.enableSalesGeography);
         
   }
@@ -184,7 +184,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       'manuallyManageEOD': manuallyManageEOD == true ? 1 : 0,
       'enableFbrPos': enableFbrPos == true ? 1 : 0,
       'enableFbrPosFee': enableFbrPosFee == true ? 1 : 0,
-      'enableProductAddMultiple': enableProductAddMultiple == true ? 1 : 0,
+      'allowDuplicateProducts': allowDuplicateProducts == true ? 1 : 0,
       'fbrPosFeeAccountType': fbrPosFeeAccountType,
       'enableSalesmansOnPos': enableSalesmansOnPos == true ? 1 : 0,
       'isSalesmanRequiredOnPos': isSalesmanRequiredOnPos == true ? 1 : 0,
@@ -221,7 +221,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       decimalPlaces: map['decimalPlaces'] ?? 0,
       allowDiscountOnPosProduct: (map['allowDiscountOnPosProduct'] == 0 || map['allowDiscountOnPosProduct'] == false) ? false : true,
       enableScheme: (map['enableScheme'] == 0 || map['enableScheme'] == false) ? false : true,
-      enableProductAddMultiple: (map['enableProductAddMultiple'] == 1 || map['enableProductAddMultiple'] == true) ? true : false,
+      allowDuplicateProducts: (map['allowDuplicateProducts'] == 1 || map['allowDuplicateProducts'] == true) ? true : false,
       allowPriceChangeForPosProduct: (map['allowPriceChangeForPosProduct'] == 0 || map['allowPriceChangeForPosProduct'] == false) ? false : true,
       allowRemovePosProductAfterScanning: (map['allowRemovePosProductAfterScanning'] == 0 || map['allowRemovePosProductAfterScanning'] == false) ? false : true,
       allowOverallDiscountPos: (map['allowOverallDiscountPos'] == 0 || map['allowOverallDiscountPos'] == false) ? false : true,
