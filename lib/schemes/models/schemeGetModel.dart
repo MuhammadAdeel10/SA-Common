@@ -125,8 +125,8 @@ class SchemeGetModel {
       'schemeTypeId': schemeTypeId,
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
-      'startTime': startTime?.toIso8601String(),
-      'endTime': endTime?.toIso8601String(),
+      'startTime': startTime?.toUtc().toIso8601String(),
+      'endTime': endTime?.toUtc().toIso8601String(),
       'dayTypeId': dayTypeId,
       'reference': reference,
       'dayType': dayType,
@@ -159,9 +159,8 @@ class SchemeGetModel {
       startDate:
           map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
       endDate: map['endDate'] != null ? DateTime.parse(map['endDate']) : null,
-      startTime:
-          map['startTime'] != null ? DateTime.parse(map['startTime']) : null,
-      endTime: map['endTime'] != null ? DateTime.parse(map['endTime']) : null,
+      startTime: map['startTime'] != null ? DateTime.parse(map['startTime']).toUtc() : null,
+      endTime: map['endTime'] != null ? DateTime.parse(map['endTime']).toUtc() : null,
       dayTypeId: map['dayTypeId']?.toInt(),
       reference: map['reference'],
       dayType: map['dayType']?.toInt(),

@@ -6,6 +6,7 @@ import 'package:sa_common/schemes/Database/schemesSalesGeography_database.dart';
 import 'package:sa_common/utils/DatabaseHelper.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sa_common/utils/TablesName.dart';
+import 'package:sa_common/utils/Helper.dart';
 import '../models/schemeGetModel.dart';
 import '../models/schemesModel.dart';
 
@@ -38,6 +39,17 @@ class SchemesDatabase {
       }
     });
     await batch.commit();
+  }
+
+  Future<List<SchemesModel>> getDistinctSchemeTypes() async {
+    final Database db = await DatabaseHelper.instance.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT DISTINCT schemeTypeId, companySlug
+      FROM schemes where companySlug ='${Helper.user.companyId}' and isActive = 1 and (endDate is null	or endDate > '${Helper.onlyDateFormatterYearMonth.format(DateTime.now())}')
+      ''');
+    return List.generate(maps.length, (i) {
+      return SchemesModel.fromMap(maps[i]);
+    });
   }
 
   static Future<void> bulkWithMasterDetailInsert(
