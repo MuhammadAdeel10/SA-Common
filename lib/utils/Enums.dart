@@ -158,3 +158,53 @@ enum LicenseStatus {
   const LicenseStatus(this.value);
   final int value;
 }
+
+enum SchemeType {
+  InvoiceDiscountScheme(10, "Discount Invoice Scheme", "Based on Invoice Amount"),
+  ProductDiscountScheme(20, "Discount Product Scheme", "Based on Product Quantity"),
+  InvoiceBonusScheme(30, "Bonus Invoice Scheme", "Based on Invoice Amount"),
+  ProductBonusScheme(40, "Bonus Product Scheme", "Based on Product Quantity"),
+  ProductCategoryDiscountScheme(50, "Discount Product Category Scheme", "Based on Product Category"),
+  ProductCategoryBonusScheme(60, "Bonus Product Category Scheme", "Based on Bonus Product Category");
+
+  const SchemeType(this.value, this.name, this.description);
+
+  final int value;
+  final String name;
+  final String description;
+}
+
+SchemeType? intoSchemeType(int value) {
+  return SchemeType.values.firstWhere((element) => element.value == value);
+}
+
+enum DiscountEffect {
+  Append(0),
+  Overwrite(1);
+
+  const DiscountEffect(this.value);
+
+  final int value;
+}
+
+DiscountEffect? intoDiscountEffect(int value) {
+  return DiscountEffect.values.firstWhere((element) => element.value == value);
+}
+
+enum Days {
+  Sun(0),
+  Mon(1),
+  Tue(2),
+  Wed(3),
+  Thu(4),
+  Fri(5),
+  Sat(6);
+
+  const Days(this.value);
+
+  final int value;
+}
+
+Days? intoDays(int value) {
+  return Days.values.firstWhere((element) => element.value == value);
+}

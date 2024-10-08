@@ -43,9 +43,23 @@ class SchemesDatabase {
 
   Future<List<SchemesModel>> getDistinctSchemeTypes() async {
     final Database db = await DatabaseHelper.instance.database;
+    int currentDay = DateTime.now().weekday;
+    if (DateTime.now().weekday == 7) {
+      currentDay = 0;
+    }
+    String currentTimeUtc = DateTime.now().toUtc().toIso8601String();
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT DISTINCT schemeTypeId, companySlug
       FROM schemes where companySlug ='${Helper.user.companyId}' and isActive = 1 and (endDate is null	or endDate > '${Helper.onlyDateFormatterYearMonth.format(DateTime.now())}')
+      AND instr(weekDays, '$currentDay')
+      AND (
+        isTimeSensitiveScheme = 0
+        OR (
+          (startTime <= '$currentTimeUtc')
+          AND 
+          (endTime >= '$currentTimeUtc')
+        )
+      )
       ''');
     return List.generate(maps.length, (i) {
       return SchemesModel.fromMap(maps[i]);
