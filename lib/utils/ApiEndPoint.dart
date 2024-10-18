@@ -34,7 +34,7 @@ class ApiEndPoint {
   static const deleteDiscount = "/Discounts/Deleted?start=";
   static const getSalesPersons = "/salesPersons/Updated?start=";
   static const deleteSalesPersons = "/salesPersons/Deleted?start=";
-  static const getWarehouses = "/Warehouses";
+  static const getWarehouses = "Warehouses";
   static const posCashRegisters = "/PosCashRegisters/Updated?start=";
   static const forgotPassword = "auth/RequestPassword";
   static const branches = "Branches/Users/";

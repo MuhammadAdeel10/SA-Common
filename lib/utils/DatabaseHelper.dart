@@ -28,6 +28,7 @@ import 'package:sa_common/synchronization/Models/DetailAGroupModel.dart';
 import 'package:sa_common/synchronization/Models/DetailBGroupModel.dart';
 import 'package:sa_common/synchronization/Models/MasterGroupModel.dart';
 import 'package:sa_common/synchronization/Models/NumberSerialsModel.dart';
+import 'package:sa_common/synchronization/Models/WarehouseModel.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
@@ -60,7 +61,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 5;
+  int version = 8;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -235,7 +236,7 @@ class DatabaseHelper implements DBHelper {
     ${SubAreaSalesPersonsFields.branchId} $integerType
     )''');
 
-     // ${SubAreaSalesPersonsFields.subAreaName} $textType,
+    // ${SubAreaSalesPersonsFields.subAreaName} $textType,
 
     batch.execute('''
       CREATE TABLE ${Tables.products} (
@@ -283,8 +284,7 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
 
-
-  batch.execute('''
+    batch.execute('''
   CREATE TABLE ${Tables.productImages} (
   ${ProductImagesFields.id} $idTypeNoAutoIncrement,
   ${ProductImagesFields.companySlug} $textTypeNotNull,
@@ -549,19 +549,6 @@ class DatabaseHelper implements DBHelper {
       ${SalesPersonFiles.branchId} $integerType,
       ${SalesPersonFiles.isActive} $boolType CHECK(${SalesPersonFiles.isActive} IN (0,1))
       )''');
-    // batch.execute('''
-    //   CREATE TABLE ${Tables.WareHouse} (
-    //   ${WareHousesFiled.id} $idTypeNoAutoIncrement,
-    //   ${WareHousesFiled.companySlug} $textTypeNotNull,
-    //   ${WareHousesFiled.name} $textTypeNotNull,
-    //   ${WareHousesFiled.isDefault} $boolType CHECK(${WareHousesFiled.isDefault} IN (0,1)),
-    //   ${WareHousesFiled.isTransit} $boolType CHECK(${WareHousesFiled.isTransit} IN (0,1)),
-    //   ${WareHousesFiled.isActive} $boolType CHECK(${WareHousesFiled.isActive} IN (0,1)),
-    //   ${WareHousesFiled.branchId} $integerType,
-    //   ${WareHousesFiled.updatedOn} $dateTimeType,
-    //   ${WareHousesFiled.isSync} $boolType CHECK(${WareHousesFiled.isSync} IN (0,1)),
-    //   ${WareHousesFiled.syncDate} $dateTimeType
-    //   )''');
 
     // batch.execute('''
     //   CREATE TABLE ${Tables.CustomerLoyaltyPointBalance} (
@@ -1319,7 +1306,7 @@ class DatabaseHelper implements DBHelper {
   ${EndOfTheDayFields.endOfDayDate} $dateTimeType,
   ${BranchProductTaxField.branchId} $integerType
 )''');
-batch.execute('''
+    batch.execute('''
   CREATE TABLE ${Tables.TravelLogs} (
   ${TravelLogFiles.id} $idTypeNoAutoIncrement,
   ${TravelLogFiles.companySlug} $textTypeNotNull,
@@ -1336,7 +1323,7 @@ batch.execute('''
   ${TravelLogFiles.longitude} $decimalType,
   ${TravelLogFiles.latitude} $decimalType
 )''');
-    batch.execute(''' 
+    batch.execute('''
     CREATE INDEX Products_id_IDX ON Products (id);
     CREATE INDEX Products_name_IDX ON Products (name);
     CREATE INDEX Products_code_IDX ON Products (code);
@@ -1515,19 +1502,21 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
 	[Id] ASC
 );
     ''');
-    batch.commit();
+     batch.execute(CreateWarehouseTableQuery());
+     await batch.commit();
   }
 
   @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-     await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
-     await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
-     await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
-     await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
+      await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
+      await db.execute(CreateWarehouseTableQuery());
     }
   }
-  
+
   Future<void> addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
     final result = await db.rawQuery('PRAGMA table_info($tableName)');
     bool columnExists = result.any((column) => column['name'] == columnName);
@@ -1536,4 +1525,30 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
     }
   }
+
+String CreateWarehouseTableQuery(){
+    return '''
+    CREATE TABLE IF NOT EXISTS ${Tables.WareHouse} (
+      ${WarehouseFiled.id} $idTypeNoAutoIncrement,
+      ${WarehouseFiled.companySlug} $textTypeNotNull,
+      ${WarehouseFiled.name} $textTypeNotNull,
+      ${WarehouseFiled.isDefault} $boolType CHECK(${WarehouseFiled.isDefault} IN (0,1)),
+      ${WarehouseFiled.isTransit} $boolType CHECK(${WarehouseFiled.isTransit} IN (0,1)),
+      ${WarehouseFiled.isActive} $boolType CHECK(${WarehouseFiled.isActive} IN (0,1)),
+      ${WarehouseFiled.branchId} $integerType,
+      ${WarehouseFiled.updatedOn} $dateTimeType,
+      ${WarehouseFiled.isSync} $boolType CHECK(${WarehouseFiled.isSync} IN (0,1)),
+      ${WarehouseFiled.address1} $textType,
+      ${WarehouseFiled.address2} $textType,
+      ${WarehouseFiled.zip} $textType,
+      ${WarehouseFiled.state} $textType,
+      ${WarehouseFiled.city} $textType,
+      ${WarehouseFiled.contactPerson} $textType,
+      ${WarehouseFiled.countryId} $integerType,
+      ${WarehouseFiled.phone} $textType,
+      ${WarehouseFiled.fax} $textType,
+      ${WarehouseFiled.email} $textType);
+     ''';
+  }
+
 }
