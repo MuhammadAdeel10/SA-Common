@@ -33,7 +33,7 @@ class TravelLogController extends BaseController {
   }
 
   Future<bool> isPermissionGranted() async {
-    return await Permission.locationWhenInUse.isGranted;
+    return await Permission.locationAlways.isGranted;
   }
 
   Future<bool> isGpsEnabled() async {
@@ -44,7 +44,7 @@ class TravelLogController extends BaseController {
     locations.insert(0, data);
   }
 
-  Future<void> startTracking() async {
+  Future startTracking() async {
     if (!(await isGpsEnabled())) {
       return;
     }
@@ -78,14 +78,12 @@ class TravelLogController extends BaseController {
   void requestEnableGps() async {
     if (gpsEnabled) {
       log("Already open");
-    } 
-    else {
+    } else {
       bool isGpsActive = await location.requestService();
       if (!isGpsActive) {
         gpsEnabled = false;
         log("User did not turn on GPS");
-      } 
-      else {
+      } else {
         log("gave permission to the user and opened it");
         gpsEnabled = true;
       }
@@ -93,35 +91,24 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> requestLocationPermission() async {
-    PermissionStatus permissionStatus = await Permission.locationWhenInUse.request();
+    PermissionStatus permissionStatus = await Permission.locationAlways.request();
     if (permissionStatus == PermissionStatus.granted) {
       permissionGranted = true;
-    } 
-    else {
+    } else {
       permissionGranted = false;
+      //await checkStatus();
     }
   }
 
   Future<void> CreateTravelLog(l.LocationData event) async {
-    try{
-    TravelLogModel travelLog = TravelLogModel(
-        speed: event.speed ?? 0.0,
-        latitude: event.latitude ?? 0.0,
-        longitude: event.longitude ?? 0.0,
-        locationDateTime: DateTime.now(),
-        heading: event.heading ?? 0.0,
-        altitude: event.altitude ?? 0.0,
-        altitudeAccuracy: event.speedAccuracy ?? 0.0,
-        applicationUserId: Helper.user.userId,
-        branchId: Helper.user.branchId,
-        serverDateTime: DateTime.now().toUtc());
-    await TravelLogDatabase.dao.insert(travelLog);
-    
-    if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
-      await SyncToServerTravelLog();
-    }
-    }
-    catch(ex){
+    try {
+      TravelLogModel travelLog = TravelLogModel(speed: event.speed ?? 0.0, latitude: event.latitude ?? 0.0, longitude: event.longitude ?? 0.0, locationDateTime: DateTime.now(), heading: event.heading ?? 0.0, altitude: event.altitude ?? 0.0, altitudeAccuracy: event.speedAccuracy ?? 0.0, applicationUserId: Helper.user.userId, branchId: Helper.user.branchId, serverDateTime: DateTime.now().toUtc());
+      await TravelLogDatabase.dao.insert(travelLog);
+
+      if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+        await SyncToServerTravelLog();
+      }
+    } catch (ex) {
       log("Exception Background Create Travel $ex");
     }
   }
@@ -132,30 +119,29 @@ class TravelLogController extends BaseController {
       logs.forEach((element) {
         element.id = 0;
       });
-      var response = await this.baseClient.post(ApiEndPoint.baseUrl,
-          "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
+      var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
       if (response != null && response.statusCode == 200) {
         await TravelLogDatabase.bulkUpdate();
       }
     }
   }
 
-  void CheckInOut({required bool isCheckIn}){
+  void CheckInOut({required bool isCheckIn}) {
     var pref = PrefUtils();
-    var slug =  pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
     var dateTime = DateTime.now();
     pref.SetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}", isCheckIn);
     pref.SetPreferencesString("$slug ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
   }
 
-  Future <void> BackgroundTracking() async {
+  Future<void> BackgroundTracking() async {
     var pref = PrefUtils();
-    var slug =  pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
     var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
 
-    if(isCheckIn) {
-    var locationDate = await location.getLocation();
-    await CreateTravelLog(locationDate);
+    if (isCheckIn) {
+      var locationDate = await location.getLocation();
+      await CreateTravelLog(locationDate);
     }
   }
 }

@@ -1,0 +1,11 @@
+{
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4, 
+    "[dart]": {
+      "editor.defaultFormatter": "Dart-Code.dart-code",
+      "editor.tabSize": 4
+    },
+    "dart.lineLength": 500, // Similar to C# max line width
+    "dart.formatterFixes": true
+  }
+  
