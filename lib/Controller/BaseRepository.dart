@@ -1,4 +1,5 @@
 import 'package:sa_common/utils/DatabaseHelper.dart';
+import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/pref_utils.dart';
@@ -156,6 +157,18 @@ class BaseRepository<T extends BaseModel> {
   Future close() async {
     final dbClient = await db;
     dbClient.close();
+  }
+
+  Future<bool> updateSyncDate() async {
+    var slug = Helper.user.companyId;
+    var branchId = Helper.user.branchId;
+    DateTime now = DateTime.now().toUtc();
+    final db = await DatabaseHelper.instance.database;
+    var response = await db.rawQuery(''' Update syncSettings set syncDate = '$now' where tableName = '$tableName' and companySlug = '$slug' and branchId = $branchId ''');
+    if (response.length > 0) {
+      return true;
+    }
+    return false;
   }
 }
 
