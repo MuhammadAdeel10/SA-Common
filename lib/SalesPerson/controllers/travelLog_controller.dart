@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sa_common/Controller/BaseController.dart';
 import 'package:location/location.dart' as l;
 import 'package:permission_handler/permission_handler.dart';
@@ -27,7 +29,6 @@ class TravelLogController extends BaseController {
   checkStatus() async {
     bool _permissionGranted = await isPermissionGranted();
     bool _gpsEnabled = await isGpsEnabled();
-    await requestLocationPermission();
     permissionGranted = _permissionGranted;
     gpsEnabled = _gpsEnabled;
   }
@@ -46,6 +47,7 @@ class TravelLogController extends BaseController {
 
   Future startTracking() async {
     if (!(await isGpsEnabled())) {
+      requestEnableGps();
       return;
     }
 
@@ -76,8 +78,9 @@ class TravelLogController extends BaseController {
   }
 
   void requestEnableGps() async {
-    if (gpsEnabled) {
+    if ((await isGpsEnabled())) {
       log("Already open");
+      gpsEnabled = true;
     } else {
       bool isGpsActive = await location.requestService();
       if (!isGpsActive) {
@@ -90,9 +93,74 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<void> requestLocationPermission() async {
-    PermissionStatus permissionStatus = await Permission.locationAlways.request();
-    if (permissionStatus == PermissionStatus.granted) {
+  Future<void> requestLocationPermission(String title, String description) async {
+    PermissionStatus? permissionStatus = await Permission.locationAlways.request();
+    if (permissionStatus == PermissionStatus.permanentlyDenied || permissionStatus == PermissionStatus.denied) {
+      Get.dialog(
+        Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  description,
+                  style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      height: 40,
+                      child: TextButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: Text(
+                          'No',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    SizedBox(
+                      width: 100,
+                      height: 40,
+                      child: TextButton(
+                        onPressed: () async {
+                          await openAppSettings();
+                          Get.back();
+                        },
+                        child: Text(
+                          'Yes',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    } else if (permissionStatus == PermissionStatus.granted) {
       permissionGranted = true;
     } else {
       permissionGranted = false;
