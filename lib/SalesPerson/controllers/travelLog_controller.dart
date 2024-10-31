@@ -48,6 +48,9 @@ class TravelLogController extends BaseController {
   }
 
   Future startTracking() async {
+    var pref = PrefUtils();
+    var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
     if (!(await isGpsEnabled())) {
       requestEnableGps();
       return;
@@ -56,14 +59,15 @@ class TravelLogController extends BaseController {
     if (!(await isPermissionGranted())) {
       return;
     }
-    trackingEnabled = true;
-    if (trackingEnabled) {
+
+    if (isCheckIn) {
       await location.changeSettings(distanceFilter: 10);
       subscription = location.onLocationChanged.listen((event) async {
         await CreateTravelLog(event);
       });
+      CheckInOut(isCheckIn: true);
+      trackingEnabled = true;
     }
-    CheckInOut(isCheckIn: true);
   }
 
   Future<void> stopTracking() async {
