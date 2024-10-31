@@ -128,6 +128,16 @@ class Helper extends BaseController {
     return outputFormat.format(inputDate);
   }
 
+  static String getFormattedTime(String? _date) {
+    if (_date == null || _date.isEmpty) {
+      return "";
+    }
+    var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+    var inputDate = inputFormat.parse(_date);
+    var outputFormat = DateFormat('hh:mm:ss a');
+    return outputFormat.format(inputDate);
+  }
+
   static String getFormateDateMonth(_date) {
     if (_date == null || _date == "") {
       return "";

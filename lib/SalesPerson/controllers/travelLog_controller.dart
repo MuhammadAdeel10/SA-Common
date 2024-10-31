@@ -11,6 +11,7 @@ import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/pref_utils.dart';
+import 'package:synchronized/synchronized.dart';
 
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
@@ -20,6 +21,7 @@ class TravelLogController extends BaseController {
   bool trackingEnabled = false;
   List<l.LocationData> locations = [];
   DateTime? dateTime = null;
+  var lock = Lock();
 
   @override
   Future<void> onInit() async {
@@ -46,6 +48,9 @@ class TravelLogController extends BaseController {
   }
 
   Future startTracking() async {
+    var pref = PrefUtils();
+    var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
     if (!(await isGpsEnabled())) {
       requestEnableGps();
       return;
@@ -54,12 +59,15 @@ class TravelLogController extends BaseController {
     if (!(await isPermissionGranted())) {
       return;
     }
-    await location.changeSettings(distanceFilter: 25);
-    subscription = location.onLocationChanged.listen((event) async {
-      await CreateTravelLog(event);
-    });
-    CheckInOut(isCheckIn: true);
-    trackingEnabled = true;
+
+    if (isCheckIn) {
+      await location.changeSettings(distanceFilter: 10);
+      subscription = location.onLocationChanged.listen((event) async {
+        await CreateTravelLog(event);
+      });
+      CheckInOut(isCheckIn: true);
+      trackingEnabled = true;
+    }
   }
 
   Future<void> stopTracking() async {
@@ -182,16 +190,20 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> SyncToServerTravelLog() async {
-    var logs = await TravelLogDatabase.dao.SelectList("isSync = 0");
-    if (logs != null && logs.isNotEmpty) {
-      logs.forEach((element) {
-        element.id = 0;
-      });
-      var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
-      if (response != null && response.statusCode == 200) {
-        await TravelLogDatabase.bulkUpdate();
-      }
-    }
+    await lock.synchronized(
+      () async {
+        var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 order by locationDateTime");
+        if (logs != null && logs.isNotEmpty) {
+          logs.forEach((element) {
+            element.id = 0;
+          });
+          var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
+          if (response != null && response.statusCode == 200) {
+            await TravelLogDatabase.bulkUpdate();
+          }
+        }
+      },
+    );
   }
 
   void CheckInOut({required bool isCheckIn}) {

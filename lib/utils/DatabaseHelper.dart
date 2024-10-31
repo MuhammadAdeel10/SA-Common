@@ -60,7 +60,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 5;
+  int version = 6;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -235,7 +235,7 @@ class DatabaseHelper implements DBHelper {
     ${SubAreaSalesPersonsFields.branchId} $integerType
     )''');
 
-     // ${SubAreaSalesPersonsFields.subAreaName} $textType,
+    // ${SubAreaSalesPersonsFields.subAreaName} $textType,
 
     batch.execute('''
       CREATE TABLE ${Tables.products} (
@@ -1319,7 +1319,7 @@ class DatabaseHelper implements DBHelper {
   ${EndOfTheDayFields.endOfDayDate} $dateTimeType,
   ${BranchProductTaxField.branchId} $integerType
 )''');
-batch.execute('''
+    batch.execute('''
   CREATE TABLE ${Tables.TravelLogs} (
   ${TravelLogFiles.id} $idTypeNoAutoIncrement,
   ${TravelLogFiles.companySlug} $textTypeNotNull,
