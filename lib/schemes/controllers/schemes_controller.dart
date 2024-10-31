@@ -113,6 +113,7 @@ class SchemesController extends BaseController {
       detail.serialNumber = element.serialNumber;
       detail.batchId = element.batchId;
       detail.quantity = element.qty;
+      detail.description = element.description;
       if (element.cartDiscounts != null) {
         for (var cartDiscount in element.cartDiscounts!) {
           var map = cartDiscount.toMap();

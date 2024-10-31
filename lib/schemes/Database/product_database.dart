@@ -1,12 +1,9 @@
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:sa_common/schemes/Database/productSalesTax_database.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/product_model.dart';
-import 'package:http/http.dart' as http;
-import 'package:path/path.dart';
 import 'package:sa_common/Controller/BaseRepository.dart';
 import 'package:sa_common/utils/DatabaseHelper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
@@ -36,27 +33,12 @@ class ProductDatabase {
     return productList;
   }
 
-  static Future<void> bulkInsert(String imageBaseUrl, List<ProductModel> model) async {
+ static Future<void> bulkInsert(String imageBaseUrl, List<ProductModel> model) async {
     final db = await DatabaseHelper.instance.database;
     var getAllProduct = await ProductDatabase.dao.getAll();
     var user = Helper.user;
-    var path = await Helper.createFolder("uploads/${user.companyId}/");
     Batch batch = db.batch();
     for (var val in model) {
-      if (val.imageUrl.isNotEmpty) {
-        var imageUrl = imageBaseUrl + val.imageUrl;
-        Uri uri = Uri.parse(imageUrl);
-        final imageData = await http.get(uri);
-        if (Platform.isWindows) {
-          var data = await File(join(path, imageUrl.split("/").last)).create(recursive: true);
-          await data.writeAsBytes(imageData.bodyBytes);
-        } else if (Platform.isAndroid || Platform.isIOS) {
-          final documentDirectory = await getApplicationDocumentsDirectory();
-          final file = await File('${documentDirectory.path}/${imageUrl.split("/").last}').create(recursive: true);
-          await file.writeAsBytes(imageData.bodyBytes);
-        }
-        print(val.imageUrl.toString());
-      }
       var exist = getAllProduct.any((element) => element.id == val.id);
       if (exist) {
         batch.rawQuery("delete from '${Tables.ProductSalesTax}' where companySlug = '${user.companyId}' and ProductId = ${val.id} ");
