@@ -269,16 +269,16 @@ class TravelLogController extends BaseController {
       var logs = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by locationDateTime desc limit 1");
       if (logs != null && logs.locationDateTime != null) {
         final DateTime currentTime = DateTime.now();
-        final DateTime timeLimit = currentTime.subtract(Duration(minutes: 5));
+        final DateTime timeLimit = currentTime.subtract(Duration(minutes: 4));
         if (logs.locationDateTime!.isBefore(timeLimit)) {
-          await SetCurrentLocation();
+          await SetCurrentLocation(isIdle: true);
         }
       }
     }
   }
 
-  Future<void> SetCurrentLocation() async {
+  Future<void> SetCurrentLocation({bool isIdle = false}) async {
     var locationData = await location.getLocation();
-    await CreateTravelLog(locationData);
+    await CreateTravelLog(locationData, isIdle: isIdle);
   }
 }
