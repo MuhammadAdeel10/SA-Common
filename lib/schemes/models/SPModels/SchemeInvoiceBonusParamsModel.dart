@@ -52,7 +52,7 @@ class SchemeInvoiceBonusParams {
 
   Map<String, dynamic> toMap() {
     return {
-      'date': date?.millisecondsSinceEpoch,
+      'date': date?.toIso8601String(),
       'branchId': branchId,
       'customerCategoryId': customerCategoryId,
       'customerId': customerId,

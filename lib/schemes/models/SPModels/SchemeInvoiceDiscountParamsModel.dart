@@ -52,7 +52,7 @@ class SchemeInvoiceDiscountParams {
 
   Map<String, dynamic> toMap() {
     return {
-      'date': date?.millisecondsSinceEpoch,
+      'date': date?.toIso8601String(),
       'branchId': branchId,
       'customerCategoryId': customerCategoryId,
       'customerId': customerId,
@@ -67,9 +67,7 @@ class SchemeInvoiceDiscountParams {
 
   factory SchemeInvoiceDiscountParams.fromMap(Map<String, dynamic> map) {
     return SchemeInvoiceDiscountParams(
-      date: map['date'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['date'])
-          : null,
+      date: map['date'] != null ? DateTime.parse(map['date']) : null,
       branchId: map['branchId']?.toInt(),
       customerCategoryId: map['customerCategoryId']?.toInt(),
       customerId: map['customerId']?.toInt(),

@@ -67,7 +67,7 @@ class SchemeParamModel {
     return {
       'productId': productId,
       'currencyId': currencyId,
-      'date': date?.millisecondsSinceEpoch,
+      'date': date?.toIso8601String(),
       'branchId': branchId,
       'customerCategoryId': customerCategoryId,
       'customerId': customerId,
@@ -85,9 +85,7 @@ class SchemeParamModel {
     return SchemeParamModel(
       productId: map['productId']?.toInt() ?? 0,
       currencyId: map['currencyId']?.toInt(),
-      date: map['date'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['date'])
-          : null,
+      date: map['date'] != null ? DateTime.parse(map['date']) : null,
       branchId: map['branchId']?.toInt(),
       customerCategoryId: map['customerCategoryId']?.toInt(),
       customerId: map['customerId']?.toInt(),
