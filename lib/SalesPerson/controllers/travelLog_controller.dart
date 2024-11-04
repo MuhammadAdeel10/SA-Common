@@ -207,7 +207,7 @@ class TravelLogController extends BaseController {
         locationDateTime: DateTime.now(),
         heading: event.heading ?? 0.0,
         altitude: event.altitude ?? 0.0,
-        altitudeAccuracy: event.speedAccuracy ?? 0.0,
+        altitudeAccuracy: event.accuracy ?? 0.0,
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
         serverDateTime: DateTime.now().toUtc(),
