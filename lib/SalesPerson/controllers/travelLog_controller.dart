@@ -81,9 +81,11 @@ class TravelLogController extends BaseController {
     if (isCheckIn) {
       await location.changeSettings(distanceFilter: 10);
       subscription = location.onLocationChanged.listen((event) async {
-        if (_previousLocation == null || _calculateDistance(_previousLocation!, event) > 10) {
-          _previousLocation = event;
-          await CreateTravelLog(event);
+        if (event.speed != null && event.speed! > 0.5) {
+          if (_previousLocation == null || _calculateDistance(_previousLocation!, event) > 10) {
+            _previousLocation = event;
+            await CreateTravelLog(event);
+          }
         }
       });
       trackingEnabled = true;
@@ -267,12 +269,16 @@ class TravelLogController extends BaseController {
       var logs = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by locationDateTime desc limit 1");
       if (logs != null && logs.locationDateTime != null) {
         final DateTime currentTime = DateTime.now();
-        final DateTime timeLimit = currentTime.subtract(Duration(minutes: 4));
+        final DateTime timeLimit = currentTime.subtract(Duration(minutes: 5));
         if (logs.locationDateTime!.isBefore(timeLimit)) {
-          var locationDate = await location.getLocation();
-          CreateTravelLog(locationDate, isIdle: true);
+          await SetCurrentLocation();
         }
       }
     }
+  }
+
+  Future<void> SetCurrentLocation() async {
+    var locationData = await location.getLocation();
+    await CreateTravelLog(locationData);
   }
 }
