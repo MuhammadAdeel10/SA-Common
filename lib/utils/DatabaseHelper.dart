@@ -283,8 +283,7 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
 
-
-  batch.execute('''
+    batch.execute('''
   CREATE TABLE ${Tables.productImages} (
   ${ProductImagesFields.id} $idTypeNoAutoIncrement,
   ${ProductImagesFields.companySlug} $textTypeNotNull,
@@ -1334,9 +1333,10 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.speed} $decimalType,
   ${TravelLogFiles.altitudeAccuracy} $decimalType,
   ${TravelLogFiles.longitude} $decimalType,
-  ${TravelLogFiles.latitude} $decimalType
+  ${TravelLogFiles.latitude} $decimalType,
+  ${TravelLogFiles.isIdle} $boolType CHECK(${TravelLogFiles.isIdle} IN (0,1))
 )''');
-    batch.execute(''' 
+    batch.execute('''
     CREATE INDEX Products_id_IDX ON Products (id);
     CREATE INDEX Products_name_IDX ON Products (name);
     CREATE INDEX Products_code_IDX ON Products (code);
@@ -1521,13 +1521,14 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
   @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-     await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
-     await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
-     await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
-     await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
+      await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
+      await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
     }
   }
-  
+
   Future<void> addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
     final result = await db.rawQuery('PRAGMA table_info($tableName)');
     bool columnExists = result.any((column) => column['name'] == columnName);
