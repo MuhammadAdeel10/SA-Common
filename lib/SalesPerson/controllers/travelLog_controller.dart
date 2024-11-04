@@ -228,7 +228,7 @@ class TravelLogController extends BaseController {
   Future<void> SyncToServerTravelLog() async {
     await lock.synchronized(
       () async {
-        var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 order by locationDateTime");
+        var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 and branchId = ${Helper.user.branchId} order by locationDateTime");
         if (logs != null && logs.isNotEmpty) {
           logs.forEach((element) {
             element.id = 0;
