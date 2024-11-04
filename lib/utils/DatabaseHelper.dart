@@ -60,7 +60,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 6;
+  int version = 7;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
