@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:sa_common/Controller/BaseRepository.dart';
+
 class TravelLogFiles {
   static final String id = 'id';
   static final String companySlug = 'companySlug';
@@ -17,8 +18,9 @@ class TravelLogFiles {
   static final String altitudeAccuracy = 'altitudeAccuracy';
   static final String longitude = 'longitude';
   static final String latitude = 'latitude';
-  }
-  
+  static final String isIdle = 'isIdle';
+}
+
 class TravelLogModel extends BaseModel<int> {
   @override
   int? id;
@@ -36,6 +38,7 @@ class TravelLogModel extends BaseModel<int> {
   double latitude;
   bool isSync;
   DateTime? syncDate;
+  bool isIdle;
   TravelLogModel({
     this.id,
     this.companySlug,
@@ -51,9 +54,10 @@ class TravelLogModel extends BaseModel<int> {
     this.latitude = 0,
     this.isSync = false,
     this.syncDate,
+    this.isIdle = false,
   });
 
-  Map<String, dynamic> toMap() { 
+  Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
       'companySlug': companySlug,
@@ -68,6 +72,7 @@ class TravelLogModel extends BaseModel<int> {
       'longitude': longitude,
       'latitude': latitude,
       'isSync': isSync == true ? 1 : 0,
+      'isIdle': isIdle == true ? 1 : 0,
       'syncDate': syncDate?.toIso8601String(),
     };
   }
@@ -87,11 +92,12 @@ class TravelLogModel extends BaseModel<int> {
       longitude: double.parse(map['longitude'].toString()),
       latitude: double.parse(map['latitude'].toString()),
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
-      syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate'] ) : null,
+      isIdle: (map['isIdle'] == 0 || map['isIdle'] == false) ? false : true,
+      syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
     );
   }
 
- @override
+  @override
   BaseModel fromJson(Map<String, dynamic> json, {String? slug}) {
     return TravelLogModel.fromMap(json, slug: slug);
   }
@@ -99,12 +105,9 @@ class TravelLogModel extends BaseModel<int> {
   @override
   Map<String, dynamic> toJson() {
     return toMap();
-    
   }
 
   List<TravelLogModel> FromJson(String str, String slug) => List<TravelLogModel>.from(json.decode(str).map((x) => TravelLogModel().fromJson(x, slug: slug)));
 
   String ToJson({required List<TravelLogModel> data}) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
- 
 }
-

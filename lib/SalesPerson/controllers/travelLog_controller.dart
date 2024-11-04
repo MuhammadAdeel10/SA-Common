@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sa_common/Controller/BaseController.dart';
@@ -22,10 +23,27 @@ class TravelLogController extends BaseController {
   List<l.LocationData> locations = [];
   DateTime? dateTime = null;
   var lock = Lock();
+  l.LocationData? _previousLocation;
+  final double accuracyThreshold = 5.0;
 
   @override
   Future<void> onInit() async {
     super.onInit();
+  }
+
+  double _calculateDistance(l.LocationData start, l.LocationData end) {
+    const double earthRadius = 6371000; // meters
+    double dLat = _toRadians(end.latitude! - start.latitude!);
+    double dLon = _toRadians(end.longitude! - start.longitude!);
+
+    double a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(_toRadians(start.latitude!)) * math.cos(_toRadians(end.latitude!)) * math.sin(dLon / 2) * math.sin(dLon / 2);
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degree) {
+    return degree * math.pi / 180;
   }
 
   checkStatus() async {
@@ -63,9 +81,13 @@ class TravelLogController extends BaseController {
     if (isCheckIn) {
       await location.changeSettings(distanceFilter: 10);
       subscription = location.onLocationChanged.listen((event) async {
-        await CreateTravelLog(event);
+        if (event.speed != null && event.speed! > 0.5) {
+          if (_previousLocation == null || _calculateDistance(_previousLocation!, event) > 10) {
+            _previousLocation = event;
+            await CreateTravelLog(event);
+          }
+        }
       });
-      CheckInOut(isCheckIn: true);
       trackingEnabled = true;
     }
   }
@@ -77,6 +99,8 @@ class TravelLogController extends BaseController {
     CheckInOut(isCheckIn: false);
     await SyncToServerTravelLog();
     trackingEnabled = false;
+    location.onLocationChanged.drain(); // Stop the location stream
+    _previousLocation = null;
     subscription.cancel();
     clearLocation();
   }
@@ -176,9 +200,21 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<void> CreateTravelLog(l.LocationData event) async {
+  Future<void> CreateTravelLog(l.LocationData event, {bool isIdle = false}) async {
     try {
-      TravelLogModel travelLog = TravelLogModel(speed: event.speed ?? 0.0, latitude: event.latitude ?? 0.0, longitude: event.longitude ?? 0.0, locationDateTime: DateTime.now(), heading: event.heading ?? 0.0, altitude: event.altitude ?? 0.0, altitudeAccuracy: event.speedAccuracy ?? 0.0, applicationUserId: Helper.user.userId, branchId: Helper.user.branchId, serverDateTime: DateTime.now().toUtc());
+      TravelLogModel travelLog = TravelLogModel(
+        speed: event.speed ?? 0.0,
+        latitude: event.latitude ?? 0.0,
+        longitude: event.longitude ?? 0.0,
+        locationDateTime: DateTime.now(),
+        heading: event.heading ?? 0.0,
+        altitude: event.altitude ?? 0.0,
+        altitudeAccuracy: event.accuracy ?? 0.0,
+        applicationUserId: Helper.user.userId,
+        branchId: Helper.user.branchId,
+        serverDateTime: DateTime.now().toUtc(),
+        isIdle: isIdle,
+      );
       await TravelLogDatabase.dao.insert(travelLog);
 
       if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
@@ -192,7 +228,7 @@ class TravelLogController extends BaseController {
   Future<void> SyncToServerTravelLog() async {
     await lock.synchronized(
       () async {
-        var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 order by locationDateTime");
+        var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 and branchId = ${Helper.user.branchId} order by locationDateTime");
         if (logs != null && logs.isNotEmpty) {
           logs.forEach((element) {
             element.id = 0;
@@ -223,5 +259,26 @@ class TravelLogController extends BaseController {
       var locationDate = await location.getLocation();
       await CreateTravelLog(locationDate);
     }
+  }
+
+  Future<void> GetLastLocation() async {
+    var pref = PrefUtils();
+    var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
+    if (isCheckIn) {
+      var logs = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by locationDateTime desc limit 1");
+      if (logs != null && logs.locationDateTime != null) {
+        final DateTime currentTime = DateTime.now();
+        final DateTime timeLimit = currentTime.subtract(Duration(minutes: 4));
+        if (logs.locationDateTime!.isBefore(timeLimit)) {
+          await SetCurrentLocation(isIdle: true);
+        }
+      }
+    }
+  }
+
+  Future<void> SetCurrentLocation({bool isIdle = false}) async {
+    var locationData = await location.getLocation();
+    await CreateTravelLog(locationData, isIdle: isIdle);
   }
 }
