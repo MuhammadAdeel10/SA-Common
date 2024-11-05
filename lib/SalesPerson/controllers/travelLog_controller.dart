@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sa_common/Controller/BaseController.dart';
-import 'package:location/location.dart' as l;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sa_common/SalesPerson/database/travelLog_database.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
@@ -13,30 +12,30 @@ import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:geolocator/geolocator.dart';
 
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
   bool permissionGranted = false;
-  l.Location location = l.Location();
-  late StreamSubscription subscription;
+  late StreamSubscription<Position> subscription;
   bool trackingEnabled = false;
-  List<l.LocationData> locations = [];
-  DateTime? dateTime = null;
+  List<Position> locations = [];
+  DateTime? dateTime;
   var lock = Lock();
-  l.LocationData? _previousLocation;
-  final double accuracyThreshold = 5.0;
+  Position? _previousLocation;
+  final double accuracyThreshold = 10.0;
 
   @override
   Future<void> onInit() async {
     super.onInit();
   }
 
-  double _calculateDistance(l.LocationData start, l.LocationData end) {
+  double _calculateDistance(Position start, Position end) {
     const double earthRadius = 6371000; // meters
-    double dLat = _toRadians(end.latitude! - start.latitude!);
-    double dLon = _toRadians(end.longitude! - start.longitude!);
+    double dLat = _toRadians(end.latitude - start.latitude);
+    double dLon = _toRadians(end.longitude - start.longitude);
 
-    double a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(_toRadians(start.latitude!)) * math.cos(_toRadians(end.latitude!)) * math.sin(dLon / 2) * math.sin(dLon / 2);
+    double a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(_toRadians(start.latitude)) * math.cos(_toRadians(end.latitude)) * math.sin(dLon / 2) * math.sin(dLon / 2);
     double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
 
     return earthRadius * c;
@@ -58,17 +57,18 @@ class TravelLogController extends BaseController {
   }
 
   Future<bool> isGpsEnabled() async {
-    return await Permission.location.serviceStatus.isEnabled;
+    return await Geolocator.isLocationServiceEnabled();
   }
 
-  addLocation(l.LocationData data) {
+  addLocation(Position data) {
     locations.insert(0, data);
   }
 
-  Future startTracking() async {
+  Future<void> startTracking() async {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
     var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
+
     if (!(await isGpsEnabled())) {
       requestEnableGps();
       return;
@@ -79,12 +79,13 @@ class TravelLogController extends BaseController {
     }
 
     if (isCheckIn) {
-      await location.changeSettings(distanceFilter: 10);
-      subscription = location.onLocationChanged.listen((event) async {
-        if (event.speed != null && event.speed! > 0.5) {
-          if (_previousLocation == null || _calculateDistance(_previousLocation!, event) > 10) {
-            _previousLocation = event;
-            await CreateTravelLog(event);
+      subscription = Geolocator.getPositionStream(
+        locationSettings: LocationSettings(distanceFilter: 10),
+      ).listen((Position position) async {
+        if (position.speed > 0.5) {
+          if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
+            _previousLocation = position;
+            await CreateTravelLog(position);
           }
         }
       });
@@ -93,15 +94,12 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> stopTracking() async {
-    subscription = location.onLocationChanged.listen((event) async {
-      await CreateTravelLog(event);
-    });
     CheckInOut(isCheckIn: false);
     await SyncToServerTravelLog();
+    await Geolocator.getPositionStream().drain();
     trackingEnabled = false;
-    location.onLocationChanged.drain(); // Stop the location stream
+    await subscription.cancel();
     _previousLocation = null;
-    subscription.cancel();
     clearLocation();
   }
 
@@ -110,23 +108,23 @@ class TravelLogController extends BaseController {
   }
 
   void requestEnableGps() async {
-    if ((await isGpsEnabled())) {
+    if (await isGpsEnabled()) {
       log("Already open");
       gpsEnabled = true;
     } else {
-      bool isGpsActive = await location.requestService();
+      bool isGpsActive = await Geolocator.openLocationSettings();
       if (!isGpsActive) {
         gpsEnabled = false;
         log("User did not turn on GPS");
       } else {
-        log("gave permission to the user and opened it");
+        log("GPS enabled by user");
         gpsEnabled = true;
       }
     }
   }
 
   Future<void> requestLocationPermission(String title, String description) async {
-    PermissionStatus? permissionStatus = await Permission.locationAlways.request();
+    PermissionStatus permissionStatus = await Permission.locationAlways.request();
     if (permissionStatus == PermissionStatus.permanentlyDenied || permissionStatus == PermissionStatus.denied) {
       Get.dialog(
         Dialog(
@@ -158,13 +156,8 @@ class TravelLogController extends BaseController {
                         onPressed: () {
                           Get.back();
                         },
-                        child: Text(
-                          'No',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
+                        child: Text('No', style: TextStyle(color: Colors.white)),
+                        style: TextButton.styleFrom(backgroundColor: Colors.red),
                       ),
                     ),
                     SizedBox(width: 16),
@@ -176,13 +169,8 @@ class TravelLogController extends BaseController {
                           await openAppSettings();
                           Get.back();
                         },
-                        child: Text(
-                          'Yes',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.green,
-                        ),
+                        child: Text('Yes', style: TextStyle(color: Colors.white)),
+                        style: TextButton.styleFrom(backgroundColor: Colors.green),
                       ),
                     ),
                   ],
@@ -196,20 +184,19 @@ class TravelLogController extends BaseController {
       permissionGranted = true;
     } else {
       permissionGranted = false;
-      //await checkStatus();
     }
   }
 
-  Future<void> CreateTravelLog(l.LocationData event, {bool isIdle = false}) async {
+  Future<void> CreateTravelLog(Position event, {bool isIdle = false}) async {
     try {
       TravelLogModel travelLog = TravelLogModel(
-        speed: event.speed ?? 0.0,
-        latitude: event.latitude ?? 0.0,
-        longitude: event.longitude ?? 0.0,
+        speed: event.speed,
+        latitude: event.latitude,
+        longitude: event.longitude,
         locationDateTime: DateTime.now(),
-        heading: event.heading ?? 0.0,
-        altitude: event.altitude ?? 0.0,
-        altitudeAccuracy: event.accuracy ?? 0.0,
+        heading: event.heading,
+        altitude: event.altitude,
+        altitudeAccuracy: event.accuracy,
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
         serverDateTime: DateTime.now().toUtc(),
@@ -250,17 +237,6 @@ class TravelLogController extends BaseController {
     pref.SetPreferencesString("$slug ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
   }
 
-  Future<void> BackgroundTracking() async {
-    var pref = PrefUtils();
-    var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
-    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
-
-    if (isCheckIn) {
-      var locationDate = await location.getLocation();
-      await CreateTravelLog(locationDate);
-    }
-  }
-
   Future<void> GetLastLocation() async {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
@@ -278,7 +254,7 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> SetCurrentLocation({bool isIdle = false}) async {
-    var locationData = await location.getLocation();
-    await CreateTravelLog(locationData, isIdle: isIdle);
+    Position position = await Geolocator.getCurrentPosition();
+    await CreateTravelLog(position, isIdle: isIdle);
   }
 }
