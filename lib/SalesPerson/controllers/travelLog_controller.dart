@@ -18,7 +18,6 @@ import 'package:synchronized/synchronized.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:sa_common/utils/Helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
@@ -273,14 +272,15 @@ class TravelLogController extends BaseController {
     }
   }
 
-//   stop() {
-//     final service = FlutterBackgroundService();
-//   }
-  Future<void> stopBackgroundService() async {
-    // This sends a signal to stop the background service
+  Future<void> stopService() async {
     final service = FlutterBackgroundService();
-    service.invoke("stopService");
-    Geolocator.getPositionStream().drain();
+
+    try {
+      service.invoke('stopService');
+      debugPrint("Service stop invoked successfully.");
+    } catch (e) {
+      debugPrint("Error stopping service: $e");
+    }
   }
 
   Future<void> initializeService() async {
@@ -315,7 +315,7 @@ class TravelLogController extends BaseController {
         isForegroundMode: true,
         autoStartOnBoot: true,
         notificationChannelId: 'my_foreground',
-        initialNotificationTitle: 'AWESOME SERVICE',
+        initialNotificationTitle: 'Background location',
         initialNotificationContent: 'Initializing',
         foregroundServiceNotificationId: 888,
         foregroundServiceTypes: [AndroidForegroundType.location],
@@ -361,8 +361,9 @@ void onStart(ServiceInstance service) async {
       service.setAsBackgroundService();
     });
   }
-  service.on('stopService').listen((event) {
-    service.stopSelf();
+  service.on('stopService').listen((event) async {
+    await flutterLocalNotificationsPlugin.cancel(888); // Cancel notification
+    service.stopSelf(); // Stop the service
   });
 
   // For Android foreground notification
