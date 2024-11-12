@@ -7,8 +7,7 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:sa_common/Controller/statusController.dart';
-import 'package:sa_common/SalesPerson/database/salesPerson_database.dart';
-import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
+
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserDatabase.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -46,7 +45,6 @@ class Helper extends BaseController {
   static UserModel user = UserModel();
   static String plainPassword = "";
   static String homeCurrency = "";
-  static SalesPersonModel? salePerson = SalesPersonModel();
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
     return emailValid;
@@ -220,7 +218,6 @@ class Helper extends BaseController {
     productSalesTaxModel = await ProductSalesTaxDatabase().getByCompanySlug();
     branchProductSalesTaxModel = await BranchProductTaxDatabase().getByCompanySlug();
     discounts = await DiscountDatabase().getByCompanySlug();
-    salePerson = await SalesPersonDatabase.dao.SelectSingle("applicationUserId = '${user.userId}'  ");
     var getLastEndOfDay = await EndOfTheDayDatabase.dao.SelectSingle("branchId = $branchId order by endOfDayDate desc");
     var currencyModel = await CurrencyDatabase.dao.SelectSingle("Id = ${Helper.requestContext.currencyId}");
     if (currencyModel != null) {
