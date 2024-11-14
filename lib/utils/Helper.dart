@@ -52,6 +52,26 @@ class Helper extends BaseController {
     return emailValid;
   }
 
+  static bool AmountLengthCheck({
+    int lengthValue = 12,
+    bool allowNegative = false,
+    bool allowZero = false,
+    bool isEmptyAllowed = false,
+    String? input,
+  }) {
+    if (isEmptyAllowed && input == "") {
+      return true;
+    }
+    int decimalPlaces = Helper.requestContext.decimalPlaces;
+    String numberPattern = '\\d{1,$lengthValue}';
+    if (decimalPlaces > 0) {
+      numberPattern += '(\\.\\d{1,$decimalPlaces})?';
+    }
+    String pattern = '^${allowNegative ? '-?' : ''}$numberPattern\$';
+    bool check = RegExp(pattern).hasMatch(input ?? "");
+    return check;
+  }
+
   static Color buttonColor(String colorCode) {
     String angularColorCode = colorCode;
     String hexColorCode = angularColorCode.substring(1);
@@ -250,7 +270,7 @@ class Helper extends BaseController {
     return num.parse(returnAmount == "" ? "0" : returnAmount);
   }
 
-   static const _pageSize = 50;
+  static const _pageSize = 50;
   static Future<void> fetchPage<T>(
     int pageKey, {
     required Future<List<T>?> fetchFunction,
