@@ -88,7 +88,7 @@ class TravelLogController extends BaseController {
 
     if (isCheckIn) {
       subscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(distanceFilter: 10),
+        locationSettings: LocationSettings(distanceFilter: 15),
       ).listen((Position position) async {
         if (position.speed > 0.5) {
           if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
@@ -301,7 +301,7 @@ class TravelLogController extends BaseController {
       await flutterLocalNotificationsPlugin.initialize(
         const InitializationSettings(
           iOS: DarwinInitializationSettings(),
-          android: AndroidInitializationSettings('ic_bg_service_small'),
+          android: AndroidInitializationSettings('ic_notification_icon'),
         ),
       );
     }
@@ -371,13 +371,13 @@ void onStart(ServiceInstance service) async {
     if (await service.isForegroundService()) {
       flutterLocalNotificationsPlugin.show(
         888,
-        'COOL SERVICE',
-        'Awesome ${DateTime.now()}',
+        'Background Location Service',
+        'Background location tracking is active',
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'my_foreground',
             'MY FOREGROUND SERVICE',
-            icon: 'ic_bg_service_small',
+            icon: 'ic_notification_icon',
             ongoing: true,
           ),
         ),

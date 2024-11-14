@@ -12,7 +12,7 @@ import '../model/SalesPersonModel.dart';
 class SalesPersonController extends BaseController {
   RxBool isDropDownOpen = false.obs;
   RxBool isCollapse = true.obs;
-  Future<void> Pull(String slug, int branchId, String baseUrl) async {
+  Future<void> Pull(String slug, String baseUrl) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.SalesPerson, slug: slug);
     DateTime syncDate = DateTime.now().toUtc();
     var getSyncSettingDate = getSyncSetting.syncDate;
