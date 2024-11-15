@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sa_common/Controller/BaseController.dart';
@@ -8,11 +10,16 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sa_common/SalesPerson/database/travelLog_database.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
 import 'package:sa_common/utils/ApiEndPoint.dart';
+import 'package:sa_common/utils/DatabaseHelper.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
@@ -67,7 +74,8 @@ class TravelLogController extends BaseController {
   Future<void> startTracking() async {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
-    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
+    var branchId = Helper.user.branchId;
+    var isCheckIn = pref.GetPreferencesBool("$slug $branchId ${LocalStorageKey.isCheckIn}");
 
     if (!(await isGpsEnabled())) {
       requestEnableGps();
@@ -80,7 +88,7 @@ class TravelLogController extends BaseController {
 
     if (isCheckIn) {
       subscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(distanceFilter: 10),
+        locationSettings: LocationSettings(distanceFilter: 15),
       ).listen((Position position) async {
         if (position.speed > 0.5) {
           if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
@@ -232,15 +240,17 @@ class TravelLogController extends BaseController {
   void CheckInOut({required bool isCheckIn}) {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
+    var branchId = Helper.user.branchId;
     var dateTime = DateTime.now();
-    pref.SetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}", isCheckIn);
-    pref.SetPreferencesString("$slug ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
+    pref.SetPreferencesBool("$slug $branchId ${LocalStorageKey.isCheckIn}", isCheckIn);
+    pref.SetPreferencesString("$slug $branchId ${LocalStorageKey.checkInDate}", dateTime.toIso8601String());
   }
 
   Future<void> GetLastLocation() async {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
-    var isCheckIn = pref.GetPreferencesBool("$slug ${LocalStorageKey.isCheckIn}");
+    var branchId = Helper.user.branchId;
+    var isCheckIn = pref.GetPreferencesBool("$slug $branchId ${LocalStorageKey.isCheckIn}");
     if (isCheckIn) {
       var logs = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by locationDateTime desc limit 1");
       if (logs != null && logs.locationDateTime != null) {
@@ -254,7 +264,153 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> SetCurrentLocation({bool isIdle = false}) async {
-    Position position = await Geolocator.getCurrentPosition();
-    await CreateTravelLog(position, isIdle: isIdle);
+    try {
+      Position position = await Geolocator.getCurrentPosition();
+      await CreateTravelLog(position, isIdle: isIdle);
+    } catch (ex) {
+      print(ex);
+    }
   }
+
+  Future<void> stopService() async {
+    final service = FlutterBackgroundService();
+
+    try {
+      service.invoke('stopService');
+      debugPrint("Service stop invoked successfully.");
+    } catch (e) {
+      debugPrint("Error stopping service: $e");
+    }
+  }
+
+  Future<void> initializeService() async {
+    final service = FlutterBackgroundService();
+
+    // Set up a custom notification channel for Android
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'my_foreground',
+      'MY FOREGROUND SERVICE',
+      description: 'This channel is used for important notifications.',
+      importance: Importance.high,
+    );
+
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    // Initialize notifications for Android and iOS
+    if (Platform.isIOS || Platform.isAndroid) {
+      await flutterLocalNotificationsPlugin.initialize(
+        const InitializationSettings(
+          iOS: DarwinInitializationSettings(),
+          android: AndroidInitializationSettings('ic_notification_icon'),
+        ),
+      );
+    }
+
+    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+
+    await service.configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,
+        autoStart: true,
+        isForegroundMode: true,
+        autoStartOnBoot: true,
+        notificationChannelId: 'my_foreground',
+        initialNotificationTitle: 'Background location',
+        initialNotificationContent: 'Initializing',
+        foregroundServiceNotificationId: 888,
+        foregroundServiceTypes: [AndroidForegroundType.location],
+      ),
+      iosConfiguration: IosConfiguration(
+        autoStart: true,
+        onForeground: onStart,
+        onBackground: onIosBackground,
+      ),
+    );
+  }
+
+  @pragma('vm:entry-point')
+  Future<bool> onIosBackground(ServiceInstance service) async {
+    WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.reload();
+    final log = preferences.getStringList('log') ?? <String>[];
+    log.add(DateTime.now().toIso8601String());
+    await preferences.setStringList('log', log);
+
+    return true;
+  }
+}
+
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
+
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  await preferences.setString("hello", "world");
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+  service.on('stopService').listen((event) async {
+    await flutterLocalNotificationsPlugin.cancel(888); // Cancel notification
+    service.stopSelf(); // Stop the service
+  });
+
+  // For Android foreground notification
+  if (service is AndroidServiceInstance) {
+    if (await service.isForegroundService()) {
+      flutterLocalNotificationsPlugin.show(
+        888,
+        'Background Location Service',
+        'Background location tracking is active',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'my_foreground',
+            'MY FOREGROUND SERVICE',
+            icon: 'ic_notification_icon',
+            ongoing: true,
+          ),
+        ),
+      );
+    }
+  }
+
+  // await initDatabase();
+  DatabaseHelper.instance.dataBaseName = "Order-Booker.db";
+  await DatabaseHelper.instance.database;
+  await PrefUtils().init();
+  await Helper.UserData();
+
+  /// you can see this log in logcat
+  TravelLogController travelLogController = Get.put(TravelLogController());
+
+  debugPrint('FLUTTER BACKGROUND SERVICE: ${DateTime.now()} ');
+  await travelLogController.startTracking();
+  final deviceInfo = DeviceInfoPlugin();
+  String? device;
+  if (Platform.isAndroid) {
+    final androidInfo = await deviceInfo.androidInfo;
+    device = androidInfo.model;
+  } else if (Platform.isIOS) {
+    final iosInfo = await deviceInfo.iosInfo;
+    device = iosInfo.model;
+  }
+
+  service.invoke(
+    'update',
+    {
+      "current_date": DateTime.now().toIso8601String(),
+      "device": device,
+    },
+  );
 }
