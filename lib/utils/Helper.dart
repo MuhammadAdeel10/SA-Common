@@ -52,6 +52,23 @@ class Helper extends BaseController {
     return emailValid;
   }
 
+  static bool AmountLengthCheck({
+    int lengthValue = 12,
+    bool allowNegative = false,
+    bool allowZero = false,
+    String? input,
+  }) {
+    int decimalPlaces = Helper.requestContext.decimalPlaces;
+    String numberPattern = '${allowZero ? '0|' : ''}\\d{1,$lengthValue}';
+    if (decimalPlaces > 0) {
+      numberPattern += '(\\.\\d{1,$decimalPlaces})?';
+    }
+    String finalPattern = allowZero ? numberPattern : '(?!0\$)' + '$numberPattern';
+    String pattern = '^${allowNegative ? '-?' : ''}$finalPattern\$';
+    bool check = RegExp(pattern).hasMatch(input ?? "");
+    return check;
+  }
+
   static Color buttonColor(String colorCode) {
     String angularColorCode = colorCode;
     String hexColorCode = angularColorCode.substring(1);
