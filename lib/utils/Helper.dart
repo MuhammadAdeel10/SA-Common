@@ -56,15 +56,18 @@ class Helper extends BaseController {
     int lengthValue = 12,
     bool allowNegative = false,
     bool allowZero = false,
+    bool isEmptyAllowed = false,
     String? input,
   }) {
+    if (isEmptyAllowed && input == "") {
+      return true;
+    }
     int decimalPlaces = Helper.requestContext.decimalPlaces;
-    String numberPattern = '${allowZero ? '0|' : ''}\\d{1,$lengthValue}';
+    String numberPattern = '\\d{1,$lengthValue}';
     if (decimalPlaces > 0) {
       numberPattern += '(\\.\\d{1,$decimalPlaces})?';
     }
-    String finalPattern = allowZero ? numberPattern : '(?!0\$)' + '$numberPattern';
-    String pattern = '^${allowNegative ? '-?' : ''}$finalPattern\$';
+    String pattern = '^${allowNegative ? '-?' : ''}$numberPattern\$';
     bool check = RegExp(pattern).hasMatch(input ?? "");
     return check;
   }
@@ -267,7 +270,7 @@ class Helper extends BaseController {
     return num.parse(returnAmount == "" ? "0" : returnAmount);
   }
 
-   static const _pageSize = 50;
+  static const _pageSize = 50;
   static Future<void> fetchPage<T>(
     int pageKey, {
     required Future<List<T>?> fetchFunction,
