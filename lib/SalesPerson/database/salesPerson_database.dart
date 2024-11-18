@@ -50,4 +50,14 @@ class SalesPersonDatabase {
     });
     return salesPersonList;
   }
+
+  Future<SalesPersonModel?> GetSalesPersonByUserId(String slug, String appId) async {
+    final db = await DatabaseHelper.instance.database;
+    var map = await db.rawQuery(''' select * from SalesPerson where companySlug = '$slug' and applicationUserId = '$appId' ''');
+    if (map.length > 0) {
+      return SalesPersonModel.fromMap(map.first);
+    } else {
+      return null;
+    }
+  }
 }

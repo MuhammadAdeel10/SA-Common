@@ -24,7 +24,7 @@ class SalesPersonController extends BaseController {
     );
     if (response != null) {
       var pullData = SalesPersonModel().FromJson(response.body, slug);
-      SalesPersonDatabase.bulkInsert(pullData);
+      await SalesPersonDatabase.bulkInsert(pullData);
       getSyncSetting.companySlug = slug;
       getSyncSetting.syncDate = syncDate;
       getSyncSetting.isSync = true;

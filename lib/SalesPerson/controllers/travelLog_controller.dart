@@ -24,7 +24,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 class TravelLogController extends BaseController {
   bool gpsEnabled = false;
   bool permissionGranted = false;
-  late StreamSubscription<Position> subscription;
+  late StreamSubscription<Position>? subscription;
   bool trackingEnabled = false;
   List<Position> locations = [];
   DateTime? dateTime;
@@ -106,7 +106,8 @@ class TravelLogController extends BaseController {
     await SyncToServerTravelLog();
     await Geolocator.getPositionStream().drain();
     trackingEnabled = false;
-    await subscription.cancel();
+    await subscription?.cancel();
+    subscription = null;
     _previousLocation = null;
     clearLocation();
   }
