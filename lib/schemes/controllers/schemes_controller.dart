@@ -113,6 +113,7 @@ class SchemesController extends BaseController {
       detail.serialNumber = element.serialNumber;
       detail.batchId = element.batchId;
       detail.quantity = element.qty;
+      detail.description = element.description;
       if (element.cartDiscounts != null) {
         for (var cartDiscount in element.cartDiscounts!) {
           var map = cartDiscount.toMap();
@@ -447,7 +448,7 @@ SchemeId int,
 DiscountId int,
 DiscountProductQuantity decimal(10,30));''');
 
-    batch.execute(''' 
+    batch.execute('''
 INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.DiscountProductQuantity) AS DiscountProductQuantity
 	FROM SchemeDetails D
 	INNER JOIN ProductIds P ON D.SchemeProductId = P.Id OR (D.SchemeProductId = P.BaseProductId AND P.BaseVariantId IS NOT NULL) 
@@ -455,8 +456,8 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 	LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
 	WHERE S.companySlug = '${companySetting?.slug}'
 		AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-		AND (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
-		AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL)
+		AND (Date(S.StartDate) <= '${date.toIso8601String().substring(0, 10)}' OR S.StartDate IS NULL)
+		AND (Date(S.EndDate) >= '${date.toIso8601String().substring(0, 10)}' OR S.EndDate IS NULL)
 
      and (
 			S.IsTimeSensitiveScheme = 0
@@ -632,8 +633,8 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 		LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
 	  WHERE S.companySlug = '${companySetting?.slug}'
 		AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-		AND (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
-		AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL)
+		AND (Date(S.StartDate) <= '${date.toIso8601String().substring(0, 10)}' OR S.StartDate IS NULL)
+		AND (Date(S.EndDate) >= '${date.toIso8601String().substring(0, 10)}' OR S.EndDate IS NULL)
     and (
 			S.IsTimeSensitiveScheme = 0
 			or 
@@ -772,8 +773,7 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
                   schemeId: item.SchemeId,
                   discountId: item.DiscountId ?? 0,
                   schemeDetailId: item.SchemeDetailId,
-                  discountAmount: item.DiscountAmount > 0 ? ((posInvoiceDetail.quantity ?? 0) ~/ item.DiscountProductQuantity) * item.DiscountAmount : ((posInvoiceDetail.grossAmount ?? 0) * (item.DiscountRate ?? 0)) / 100
-                  );
+                  discountAmount: item.DiscountAmount > 0 ? ((posInvoiceDetail.quantity ?? 0) ~/ item.DiscountProductQuantity) * item.DiscountAmount : ((posInvoiceDetail.grossAmount ?? 0) * (item.DiscountRate ?? 0)) / 100);
               posInvoiceDetail.discountInPercent = item.DiscountRate;
               posInvoiceDetail.discounts?.add(data);
             }
@@ -857,8 +857,8 @@ INSERT into DiscountProductQuantity SELECT D.SchemeId, S.DiscountId, MAX(D.Disco
 	WHERE D.SchemeProductCategoryId = ${params.productCategoryId}
 		AND S.companySlug = '${companySetting?.slug}'
 		AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-		AND (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
-		AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL)
+		AND (Date(S.StartDate) <= '${date.toIso8601String().substring(0, 10)}' OR S.StartDate IS NULL)
+		AND (Date(S.EndDate) >= '${date.toIso8601String().substring(0, 10)}' OR S.EndDate IS NULL)
     and (
 			S.IsTimeSensitiveScheme = 0
 			or 
@@ -1068,8 +1068,8 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
 	WHERE D.SchemeProductCategoryId = ${params.productCategoryId}
 		AND S.companySlug = '${companySetting?.slug}'
 		AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-		AND (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
-		AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL)
+		AND (Date(S.StartDate) <= '${date.toIso8601String().substring(0, 10)}' OR S.StartDate IS NULL)
+		AND (Date(S.EndDate) >= '${date.toIso8601String().substring(0, 10)}' OR S.EndDate IS NULL)
       and (
 			S.IsTimeSensitiveScheme = 0
 			or 
@@ -1262,9 +1262,9 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
 		LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
 	WHERE (S.companySlug = '${companySetting?.slug}')
 		AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-		AND ('${date}' is null OR
-		 ((DATE(S.startDate) <= '${date}' OR S.StartDate IS NULL)
-		AND (DATE(S.EndDate) >= '${date}' OR S.EndDate IS NULL)))
+		AND ('${date.toIso8601String().substring(0, 10)}' is null OR
+		 ((DATE(S.startDate) <= '${date.toIso8601String().substring(0, 10)}' OR S.StartDate IS NULL)
+		AND (DATE(S.EndDate) >= '${date.toIso8601String().substring(0, 10)}' OR S.EndDate IS NULL)))
      and (
 			S.IsTimeSensitiveScheme = 0
 			or 
@@ -1295,7 +1295,7 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
 		AND (R.AreaId = ${params.areaId} OR R.AreaId IS NULL)		
 		AND (R.SubAreaId = ${params.subAreaId} OR R.SubAreaId IS NULL) ''');
     } else {
-      response = await db.rawQuery(''' 
+      response = await db.rawQuery('''
       SELECT DISTINCT D.Id AS SchemeDetailId, D.SchemeId, D.BounsProductId as ProductId, P.Name as ProductName, D.BounsProductQuantity AS Quantity, D.BonusProductPrice as ProductPrice
 	  FROM SchemeDetails D
 		INNER JOIN MaxInoviceDiscount M ON D.SchemeId = M.SchemeId and D.Id =  M.SchemeDetailId
@@ -1478,9 +1478,9 @@ create table if not exists MaxSchemeProductQuantities (SchemeId int, SchemeProdu
         LEFT JOIN SchemeBranches B ON D.SchemeId = B.SchemeId
         WHERE S.companySlug = '${companySetting?.slug}'
             AND (B.BranchId = ${params.branchId} OR B.BranchId IS NULL)
-            AND ('${date}' IS NULL OR
-                (Date(S.StartDate) <= '${date}' OR S.StartDate IS NULL)
-            AND (Date(S.EndDate) >= '${date}' OR S.EndDate IS NULL))
+            AND ('${date.toIso8601String().substring(0, 10)}' IS NULL OR
+            (DATE(S.StartDate) <= '${date.toIso8601String().substring(0, 10)}' OR S.StartDate IS NULL)
+            AND (DATE(S.EndDate) >= '${date.toIso8601String().substring(0, 10)}' OR S.EndDate IS NULL))
           AND (
                 S.IsTimeSensitiveScheme = 0
                 OR (

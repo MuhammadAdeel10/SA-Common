@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:sa_common/Controller/statusController.dart';
+import 'package:sa_common/SalesPerson/database/salesPerson_database.dart';
+import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserDatabase.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -44,9 +46,30 @@ class Helper extends BaseController {
   static UserModel user = UserModel();
   static String plainPassword = "";
   static String homeCurrency = "";
+  static SalesPersonModel? salePerson = SalesPersonModel();
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
     return emailValid;
+  }
+
+  static bool AmountLengthCheck({
+    int lengthValue = 12,
+    bool allowNegative = false,
+    bool allowZero = false,
+    bool isEmptyAllowed = false,
+    String? input,
+  }) {
+    if (isEmptyAllowed && input == "") {
+      return true;
+    }
+    int decimalPlaces = Helper.requestContext.decimalPlaces;
+    String numberPattern = '\\d{1,$lengthValue}';
+    if (decimalPlaces > 0) {
+      numberPattern += '(\\.\\d{1,$decimalPlaces})?';
+    }
+    String pattern = '^${allowNegative ? '-?' : ''}$numberPattern\$';
+    bool check = RegExp(pattern).hasMatch(input ?? "");
+    return check;
   }
 
   static Color buttonColor(String colorCode) {
@@ -128,6 +151,16 @@ class Helper extends BaseController {
     return outputFormat.format(inputDate);
   }
 
+  static String getFormattedTime(String? _date) {
+    if (_date == null || _date.isEmpty) {
+      return "";
+    }
+    var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+    var inputDate = inputFormat.parse(_date);
+    var outputFormat = DateFormat('hh:mm:ss a');
+    return outputFormat.format(inputDate);
+  }
+
   static String getFormateDateMonth(_date) {
     if (_date == null || _date == "") {
       return "";
@@ -190,12 +223,12 @@ class Helper extends BaseController {
     productSalesTaxModel = await ProductSalesTaxDatabase().getByCompanySlug();
     branchProductSalesTaxModel = await BranchProductTaxDatabase().getByCompanySlug();
     discounts = await DiscountDatabase().getByCompanySlug();
+    salePerson = await SalesPersonDatabase.dao.SelectSingle("applicationUserId = '${user.userId}'  ");
     var getLastEndOfDay = await EndOfTheDayDatabase.dao.SelectSingle("branchId = $branchId order by endOfDayDate desc");
     var currencyModel = await CurrencyDatabase.dao.SelectSingle("Id = ${Helper.requestContext.currencyId}");
     if (currencyModel != null) {
       homeCurrency = !Helper.requestContext.currencySymbol ? currencyModel.code : currencyModel.symbol;
-    }
-    else{
+    } else {
       homeCurrency = "";
     }
     endOfTheDayModel = getLastEndOfDay;
@@ -237,7 +270,7 @@ class Helper extends BaseController {
     return num.parse(returnAmount == "" ? "0" : returnAmount);
   }
 
-   static const _pageSize = 50;
+  static const _pageSize = 50;
   static Future<void> fetchPage<T>(
     int pageKey, {
     required Future<List<T>?> fetchFunction,
