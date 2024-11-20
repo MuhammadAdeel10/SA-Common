@@ -284,6 +284,7 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
 
+
     batch.execute('''
   CREATE TABLE ${Tables.productImages} (
   ${ProductImagesFields.id} $idTypeNoAutoIncrement,
@@ -1322,10 +1323,9 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.speed} $decimalType,
   ${TravelLogFiles.altitudeAccuracy} $decimalType,
   ${TravelLogFiles.longitude} $decimalType,
-  ${TravelLogFiles.latitude} $decimalType,
-  ${TravelLogFiles.isIdle} $boolType CHECK(${TravelLogFiles.isIdle} IN (0,1))
+  ${TravelLogFiles.latitude} $decimalType
 )''');
-    batch.execute('''
+    batch.execute(''' 
     CREATE INDEX Products_id_IDX ON Products (id);
     CREATE INDEX Products_name_IDX ON Products (name);
     CREATE INDEX Products_code_IDX ON Products (code);
