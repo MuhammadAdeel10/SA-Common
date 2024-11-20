@@ -103,6 +103,18 @@ class BaseRepository<T extends BaseModel> {
     }
   }
 
+  Future<void> DeleteByCompanySlug() async {
+    try {
+      var dbClient = await db;
+      var prefs = await SharedPreferences.getInstance();
+      var companySlug = prefs.get(LocalStorageKey.companySlug) as String;
+      await dbClient.rawQuery("Delete from $tableName where companySlug = '$companySlug' ");
+    } catch (ex) {
+      Logger.ErrorLog("Find By Company Slug $tableName: $ex");
+      throw ex;
+    }
+  }
+
   Future<int> insert(BaseModel model) async {
     try {
       var prefs = await SharedPreferences.getInstance();

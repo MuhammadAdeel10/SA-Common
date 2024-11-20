@@ -61,7 +61,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 8;
+  int version = 9;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -236,7 +236,7 @@ class DatabaseHelper implements DBHelper {
     ${SubAreaSalesPersonsFields.branchId} $integerType
     )''');
 
-     // ${SubAreaSalesPersonsFields.subAreaName} $textType,
+    // ${SubAreaSalesPersonsFields.subAreaName} $textType,
 
     batch.execute('''
       CREATE TABLE ${Tables.products} (
@@ -528,6 +528,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.customerLoyaltyDiscountAccountId} $integerType,
       ${CompanySettingField.customerLoyaltyAmountToPointsConversionRate} $decimalType,
       ${CompanySettingField.customerLoyaltyPointsToAmountConversionRate} $decimalType,
+      ${CompanySettingField.OrderDateFilter} $integerType,
       ${CompanySettingField.customerLoyaltyCalculationType} $integerType
       )''');
     batch.execute('''
@@ -1503,22 +1504,23 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
 	[Id] ASC
 );
     ''');
-     batch.execute(CreateWarehouseTableQuery());
-     await batch.commit();
+    batch.execute(CreateWarehouseTableQuery());
+    await batch.commit();
   }
 
   @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
-       await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
-       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
-       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
-       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
+      await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.OrderDateFilter, integerType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
       await db.execute(CreateWarehouseTableQuery());
     }
   }
-  
+
   Future<void> addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
     final result = await db.rawQuery('PRAGMA table_info($tableName)');
     bool columnExists = result.any((column) => column['name'] == columnName);
@@ -1528,7 +1530,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
     }
   }
 
-String CreateWarehouseTableQuery(){
+  String CreateWarehouseTableQuery() {
     return '''
     CREATE TABLE IF NOT EXISTS ${Tables.WareHouse} (
       ${WarehouseFiled.id} $idTypeNoAutoIncrement,
@@ -1552,5 +1554,4 @@ String CreateWarehouseTableQuery(){
       ${WarehouseFiled.email} $textType);
      ''';
   }
-
 }
