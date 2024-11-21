@@ -1323,7 +1323,7 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.speed} $decimalType,
   ${TravelLogFiles.altitudeAccuracy} $decimalType,
   ${TravelLogFiles.longitude} $decimalType,
-  ${TravelLogFiles.latitude} $decimalType
+  ${TravelLogFiles.latitude} $decimalType,
   ${TravelLogFiles.isIdle} $boolType CHECK(${TravelLogFiles.isIdle} IN (0,1))
 )''');
     batch.execute(''' 
