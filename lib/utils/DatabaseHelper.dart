@@ -1324,6 +1324,7 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.altitudeAccuracy} $decimalType,
   ${TravelLogFiles.longitude} $decimalType,
   ${TravelLogFiles.latitude} $decimalType
+  ${TravelLogFiles.isIdle} $boolType CHECK(${TravelLogFiles.isIdle} IN (0,1))
 )''');
     batch.execute(''' 
     CREATE INDEX Products_id_IDX ON Products (id);
