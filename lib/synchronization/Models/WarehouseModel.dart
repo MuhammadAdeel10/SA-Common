@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:sa_common/Controller/BaseRepository.dart';
 
-class WarehouseFiled {
+class WarehouseField {
   static final String id = 'id';
   static final String companySlug = 'companySlug';
   static final String name = 'name';

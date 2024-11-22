@@ -16,20 +16,26 @@ class WarehouseDatabase {
   static Future<void> bulkInsert(List<Warehouse> model) async {
     final db = await DatabaseHelper.instance.database;
     var getAll = await WarehouseDatabase.dao.getAll();
-    Batch batch = db.batch();
-    model.forEach((val) {
-      var exist = getAll.any((element) => element.id == val.id);
-      if (exist) {
-        batch.update(
-          Tables.WareHouse,
-          val.toJson(),
-          where: "id = ?",
-          whereArgs: [val.id],
+    db.transaction(
+      (txn) async {
+        Batch batch = txn.batch();
+        model.forEach(
+          (val) {
+            var exist = getAll.any((element) => element.id == val.id);
+            if (exist) {
+              batch.update(
+                Tables.WareHouse,
+                val.toJson(),
+                where: "id = ?",
+                whereArgs: [val.id],
+              );
+            } else {
+              batch.insert(Tables.WareHouse, val.toMap());
+            }
+          },
         );
-      } else {
-        batch.insert(Tables.WareHouse, val.toMap());
-      }
-    });
-    await batch.commit();
+        await batch.commit();
+      },
+    );
   }
 }

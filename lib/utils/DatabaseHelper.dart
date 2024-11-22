@@ -1534,25 +1534,25 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
   String CreateWarehouseTableQuery() {
     return '''
     CREATE TABLE IF NOT EXISTS ${Tables.WareHouse} (
-      ${WarehouseFiled.id} $idTypeNoAutoIncrement,
-      ${WarehouseFiled.companySlug} $textTypeNotNull,
-      ${WarehouseFiled.name} $textTypeNotNull,
-      ${WarehouseFiled.isDefault} $boolType CHECK(${WarehouseFiled.isDefault} IN (0,1)),
-      ${WarehouseFiled.isTransit} $boolType CHECK(${WarehouseFiled.isTransit} IN (0,1)),
-      ${WarehouseFiled.isActive} $boolType CHECK(${WarehouseFiled.isActive} IN (0,1)),
-      ${WarehouseFiled.branchId} $integerType,
-      ${WarehouseFiled.updatedOn} $dateTimeType,
-      ${WarehouseFiled.isSync} $boolType CHECK(${WarehouseFiled.isSync} IN (0,1)),
-      ${WarehouseFiled.address1} $textType,
-      ${WarehouseFiled.address2} $textType,
-      ${WarehouseFiled.zip} $textType,
-      ${WarehouseFiled.state} $textType,
-      ${WarehouseFiled.city} $textType,
-      ${WarehouseFiled.contactPerson} $textType,
-      ${WarehouseFiled.countryId} $integerType,
-      ${WarehouseFiled.phone} $textType,
-      ${WarehouseFiled.fax} $textType,
-      ${WarehouseFiled.email} $textType);
+      ${WarehouseField.id} $idTypeNoAutoIncrement,
+      ${WarehouseField.companySlug} $textTypeNotNull,
+      ${WarehouseField.name} $textTypeNotNull,
+      ${WarehouseField.isDefault} $boolType CHECK(${WarehouseField.isDefault} IN (0,1)),
+      ${WarehouseField.isTransit} $boolType CHECK(${WarehouseField.isTransit} IN (0,1)),
+      ${WarehouseField.isActive} $boolType CHECK(${WarehouseField.isActive} IN (0,1)),
+      ${WarehouseField.branchId} $integerType,
+      ${WarehouseField.updatedOn} $dateTimeType,
+      ${WarehouseField.isSync} $boolType CHECK(${WarehouseField.isSync} IN (0,1)),
+      ${WarehouseField.address1} $textType,
+      ${WarehouseField.address2} $textType,
+      ${WarehouseField.zip} $textType,
+      ${WarehouseField.state} $textType,
+      ${WarehouseField.city} $textType,
+      ${WarehouseField.contactPerson} $textType,
+      ${WarehouseField.countryId} $integerType,
+      ${WarehouseField.phone} $textType,
+      ${WarehouseField.fax} $textType,
+      ${WarehouseField.email} $textType);
      ''';
   }
 }
