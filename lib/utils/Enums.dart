@@ -208,3 +208,17 @@ enum Days {
 Days? intoDays(int value) {
   return Days.values.firstWhere((element) => element.value == value);
 }
+
+enum OrderDayType  {
+  Today(0),
+  Yesterday(1),
+  DayBeforeYesterday(2);
+
+  const OrderDayType (this.value);
+
+  final int value;
+}
+
+OrderDayType intoOrderDateFilterEnum(int value) {
+  return OrderDayType.values.firstWhere((element) => element.value == value);
+}

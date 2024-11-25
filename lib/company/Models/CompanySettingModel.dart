@@ -43,6 +43,7 @@ class CompanySettingField {
   static final String currencySymbol = 'currencySymbol';
   static final String allowDuplicateProducts = 'allowDuplicateProducts';
   static final String allowNegativeStock = 'allowNegativeStock';
+  static final String OrderDateFilter = 'OrderDateFilter';
 }
 
 class CompanySettingModel extends BaseModel<Guid> {
@@ -86,6 +87,7 @@ class CompanySettingModel extends BaseModel<Guid> {
   CustomerLoyaltyCalculationType customerLoyaltyCalculationType;
   bool currencySymbol;
   bool allowNegativeStock;
+  OrderDayType? orderDateFilter;
 
   CompanySettingModel(
       {this.id,
@@ -125,6 +127,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.decimalPlaces = 0,
       this.customerLoyaltyCalculationType = CustomerLoyaltyCalculationType.None,
       this.currencySymbol = false,
+      this.orderDateFilter,
       this.allowNegativeStock = false});
 
   CompanySettingModel copyWith({
@@ -165,7 +168,6 @@ class CompanySettingModel extends BaseModel<Guid> {
         isSync: isSync ?? this.isSync,
         allowDuplicateProducts: allowDuplicateProducts ?? this.allowDuplicateProducts,
         enableSalesGeography: enableSalesGeography ?? this.enableSalesGeography);
-        
   }
 
   Map<String, dynamic> toMap() {
@@ -208,6 +210,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       'customerLoyaltyCalculationType': customerLoyaltyCalculationType.value,
       'currencySymbol': currencySymbol == true ? 1 : 0,
       'allowNegativeStock': allowNegativeStock == true ? 1 : 0,
+      'orderDateFilter': orderDateFilter!.value,
     };
   }
 
@@ -251,6 +254,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       customerLoyaltyCalculationType: intToCustomerLoyaltyCalculationType(map['customerLoyaltyCalculationType'] ?? 0),
       currencySymbol: (map['currencySymbol'] == 0 || map['currencySymbol'] == false) ? false : true,
       allowNegativeStock: (map['allowNegativeStock'] == 0 || map['allowNegativeStock'] == false) ? false : true,
+      orderDateFilter: map['orderDateFilter'] == null ? OrderDayType.Today : intoOrderDateFilterEnum(map['orderDateFilter']),
     );
   }
 

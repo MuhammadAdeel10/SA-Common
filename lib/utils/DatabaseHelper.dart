@@ -28,6 +28,7 @@ import 'package:sa_common/synchronization/Models/DetailAGroupModel.dart';
 import 'package:sa_common/synchronization/Models/DetailBGroupModel.dart';
 import 'package:sa_common/synchronization/Models/MasterGroupModel.dart';
 import 'package:sa_common/synchronization/Models/NumberSerialsModel.dart';
+import 'package:sa_common/synchronization/Models/WarehouseModel.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
@@ -60,7 +61,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 7;
+  int version = 8;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -282,6 +283,7 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.currencyId} $integerType,
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
+
 
     batch.execute('''
   CREATE TABLE ${Tables.productImages} (
@@ -527,6 +529,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.customerLoyaltyDiscountAccountId} $integerType,
       ${CompanySettingField.customerLoyaltyAmountToPointsConversionRate} $decimalType,
       ${CompanySettingField.customerLoyaltyPointsToAmountConversionRate} $decimalType,
+      ${CompanySettingField.OrderDateFilter} $integerType,
       ${CompanySettingField.customerLoyaltyCalculationType} $integerType
       )''');
     batch.execute('''
@@ -548,19 +551,6 @@ class DatabaseHelper implements DBHelper {
       ${SalesPersonFiles.branchId} $integerType,
       ${SalesPersonFiles.isActive} $boolType CHECK(${SalesPersonFiles.isActive} IN (0,1))
       )''');
-    // batch.execute('''
-    //   CREATE TABLE ${Tables.WareHouse} (
-    //   ${WareHousesFiled.id} $idTypeNoAutoIncrement,
-    //   ${WareHousesFiled.companySlug} $textTypeNotNull,
-    //   ${WareHousesFiled.name} $textTypeNotNull,
-    //   ${WareHousesFiled.isDefault} $boolType CHECK(${WareHousesFiled.isDefault} IN (0,1)),
-    //   ${WareHousesFiled.isTransit} $boolType CHECK(${WareHousesFiled.isTransit} IN (0,1)),
-    //   ${WareHousesFiled.isActive} $boolType CHECK(${WareHousesFiled.isActive} IN (0,1)),
-    //   ${WareHousesFiled.branchId} $integerType,
-    //   ${WareHousesFiled.updatedOn} $dateTimeType,
-    //   ${WareHousesFiled.isSync} $boolType CHECK(${WareHousesFiled.isSync} IN (0,1)),
-    //   ${WareHousesFiled.syncDate} $dateTimeType
-    //   )''');
 
     // batch.execute('''
     //   CREATE TABLE ${Tables.CustomerLoyaltyPointBalance} (
@@ -1336,7 +1326,7 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.latitude} $decimalType,
   ${TravelLogFiles.isIdle} $boolType CHECK(${TravelLogFiles.isIdle} IN (0,1))
 )''');
-    batch.execute('''
+    batch.execute(''' 
     CREATE INDEX Products_id_IDX ON Products (id);
     CREATE INDEX Products_name_IDX ON Products (name);
     CREATE INDEX Products_code_IDX ON Products (code);
@@ -1515,7 +1505,8 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
 	[Id] ASC
 );
     ''');
-    batch.commit();
+    batch.execute(CreateWarehouseTableQuery());
+    await batch.commit();
   }
 
   @override
@@ -1523,9 +1514,11 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
     if (oldVersion < newVersion) {
       await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.OrderDateFilter, integerType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
+      await db.execute(CreateWarehouseTableQuery());
     }
   }
 
@@ -1536,5 +1529,30 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
     if (!columnExists) {
       await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
     }
+  }
+
+  String CreateWarehouseTableQuery() {
+    return '''
+    CREATE TABLE IF NOT EXISTS ${Tables.WareHouse} (
+      ${WarehouseField.id} $idTypeNoAutoIncrement,
+      ${WarehouseField.companySlug} $textTypeNotNull,
+      ${WarehouseField.name} $textTypeNotNull,
+      ${WarehouseField.isDefault} $boolType CHECK(${WarehouseField.isDefault} IN (0,1)),
+      ${WarehouseField.isTransit} $boolType CHECK(${WarehouseField.isTransit} IN (0,1)),
+      ${WarehouseField.isActive} $boolType CHECK(${WarehouseField.isActive} IN (0,1)),
+      ${WarehouseField.branchId} $integerType,
+      ${WarehouseField.updatedOn} $dateTimeType,
+      ${WarehouseField.isSync} $boolType CHECK(${WarehouseField.isSync} IN (0,1)),
+      ${WarehouseField.address1} $textType,
+      ${WarehouseField.address2} $textType,
+      ${WarehouseField.zip} $textType,
+      ${WarehouseField.state} $textType,
+      ${WarehouseField.city} $textType,
+      ${WarehouseField.contactPerson} $textType,
+      ${WarehouseField.countryId} $integerType,
+      ${WarehouseField.phone} $textType,
+      ${WarehouseField.fax} $textType,
+      ${WarehouseField.email} $textType);
+     ''';
   }
 }
