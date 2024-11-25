@@ -58,13 +58,15 @@ class Helper extends BaseController {
     bool allowZero = false,
     bool isEmptyAllowed = false,
     String? input,
+    bool allowDecimal = true,
+    int? decimalPlaces,
   }) {
     if (isEmptyAllowed && input == "") {
       return true;
     }
-    int decimalPlaces = Helper.requestContext.decimalPlaces;
+    decimalPlaces = decimalPlaces ?? Helper.requestContext.decimalPlaces;
     String numberPattern = '\\d{1,$lengthValue}';
-    if (decimalPlaces > 0) {
+    if (allowDecimal && decimalPlaces > 0) {
       numberPattern += '(\\.\\d{1,$decimalPlaces})?';
     }
     String pattern = '^${allowNegative ? '-?' : ''}$numberPattern\$';
