@@ -222,3 +222,16 @@ enum OrderDayType  {
 OrderDayType intoOrderDateFilterEnum(int value) {
   return OrderDayType.values.firstWhere((element) => element.value == value);
 }
+
+enum TripType {
+  Moving(0),
+  Idle(1);
+
+  const TripType(this.value);
+
+  final int value;
+}
+
+TripType? intoTripType(int value) {
+  return TripType.values.firstWhere((element) => element.value == value);
+}

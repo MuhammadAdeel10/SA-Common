@@ -62,4 +62,5 @@ class Tables {
   static const CustomerLoyaltyPointBalance = "CustomerLoyaltyPointBalance";
   static const EndOfTheDay = "EndOfTheDay";
   static const TravelLogs = "TravelLogs";
+  static const Trips = "Trips";
 }

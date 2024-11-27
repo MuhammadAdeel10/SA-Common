@@ -13,6 +13,7 @@ class TravelLogFiles {
   static final String serverDateTime = 'serverDateTime';
   static final String locationDateTime = 'locationDateTime';
   static final String altitude = 'altitude';
+  static final String tripId = 'tripId';
   static final String heading = 'heading';
   static final String speed = 'speed';
   static final String altitudeAccuracy = 'altitudeAccuracy';
@@ -31,6 +32,7 @@ class TravelLogModel extends BaseModel<int> {
   DateTime? serverDateTime;
   DateTime? locationDateTime;
   double altitude;
+  int? tripId;
   double heading;
   double speed;
   double altitudeAccuracy;
@@ -49,6 +51,7 @@ class TravelLogModel extends BaseModel<int> {
     this.altitude = 0,
     this.heading = 0,
     this.speed = 0,
+    this.tripId,
     this.altitudeAccuracy = 0,
     this.longitude = 0,
     this.latitude = 0,
@@ -67,6 +70,7 @@ class TravelLogModel extends BaseModel<int> {
       'locationDateTime': locationDateTime?.toIso8601String(),
       'altitude': altitude,
       'heading': heading,
+      'tripId': tripId,
       'speed': speed,
       'altitudeAccuracy': altitudeAccuracy,
       'longitude': longitude,
@@ -88,6 +92,7 @@ class TravelLogModel extends BaseModel<int> {
       altitude: double.parse(map['altitude'].toString()),
       heading: double.parse(map['heading'].toString()),
       speed: double.parse(map['speed'].toString()),
+      tripId: map['tripId'] != null ? map['tripId'] as int : null,
       altitudeAccuracy: double.parse(map['altitudeAccuracy'].toString()),
       longitude: double.parse(map['longitude'].toString()),
       latitude: double.parse(map['latitude'].toString()),
