@@ -99,7 +99,7 @@ class TravelLogController extends BaseController {
             var lastLocation = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
             var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
             if (lastLocation?.isIdle == true) {
-              trip?.id = await startTrip(type: TripType.Moving);
+              trip?.id = await startTrip(travelStatus: TravelStatus.Moving);
             }
             await CreateTravelLog(position, tripId: trip?.id);
           }
@@ -207,13 +207,13 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<int> startTrip({TripType? type}) async {
+  Future<int> startTrip({TravelStatus? travelStatus}) async {
     try {
       TripModel trip = TripModel(
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
-        startTime: DateTime.now(),
-        tripType: type,
+        startDate: DateTime.now(),
+        travelStatus: travelStatus,
       );
       int id = await TripDatabase.dao.insert(trip);
       return id;
@@ -227,7 +227,7 @@ class TravelLogController extends BaseController {
     try {
       var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
       if (trip != null) {
-        trip.endTime = DateTime.now();
+        trip.endDate = DateTime.now();
         await TripDatabase.dao.update(trip);
       }
     } catch (ex) {

@@ -10,9 +10,9 @@ class TripFiles {
   static final String isSync = 'isSync';
   static final String syncDate = 'syncDate';
   static final String applicationUserId = 'applicationUserId';
-  static final String startTime = 'startTime';
-  static final String endTime = 'endTime';
-  static final String tripType = 'tripType';
+  static final String startDate = 'startDate';
+  static final String endDate = 'endDate';
+  static final String travelStatus = 'travelStatus';
 }
 
 class TripModel extends BaseModel<int> {
@@ -22,11 +22,11 @@ class TripModel extends BaseModel<int> {
   String? companySlug;
   int? branchId;
   String? applicationUserId;
-  DateTime? startTime;
-  DateTime? endTime;
+  DateTime? startDate;
+  DateTime? endDate;
   bool isSync;
   DateTime? syncDate;
-  TripType? tripType;
+  TravelStatus? travelStatus;
 
   TripModel({
     this.id,
@@ -35,9 +35,9 @@ class TripModel extends BaseModel<int> {
     this.applicationUserId,
     this.isSync = false,
     this.syncDate,
-    this.endTime,
-    this.startTime,
-    this.tripType,
+    this.endDate,
+    this.startDate,
+    this.travelStatus,
   });
 
   Map<String, dynamic> toMap() {
@@ -47,9 +47,9 @@ class TripModel extends BaseModel<int> {
       'branchId': branchId,
       'applicationUserId': applicationUserId,
       'syncDate': syncDate?.toIso8601String(),
-      'startTime': startTime?.toIso8601String(),
-      'endTime': endTime?.toIso8601String(),
-      'tripType': tripType?.value,
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
+      'travelStatus': travelStatus?.value,
     };
   }
 
@@ -61,9 +61,9 @@ class TripModel extends BaseModel<int> {
       applicationUserId: map['applicationUserId'] != null ? map['applicationUserId'] as String : null,
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
       syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
-      startTime: map['startTime'] != null ? DateTime.parse(map['startTime']) : null,
-      endTime: map['endTime'] != null ? DateTime.parse(map['endTime']) : null,
-      tripType: map['tripType'] == null ? null : intoTripType(map['tripType']),
+      startDate: map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
+      endDate: map['endDate'] != null ? DateTime.parse(map['endDate']) : null,
+      travelStatus: map['travelStatus'] == null ? null : intoTravelStatus(map['travelStatus']),
     );
   }
 

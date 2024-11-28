@@ -1568,10 +1568,10 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
      ${TripFiles.branchId} $integerType,
      ${TripFiles.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
      ${TripFiles.syncDate} $dateTimeType,
-     ${TripFiles.startTime} $dateTimeType,
-     ${TripFiles.endTime} $dateTimeType,
-     ${TripFiles.applicationUserId} $dateTimeType,
-     ${TripFiles.tripType} $integerType);
+     ${TripFiles.startDate} $dateTimeType,
+     ${TripFiles.endDate} $dateTimeType,
+     ${TripFiles.applicationUserId} $textType,
+     ${TripFiles.travelStatus} $integerType);
      ''';
   }
 }
