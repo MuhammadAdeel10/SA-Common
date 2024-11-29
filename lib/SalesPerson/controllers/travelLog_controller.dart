@@ -8,9 +8,12 @@ import 'package:get/get.dart';
 import 'package:sa_common/Controller/BaseController.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sa_common/SalesPerson/database/travelLog_database.dart';
+import 'package:sa_common/SalesPerson/database/trip_database.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
+import 'package:sa_common/SalesPerson/model/trip_model.dart';
 import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/DatabaseHelper.dart';
+import 'package:sa_common/utils/Enums.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/pref_utils.dart';
@@ -93,7 +96,12 @@ class TravelLogController extends BaseController {
         if (position.speed > 0.5) {
           if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
             _previousLocation = position;
-            await CreateTravelLog(position);
+            var lastLocation = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
+            var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
+            if (lastLocation?.isIdle == true) {
+              trip?.id = await startTrip(travelStatus: TravelStatus.Moving);
+            }
+            await CreateTravelLog(position, tripId: trip?.id);
           }
         }
       });
@@ -150,9 +158,12 @@ class TravelLogController extends BaseController {
                   style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w500),
                 ),
                 SizedBox(height: 24),
-                Text(
-                  description,
-                  style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    description,
+                    style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
+                  ),
                 ),
                 SizedBox(height: 24),
                 Row(
@@ -196,21 +207,37 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<void> CreateTravelLog(Position event, {bool isIdle = false}) async {
+  Future<int> startTrip({TravelStatus? travelStatus}) async {
     try {
-      TravelLogModel travelLog = TravelLogModel(
-        speed: event.speed,
-        latitude: event.latitude,
-        longitude: event.longitude,
-        locationDateTime: DateTime.now(),
-        heading: event.heading,
-        altitude: event.altitude,
-        altitudeAccuracy: event.accuracy,
+      TripModel trip = TripModel(
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
-        serverDateTime: DateTime.now().toUtc(),
-        isIdle: isIdle,
+        startDate: DateTime.now(),
+        travelStatus: travelStatus,
       );
+      int id = await TripDatabase.dao.insert(trip);
+      return id;
+    } catch (ex) {
+      log("Exception Background Start Trip $ex");
+      throw ex;
+    }
+  }
+
+  Future endTrip() async {
+    try {
+      var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
+      if (trip != null) {
+        trip.endDate = DateTime.now();
+        await TripDatabase.dao.update(trip);
+      }
+    } catch (ex) {
+      log("Exception Background End Trip $ex");
+    }
+  }
+
+  Future<void> CreateTravelLog(Position event, {bool isIdle = false, int? tripId}) async {
+    try {
+      TravelLogModel travelLog = TravelLogModel(speed: event.speed, latitude: event.latitude, longitude: event.longitude, locationDateTime: DateTime.now(), heading: event.heading, altitude: event.altitude, altitudeAccuracy: event.accuracy, applicationUserId: Helper.user.userId, branchId: Helper.user.branchId, serverDateTime: DateTime.now().toUtc(), isIdle: isIdle, tripId: tripId);
       await TravelLogDatabase.dao.insert(travelLog);
 
       if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
@@ -257,17 +284,19 @@ class TravelLogController extends BaseController {
       if (logs != null && logs.locationDateTime != null) {
         final DateTime currentTime = DateTime.now();
         final DateTime timeLimit = currentTime.subtract(Duration(minutes: 4));
-        if (logs.locationDateTime!.isBefore(timeLimit)) {
-          await SetCurrentLocation(isIdle: true);
+        if (logs.isIdle == false && logs.locationDateTime!.isBefore(timeLimit)) {
+          var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
+          await SetCurrentLocation(isIdle: true, tripId: trip?.id);
+          await endTrip();
         }
       }
     }
   }
 
-  Future<void> SetCurrentLocation({bool isIdle = false}) async {
+  Future<void> SetCurrentLocation({bool isIdle = false, int? tripId}) async {
     try {
       Position position = await Geolocator.getCurrentPosition();
-      await CreateTravelLog(position, isIdle: isIdle);
+      await CreateTravelLog(position, isIdle: isIdle, tripId: tripId);
     } catch (ex) {
       print(ex);
     }

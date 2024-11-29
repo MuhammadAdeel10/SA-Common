@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
+import 'package:sa_common/SalesPerson/model/trip_model.dart';
 import 'package:sa_common/SyncSetting/model.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -61,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 8;
+  int version = 11;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -1313,6 +1314,7 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.id} $idTypeNoAutoIncrement,
   ${TravelLogFiles.companySlug} $textTypeNotNull,
   ${TravelLogFiles.branchId} $integerType,
+  ${TravelLogFiles.tripId} $integerType,
   ${TravelLogFiles.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
   ${TravelLogFiles.syncDate} $dateTimeType,
   ${TravelLogFiles.serverDateTime} $dateTimeType,
@@ -1506,6 +1508,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
 );
     ''');
     batch.execute(CreateWarehouseTableQuery());
+    batch.execute(CreateTripsTableQuery());
     await batch.commit();
   }
 
@@ -1519,6 +1522,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
       await db.execute(CreateWarehouseTableQuery());
+      await db.execute(CreateTripsTableQuery());
     }
   }
 
@@ -1553,6 +1557,21 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       ${WarehouseField.phone} $textType,
       ${WarehouseField.fax} $textType,
       ${WarehouseField.email} $textType);
+     ''';
+  }
+
+  String CreateTripsTableQuery() {
+    return '''
+    CREATE TABLE IF NOT EXISTS ${Tables.Trips} (
+     ${TripFiles.id} $idTypeNoAutoIncrement,
+     ${TripFiles.companySlug} $textTypeNotNull,
+     ${TripFiles.branchId} $integerType,
+     ${TripFiles.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
+     ${TripFiles.syncDate} $dateTimeType,
+     ${TripFiles.startDate} $dateTimeType,
+     ${TripFiles.endDate} $dateTimeType,
+     ${TripFiles.applicationUserId} $textType,
+     ${TripFiles.travelStatus} $integerType);
      ''';
   }
 }
