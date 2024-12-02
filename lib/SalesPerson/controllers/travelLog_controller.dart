@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
@@ -207,15 +208,22 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<int> startTrip({TravelStatus? travelStatus}) async {
+  Future<int> startTrip({required TravelStatus travelStatus}) async {
     try {
       TripModel trip = TripModel(
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
         startDate: DateTime.now(),
+        isNew: true,
         travelStatus: travelStatus,
       );
       int id = await TripDatabase.dao.insert(trip);
+      if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+        var responseId = await postTrip();
+        if (responseId != null) {
+          return responseId;
+        }
+      }
       return id;
     } catch (ex) {
       log("Exception Background Start Trip $ex");
@@ -223,12 +231,58 @@ class TravelLogController extends BaseController {
     }
   }
 
+  Future<int?> postTrip() async {
+    var trips = await TripDatabase.dao.SelectList("isNew = 1 and branchId = ${Helper.user.branchId}");
+    if (trips != null && trips.isNotEmpty) {
+      for (var trip in trips) {
+        var localId = trip.id;
+        trip.id = 0;
+        var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/Trips", trip);
+        if (response != null && response.statusCode == 201) {
+          var modelRes = TripModel.fromMap(json.decode(response.body));
+          var travelLogs = await TravelLogDatabase.dao.SelectList("tripId = $localId");
+          if (travelLogs != null) {
+            await TravelLogDatabase.BulkUpdateTrip(modelRes.id, localId, trip.companySlug);
+          }
+          await TripDatabase.dao.deleteById(localId ?? 0);
+          modelRes.branchId = trip.branchId;
+          modelRes.isNew = false;
+          await TripDatabase.dao.insert(modelRes);
+
+          return modelRes.id;
+        }
+      }
+    }
+    return null;
+  }
+
+  updateTrip() async {
+    var trips = await TripDatabase.dao.SelectList("isEdit = 1 and branchId = ${Helper.user.branchId}");
+    if (trips != null && trips.isNotEmpty) {
+      for (var trip in trips) {
+        var localId = trip.id;
+        var response = await this.baseClient.put(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/Trips/${trip.id}", trip);
+        if (response != null && response.statusCode == 200) {
+          var modelRes = TripModel.fromMap(json.decode(response.body));
+          await TripDatabase.dao.deleteById(localId ?? 0);
+          modelRes.branchId = trip.branchId;
+          modelRes.isEdit = false;
+          await TripDatabase.dao.insert(modelRes);
+        }
+      }
+    }
+  }
+
   Future endTrip() async {
     try {
       var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
       if (trip != null) {
+        trip.isEdit = true;
         trip.endDate = DateTime.now();
         await TripDatabase.dao.update(trip);
+        if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+          await updateTrip();
+        }
       }
     } catch (ex) {
       log("Exception Background End Trip $ex");

@@ -62,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 11;
+  int version = 12;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -284,7 +284,6 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.currencyId} $integerType,
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
-
 
     batch.execute('''
   CREATE TABLE ${Tables.productImages} (
@@ -1521,6 +1520,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
+      await addColumnIfNotExists(db, Tables.Trips, TripFiles.updatedOn, textType);
       await db.execute(CreateWarehouseTableQuery());
       await db.execute(CreateTripsTableQuery());
     }
@@ -1567,8 +1567,11 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
      ${TripFiles.companySlug} $textTypeNotNull,
      ${TripFiles.branchId} $integerType,
      ${TripFiles.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
+     ${TripFiles.isNew} $boolType CHECK(${TripFiles.isNew} IN (0,1)),
+     ${TripFiles.isEdit} $boolType CHECK(${TripFiles.isEdit} IN (0,1)),
      ${TripFiles.syncDate} $dateTimeType,
      ${TripFiles.startDate} $dateTimeType,
+     ${TripFiles.updatedOn} $textType,
      ${TripFiles.endDate} $dateTimeType,
      ${TripFiles.applicationUserId} $textType,
      ${TripFiles.travelStatus} $integerType);

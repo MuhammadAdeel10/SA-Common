@@ -8,11 +8,14 @@ class TripFiles {
   static final String companySlug = 'companySlug';
   static final String branchId = 'branchId';
   static final String isSync = 'isSync';
+  static final String isNew = 'isNew';
+  static final String isEdit = 'isEdit';
   static final String syncDate = 'syncDate';
   static final String applicationUserId = 'applicationUserId';
   static final String startDate = 'startDate';
   static final String endDate = 'endDate';
   static final String travelStatus = 'travelStatus';
+  static final String updatedOn = 'updatedOn';
 }
 
 class TripModel extends BaseModel<int> {
@@ -25,8 +28,11 @@ class TripModel extends BaseModel<int> {
   DateTime? startDate;
   DateTime? endDate;
   bool isSync;
+  bool isNew;
+  bool isEdit;
   DateTime? syncDate;
   TravelStatus? travelStatus;
+  String? updatedOn;
 
   TripModel({
     this.id,
@@ -34,10 +40,13 @@ class TripModel extends BaseModel<int> {
     this.branchId,
     this.applicationUserId,
     this.isSync = false,
+    this.isNew = false,
+    this.isEdit = false,
     this.syncDate,
     this.endDate,
     this.startDate,
     this.travelStatus,
+    this.updatedOn,
   });
 
   Map<String, dynamic> toMap() {
@@ -50,6 +59,10 @@ class TripModel extends BaseModel<int> {
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
       'travelStatus': travelStatus?.value,
+      'isSync': isSync == false ? 0 : 1,
+      'isNew': isNew == false ? 0 : 1,
+      'isEdit': isEdit == false ? 0 : 1,
+      'updatedOn': updatedOn,
     };
   }
 
@@ -60,10 +73,13 @@ class TripModel extends BaseModel<int> {
       branchId: map['branchId'] != null ? map['branchId'] as int : null,
       applicationUserId: map['applicationUserId'] != null ? map['applicationUserId'] as String : null,
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
+      isNew: (map['isNew'] == 0 || map['isNew'] == false || map['isNew'] == null) ? false : true,
+      isEdit: (map['isEdit'] == 0 || map['isEdit'] == false || map['isEdit'] == null) ? false : true,
       syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
       startDate: map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
       endDate: map['endDate'] != null ? DateTime.parse(map['endDate']) : null,
       travelStatus: map['travelStatus'] == null ? null : intoTravelStatus(map['travelStatus']),
+      updatedOn: map['updatedOn'] != null ? map['updatedOn'] as String : null,
     );
   }
 
