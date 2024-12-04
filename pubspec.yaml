@@ -33,6 +33,7 @@ dependencies:
   flutter_local_notifications: ^18.0.0
   flutter_background_service: ^5.0.10
   google_fonts: ^4.0.3
+  int_to_words: ^0.0.4
   
 
 dev_dependencies:
