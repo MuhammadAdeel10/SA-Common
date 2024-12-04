@@ -44,6 +44,17 @@ class CompanySettingField {
   static final String allowDuplicateProducts = 'allowDuplicateProducts';
   static final String allowNegativeStock = 'allowNegativeStock';
   static final String OrderDateFilter = 'OrderDateFilter';
+  static final String textField1Value = 'textField1Value';
+  static final String textField2Value = 'textField2Value';
+  static final String textField1Caption = 'textField1Caption';
+  static final String textField2Caption = 'textField2Caption';
+  static final String address1 = 'address1';
+  static final String address2 = 'address2';
+  static final String city = 'city';
+  static final String state = 'state';
+  static final String zip = 'zip';
+  static final String countryId = 'countryId';
+  static final String phone = 'phone';
 }
 
 class CompanySettingModel extends BaseModel<Guid> {
@@ -88,6 +99,17 @@ class CompanySettingModel extends BaseModel<Guid> {
   bool currencySymbol;
   bool allowNegativeStock;
   OrderDayType? orderDateFilter;
+  String? textField1Value;
+  String? textField2Value;
+  String? textField1Caption;
+  String? textField2Caption;
+  String? address1;
+  String? address2;
+  String? city;
+  String? state;
+  String? zip;
+  int? countryId;
+  String? phone;
 
   CompanySettingModel(
       {this.id,
@@ -128,6 +150,17 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.customerLoyaltyCalculationType = CustomerLoyaltyCalculationType.None,
       this.currencySymbol = false,
       this.orderDateFilter,
+      this.textField1Caption,
+      this.textField2Caption,
+      this.textField1Value,
+      this.textField2Value,
+      this.address1,
+      this.address2,
+      this.city,
+      this.state,
+      this.zip,
+      this.countryId,
+      this.phone,
       this.allowNegativeStock = false});
 
   CompanySettingModel copyWith({
@@ -210,7 +243,18 @@ class CompanySettingModel extends BaseModel<Guid> {
       'customerLoyaltyCalculationType': customerLoyaltyCalculationType.value,
       'currencySymbol': currencySymbol == true ? 1 : 0,
       'allowNegativeStock': allowNegativeStock == true ? 1 : 0,
-      'orderDateFilter': orderDateFilter!.value,
+      'orderDateFilter': orderDateFilter != null ? orderDateFilter!.value : null,
+      'textField1Value': textField1Value,
+      'textField2Value': textField2Value,
+      'textField1Caption': textField1Caption,
+      'textField2Caption': textField2Caption,
+      if (address1 != null) "address1": address1 ?? "",
+      if (address2 != null) "address2": address2 ?? "",
+      if (city != null) "city": city ?? "",
+      if (state != null) "state": state ?? "",
+      if (zip != null) "zip": zip ?? "",
+      if (countryId != null) "countryId": countryId,
+      if (phone != null) 'phone': phone,
     };
   }
 
@@ -255,6 +299,16 @@ class CompanySettingModel extends BaseModel<Guid> {
       currencySymbol: (map['currencySymbol'] == 0 || map['currencySymbol'] == false) ? false : true,
       allowNegativeStock: (map['allowNegativeStock'] == 0 || map['allowNegativeStock'] == false) ? false : true,
       orderDateFilter: map['orderDateFilter'] == null ? OrderDayType.Today : intoOrderDateFilterEnum(map['orderDateFilter']),
+      textField1Value: map['textField1Value'] ?? "",
+      textField2Value: map['textField2Value'] ?? "",
+      textField1Caption: map['textField1Caption'] ?? "",
+      textField2Caption: map['textField2Caption'] ?? "",
+      address1: map['address1'] ?? "",
+      address2: map['address2'] ?? "",
+      city: map['city'] ?? "",
+      state: map['state'] ?? "",
+      zip: map['zip'] ?? "",
+      phone: map['phone'] ?? "",
     );
   }
 

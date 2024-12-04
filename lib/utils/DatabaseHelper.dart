@@ -62,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 11;
+  int version = 12;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -284,7 +284,6 @@ class DatabaseHelper implements DBHelper {
   ${CountryField.currencyId} $integerType,
   ${CountryField.isSync} $boolType CHECK(${CountryField.isSync} IN (0,1)),
   ${CountryField.syncDate} $dateTimeType)''');
-
 
     batch.execute('''
   CREATE TABLE ${Tables.productImages} (
@@ -531,6 +530,18 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.customerLoyaltyAmountToPointsConversionRate} $decimalType,
       ${CompanySettingField.customerLoyaltyPointsToAmountConversionRate} $decimalType,
       ${CompanySettingField.OrderDateFilter} $integerType,
+      ${CompanySettingField.textField1Value} $textType,
+      ${CompanySettingField.textField2Value} $textType,
+      ${CompanySettingField.textField1Caption} $textType,
+      ${CompanySettingField.textField2Caption} $textType,
+      ${CompanySettingField.address1} $textType,
+      ${CompanySettingField.address2} $textType,
+      ${CompanySettingField.city} $textType,
+      ${CompanySettingField.state} $textType,
+      ${CompanySettingField.zip} $textType,
+      ${CompanySettingField.countryId} $integerType,
+      ${CompanySettingField.phone} $textType,
+
       ${CompanySettingField.customerLoyaltyCalculationType} $integerType
       )''');
     batch.execute('''
@@ -1328,7 +1339,7 @@ class DatabaseHelper implements DBHelper {
   ${TravelLogFiles.latitude} $decimalType,
   ${TravelLogFiles.isIdle} $boolType CHECK(${TravelLogFiles.isIdle} IN (0,1))
 )''');
-    batch.execute(''' 
+    batch.execute('''
     CREATE INDEX Products_id_IDX ON Products (id);
     CREATE INDEX Products_name_IDX ON Products (name);
     CREATE INDEX Products_code_IDX ON Products (code);
@@ -1518,6 +1529,17 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.products, ProductFields.isForSale, boolType);
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.allowDuplicateProducts, boolType);
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.OrderDateFilter, integerType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.textField1Value, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.textField2Value, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.textField1Caption, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.textField2Caption, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.address1, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.address2, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.city, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.state, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.zip, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.countryId, integerType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.phone, textType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);

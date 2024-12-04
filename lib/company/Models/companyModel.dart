@@ -9,14 +9,7 @@ class CompanyModel {
   bool? enableBranch;
   List<Branches>? _branches;
 
-  CompanyModel(
-      {String? id,
-      String? name,
-      String? slug,
-      List<Branches>? branches,
-      String? logo,
-      bool? isDemo,
-      this.enableBranch}) {
+  CompanyModel({String? id, String? name, String? slug, List<Branches>? branches, String? logo, bool? isDemo, this.enableBranch}) {
     if (id != null) {
       this._id = id;
     }
@@ -78,8 +71,7 @@ class CompanyModel {
     return data;
   }
 
-  List<CompanyModel> stringToList(String str) => List<CompanyModel>.from(
-      json.decode(str).map((x) => CompanyModel.fromJson(x)));
+  List<CompanyModel> stringToList(String str) => List<CompanyModel>.from(json.decode(str).map((x) => CompanyModel.fromJson(x)));
 }
 
 class Branches {
@@ -87,9 +79,16 @@ class Branches {
   int? _id;
   String? _prefix;
   int? _defaultPOSCustomerId;
+  String? _address1;
+  String? _address2;
+  String? _city;
+  String? _state;
+  String? _zip;
+  int? _countryId;
+  String? _phone;
   bool _isActive;
 
-  Branches({String? name, int? id, String? prefix, int? defaultPOSCustomerId, bool isActive = false}) : _isActive = isActive {
+  Branches({String? name, int? id, String? prefix, int? defaultPOSCustomerId, String? address1, String? address2, String? city, String? state, String? zip, int? countryId, String? phone, bool isActive = false}) : _isActive = isActive {
     if (name != null) {
       this._name = name;
     }
@@ -98,6 +97,27 @@ class Branches {
     }
     if (prefix != null) {
       this._prefix = prefix;
+    }
+    if (address1 != null) {
+      this._address1 = address1;
+    }
+    if (address2 != null) {
+      this._address2 = address2;
+    }
+    if (city != null) {
+      this._city = city;
+    }
+    if (state != null) {
+      this._state = state;
+    }
+    if (zip != null) {
+      this._zip = zip;
+    }
+    if (countryId != null) {
+      this._countryId = countryId;
+    }
+    if (phone != null) {
+      this._phone = phone;
     }
     if (defaultPOSCustomerId != null) {
       this._defaultPOSCustomerId = defaultPOSCustomerId;
@@ -110,6 +130,20 @@ class Branches {
   set prefix(String? prefix) => _prefix = prefix;
   int? get id => _id;
   set id(int? id) => _id = id;
+  String? get address1 => _address1;
+  set address1(String? address1) => _address1 = address1;
+  String? get address2 => _address2;
+  set address2(String? address2) => _address2 = address2;
+  String? get city => _city;
+  set city(String? city) => _city = city;
+  String? get state => _state;
+  set state(String? state) => _state = state;
+  String? get zip => _zip;
+  set zip(String? zip) => _zip = zip;
+  int? get countryId => _countryId;
+  set countryId(int? countryId) => _countryId = countryId;
+  String? get phone => _phone;
+  set phone(String? phone) => _phone = phone;
 
   int? get defaultPOSCustomerId => _defaultPOSCustomerId;
   set defaultPOSCustomerId(int? defaultPOSCustomerId) => _defaultPOSCustomerId = defaultPOSCustomerId;
@@ -121,7 +155,14 @@ class Branches {
         _name = json['name'],
         _id = json['id'],
         _prefix = json['prefix'],
-        _defaultPOSCustomerId = json['defaultPOSCustomerId'];
+        _defaultPOSCustomerId = json['defaultPOSCustomerId'],
+        _address1 = json['address1'],
+        _address2 = json['address2'],
+        _city = json['city'],
+        _state = json['state'],
+        _zip = json['zip'],
+        _countryId = json['countryId'],
+        _phone = json['phone'];
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -130,9 +171,15 @@ class Branches {
     data['prefix'] = this.prefix;
     data['defaultPOSCustomerId'] = this.defaultPOSCustomerId;
     data['_isActive'] = this._isActive;
+    data['address1'] = this._address1;
+    data['address2'] = this._address2;
+    data['city'] = this._city;
+    data['state'] = this._state;
+    data['zip'] = this._zip;
+    data['countryId'] = this._countryId;
+    data['phone'] = this._phone;
     return data;
   }
 
-  List<Branches> FromJson(String str) =>
-      List<Branches>.from(json.decode(str).map((x) => Branches.fromJson(x)));
+  List<Branches> FromJson(String str) => List<Branches>.from(json.decode(str).map((x) => Branches.fromJson(x)));
 }
