@@ -204,6 +204,12 @@ class CompanyController extends BaseController {
         companyModel.defaultPOSCustomerId = companySettings.defaultPOSCustomerId;
         companyModel.printerName = companySettings.printerName;
         companyModel.allowDuplicateProducts = companySettings.allowDuplicateProducts;
+        companyModel.address1 = companySettings.address1;
+        companyModel.address2 = companySettings.address2;
+        companyModel.phone = companySettings.phone;
+        companyModel.city = companySettings.city;
+        companyModel.state = companySettings.state;
+        companyModel.zip = companySettings.zip;
       }
       await CompanySettingDatabase().newUpdate(companyModel);
       if (companySettings != null) {
