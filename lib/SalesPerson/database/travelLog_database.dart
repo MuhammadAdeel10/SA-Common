@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:sa_common/Controller/BaseRepository.dart';
 import 'package:sa_common/SalesPerson/model/TravelLogModel.dart';
 import 'package:sa_common/utils/DatabaseHelper.dart';
@@ -6,8 +7,7 @@ import 'package:sa_common/utils/TablesName.dart';
 import 'package:sqflite/sqflite.dart';
 
 class TravelLogDatabase {
-  static final dao = BaseRepository<TravelLogModel>(TravelLogModel(),
-      tableName: Tables.TravelLogs);
+  static final dao = BaseRepository<TravelLogModel>(TravelLogModel(), tableName: Tables.TravelLogs);
   Future<TravelLogModel> find(int id) => dao.find(id);
   Future<List<TravelLogModel>> getAll() => dao.getAll();
   Future<int> insert(TravelLogModel model) => dao.insert(model);
@@ -42,5 +42,16 @@ class TravelLogDatabase {
     Batch batch = db.batch();
     batch.rawQuery(''' update ${Tables.TravelLogs} set IsSync = 1 where companySlug = '$companySlug' and branchId = $branchId ''');
     await batch.commit();
+  }
+
+  static Future<bool> BulkUpdateTrip(int? tripId, int? localTripId, String? companySlug) async {
+    try {
+      final db = await DatabaseHelper.instance.database;
+      await db.rawQuery('''Update ${Tables.TravelLogs} set tripId = $tripId where companySlug = '$companySlug' and tripId = $localTripId ''');
+      return true;
+    } catch (ex) {
+      log("Error With catch Exception $ex");
+      return false;
+    }
   }
 }

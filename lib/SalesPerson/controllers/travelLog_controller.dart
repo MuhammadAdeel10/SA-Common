@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
@@ -16,7 +17,9 @@ import 'package:sa_common/utils/DatabaseHelper.dart';
 import 'package:sa_common/utils/Enums.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
+import 'package:sa_common/utils/TablesName.dart';
 import 'package:sa_common/utils/pref_utils.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -207,14 +210,18 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<int> startTrip({TravelStatus? travelStatus}) async {
+  Future<int> startTrip({required TravelStatus travelStatus}) async {
     try {
       TripModel trip = TripModel(
         applicationUserId: Helper.user.userId,
         branchId: Helper.user.branchId,
         startDate: DateTime.now(),
+        isNew: true,
         travelStatus: travelStatus,
       );
+      if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+        await postTrip();
+      }
       int id = await TripDatabase.dao.insert(trip);
       return id;
     } catch (ex) {
@@ -223,12 +230,105 @@ class TravelLogController extends BaseController {
     }
   }
 
+  Future<void> postTrip() async {
+    var trips = await TripDatabase.dao.SelectList("isNew = 1 and branchId = ${Helper.user.branchId}");
+    if (trips != null && trips.isNotEmpty) {
+      var payload = trips.map((trip) {
+        trip.tripId = trip.id;
+        trip.id = 0;
+        return trip.toMap();
+      }).toList();
+
+      var response = await this.baseClient.post(
+            ApiEndPoint.baseUrl,
+            "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk",
+            payload,
+          );
+
+      if (response != null && response.statusCode == 200) {
+        var responseJson = json.decode(response.body);
+        if (responseJson["success"] != null && responseJson["success"].isNotEmpty) {
+          var responseList = (responseJson["success"] as List).map((item) => TripModel.fromMap(item, slug: Helper.user.companyId)).toList();
+          for (var model in responseList) {
+            var travelLogs = await TravelLogDatabase.dao.SelectList("tripId = ${model.tripId}");
+            if (travelLogs != null) {
+              await TravelLogDatabase.BulkUpdateTrip(model.id, model.tripId, model.companySlug);
+            }
+          }
+          final db = await DatabaseHelper.instance.database;
+
+          try {
+            await db.transaction((txn) async {
+              Batch batch = txn.batch();
+              for (var model in responseList) {
+                batch.delete(
+                  Tables.Trips,
+                  where: "id = ?",
+                  whereArgs: [model.tripId],
+                );
+
+                model.isNew = false;
+                batch.insert(Tables.Trips, model.toMap());
+              }
+              await batch.commit();
+            });
+          } catch (e) {
+            print("Transaction failed: $e");
+            rethrow;
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> updateTrip() async {
+    var trips = await TripDatabase.dao.SelectList("isEdit = 1 and branchId = ${Helper.user.branchId}");
+    if (trips != null && trips.isNotEmpty) {
+      var payload = trips.map((trip) => trip.toMap()).toList();
+      var response = await this.baseClient.put(
+            ApiEndPoint.baseUrl,
+            "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk",
+            payload,
+          );
+      if (response != null && response.statusCode == 200) {
+        var responseJson = json.decode(response.body);
+        if (responseJson["errors"] != null || responseJson["errors"].isNotEmpty) {
+          var errorIds = (responseJson["errors"] as List).map((error) => int.tryParse(error["id"] ?? "")).where((id) => id != null).toSet();
+          var tripsToDelete = trips.where((trip) => !errorIds.contains(trip.id)).toList();
+          if (tripsToDelete.isNotEmpty) {
+            final db = await DatabaseHelper.instance.database;
+            try {
+              await db.transaction((txn) async {
+                Batch batch = txn.batch();
+                for (var trip in tripsToDelete) {
+                  batch.delete(
+                    Tables.Trips,
+                    where: "id = ?",
+                    whereArgs: [trip.id],
+                  );
+                }
+                await batch.commit();
+              });
+            } catch (e) {
+              rethrow;
+            }
+          }
+        }
+      }
+    }
+  }
+
   Future endTrip() async {
     try {
       var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
       if (trip != null) {
+        trip.isEdit = true;
         trip.endDate = DateTime.now();
         await TripDatabase.dao.update(trip);
+        if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+          await postTrip();
+          await updateTrip();
+        }
       }
     } catch (ex) {
       log("Exception Background End Trip $ex");
