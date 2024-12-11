@@ -297,24 +297,24 @@ class Helper extends BaseController {
     }
   }
 
- static http.Response handleHttpResponse(http.Response response) {
+  static void logAndShowError(String title, String message, String errorLogMessage, BuildContext? context, [bool navigateToLogin = false]) {
+    Logger.ErrorLog(errorLogMessage);
+    if (navigateToLogin) {
+      Helper.infoMsg('Session Expired', 'You are already logged in another session', null);
+      Get.offNamedUntil(Routes.LOGIN, (route) => false);
+    } else {
+      Helper.errorMsg(title, message, context);
+    }
+    if (Get.isDialogOpen!) {
+      Get.back();
+    }
+  }
+
+  static http.Response handleHttpResponse(http.Response response) {
     final statusCode = response.statusCode;
     final requestInfo = 'Url: ${response.request}';
     final errorLogMessage = '$requestInfo Server Exception with statusCode: $statusCode data: ${response.body}';
-        BuildContext? context = Get.key.currentContext;
-
-    void logAndShowError(String title, String message, [bool navigateToLogin = false]) {
-      Logger.ErrorLog(errorLogMessage);
-      if (navigateToLogin) {
-        Helper.infoMsg('Session Expired', 'You are already logged in another session', null);
-        Get.offNamedUntil(Routes.LOGIN, (route) => false);
-      } else {
-        Helper.errorMsg(title, message, context);
-      }
-      if (Get.isDialogOpen!) {
-        Get.back();
-      }
-    }
+    BuildContext? context = Get.key.currentContext;
 
     switch (statusCode) {
       case 200:
@@ -324,15 +324,15 @@ class Helper extends BaseController {
       case 401:
       case 427:
       case 423:
-        logAndShowError('Session Expired', 'You are already logged in another session', true);
+        logAndShowError('Session Expired', 'You are already logged in another session', errorLogMessage, context, true);
         break;
 
       case 500:
-        logAndShowError('Server Error', 'Internal Server Error');
+        logAndShowError('Server Error', 'Internal Server Error', errorLogMessage, context);
         break;
 
       case 400:
-        logAndShowError('Server Message', response.body);
+        logAndShowError('Server Message', response.body, errorLogMessage, context);
         break;
 
       default:
