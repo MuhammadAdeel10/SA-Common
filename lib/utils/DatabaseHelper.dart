@@ -62,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 12;
+  int version = 13;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -1544,6 +1544,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.updatedOn, textType);
+      await addColumnIfNotExists(db, Tables.Trips, TripFiles.tripId, integerType);
       await db.execute(CreateWarehouseTableQuery());
       await db.execute(CreateTripsTableQuery());
     }
@@ -1589,7 +1590,8 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
      ${TripFiles.id} $idTypeNoAutoIncrement,
      ${TripFiles.companySlug} $textTypeNotNull,
      ${TripFiles.branchId} $integerType,
-     ${TripFiles.isSync} $boolType CHECK(${ProductSockField.isSync} IN (0,1)),
+     ${TripFiles.tripId} $integerType,
+     ${TripFiles.isSync} $boolType CHECK(${TripFiles.isSync} IN (0,1)),
      ${TripFiles.isNew} $boolType CHECK(${TripFiles.isNew} IN (0,1)),
      ${TripFiles.isEdit} $boolType CHECK(${TripFiles.isEdit} IN (0,1)),
      ${TripFiles.syncDate} $dateTimeType,

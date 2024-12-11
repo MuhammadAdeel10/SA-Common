@@ -7,6 +7,7 @@ class TripFiles {
   static final String id = 'id';
   static final String companySlug = 'companySlug';
   static final String branchId = 'branchId';
+  static final String tripId = 'tripId';
   static final String isSync = 'isSync';
   static final String isNew = 'isNew';
   static final String isEdit = 'isEdit';
@@ -24,6 +25,7 @@ class TripModel extends BaseModel<int> {
   @override
   String? companySlug;
   int? branchId;
+  int? tripId;
   String? applicationUserId;
   DateTime? startDate;
   DateTime? endDate;
@@ -38,6 +40,7 @@ class TripModel extends BaseModel<int> {
     this.id,
     this.companySlug,
     this.branchId,
+    this.tripId,
     this.applicationUserId,
     this.isSync = false,
     this.isNew = false,
@@ -55,6 +58,7 @@ class TripModel extends BaseModel<int> {
       'companySlug': companySlug,
       'branchId': branchId,
       'applicationUserId': applicationUserId,
+      'tripId': tripId,
       'syncDate': syncDate?.toIso8601String(),
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
@@ -71,6 +75,7 @@ class TripModel extends BaseModel<int> {
       id: map['id'] != null ? map['id'] as int : null,
       companySlug: slug ?? map['companySlug'],
       branchId: map['branchId'] != null ? map['branchId'] as int : null,
+      tripId: map['tripId'] != null ? map['tripId'] as int : null,
       applicationUserId: map['applicationUserId'] != null ? map['applicationUserId'] as String : null,
       isSync: (map['isSync'] == 0 || map['isSync'] == false) ? false : true,
       isNew: (map['isNew'] == 0 || map['isNew'] == false || map['isNew'] == null) ? false : true,

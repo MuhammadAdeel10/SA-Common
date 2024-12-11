@@ -17,7 +17,9 @@ import 'package:sa_common/utils/DatabaseHelper.dart';
 import 'package:sa_common/utils/Enums.dart';
 import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
+import 'package:sa_common/utils/TablesName.dart';
 import 'package:sa_common/utils/pref_utils.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -217,13 +219,10 @@ class TravelLogController extends BaseController {
         isNew: true,
         travelStatus: travelStatus,
       );
-      int id = await TripDatabase.dao.insert(trip);
       if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
-        var responseId = await postTrip();
-        if (responseId != null) {
-          return responseId;
-        }
+        await postTrip();
       }
+      int id = await TripDatabase.dao.insert(trip);
       return id;
     } catch (ex) {
       log("Exception Background Start Trip $ex");
@@ -231,43 +230,89 @@ class TravelLogController extends BaseController {
     }
   }
 
-  Future<int?> postTrip() async {
+  Future<void> postTrip() async {
     var trips = await TripDatabase.dao.SelectList("isNew = 1 and branchId = ${Helper.user.branchId}");
     if (trips != null && trips.isNotEmpty) {
-      for (var trip in trips) {
-        var localId = trip.id;
+      var payload = trips.map((trip) {
+        trip.tripId = trip.id;
         trip.id = 0;
-        var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/Trips", trip);
-        if (response != null && response.statusCode == 201) {
-          var modelRes = TripModel.fromMap(json.decode(response.body));
-          var travelLogs = await TravelLogDatabase.dao.SelectList("tripId = $localId");
-          if (travelLogs != null) {
-            await TravelLogDatabase.BulkUpdateTrip(modelRes.id, localId, trip.companySlug);
-          }
-          await TripDatabase.dao.deleteById(localId ?? 0);
-          modelRes.branchId = trip.branchId;
-          modelRes.isNew = false;
-          await TripDatabase.dao.insert(modelRes);
+        return trip.toMap();
+      }).toList();
 
-          return modelRes.id;
+      var response = await this.baseClient.post(
+            ApiEndPoint.baseUrl,
+            "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk",
+            payload,
+          );
+
+      if (response != null && response.statusCode == 200) {
+        var responseJson = json.decode(response.body);
+        if (responseJson["success"] != null && responseJson["success"].isNotEmpty) {
+          var responseList = (responseJson["success"] as List).map((item) => TripModel.fromMap(item, slug: Helper.user.companyId)).toList();
+          for (var model in responseList) {
+            var travelLogs = await TravelLogDatabase.dao.SelectList("tripId = ${model.tripId}");
+            if (travelLogs != null) {
+              await TravelLogDatabase.BulkUpdateTrip(model.id, model.tripId, model.companySlug);
+            }
+          }
+          final db = await DatabaseHelper.instance.database;
+
+          try {
+            await db.transaction((txn) async {
+              Batch batch = txn.batch();
+              for (var model in responseList) {
+                batch.delete(
+                  Tables.Trips,
+                  where: "id = ?",
+                  whereArgs: [model.tripId],
+                );
+
+                model.isNew = false;
+                batch.insert(Tables.Trips, model.toMap());
+              }
+              await batch.commit();
+            });
+          } catch (e) {
+            print("Transaction failed: $e");
+            rethrow;
+          }
         }
       }
     }
-    return null;
   }
 
-  updateTrip() async {
+  Future<void> updateTrip() async {
     var trips = await TripDatabase.dao.SelectList("isEdit = 1 and branchId = ${Helper.user.branchId}");
     if (trips != null && trips.isNotEmpty) {
-      for (var trip in trips) {
-        var localId = trip.id;
-        var response = await this.baseClient.put(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/Trips/${trip.id}", trip);
-        if (response != null && response.statusCode == 200) {
-          var modelRes = TripModel.fromMap(json.decode(response.body));
-          await TripDatabase.dao.deleteById(localId ?? 0);
-          modelRes.branchId = trip.branchId;
-          modelRes.isEdit = false;
-          await TripDatabase.dao.insert(modelRes);
+      var payload = trips.map((trip) => trip.toMap()).toList();
+      var response = await this.baseClient.put(
+            ApiEndPoint.baseUrl,
+            "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk",
+            payload,
+          );
+      if (response != null && response.statusCode == 200) {
+        var responseJson = json.decode(response.body);
+        if (responseJson["errors"] != null || responseJson["errors"].isNotEmpty) {
+          var errorIds = (responseJson["errors"] as List).map((error) => int.tryParse(error["id"] ?? "")).where((id) => id != null).toSet();
+          var tripsToDelete = trips.where((trip) => !errorIds.contains(trip.id)).toList();
+          if (tripsToDelete.isNotEmpty) {
+            final db = await DatabaseHelper.instance.database;
+            try {
+              await db.transaction((txn) async {
+                Batch batch = txn.batch();
+                for (var trip in tripsToDelete) {
+                  batch.delete(
+                    Tables.Trips,
+                    where: "id = ?",
+                    whereArgs: [trip.id],
+                  );
+                }
+                await batch.commit();
+              });
+            } catch (e) {
+              rethrow;
+            }
+          }
         }
       }
     }
@@ -281,6 +326,7 @@ class TravelLogController extends BaseController {
         trip.endDate = DateTime.now();
         await TripDatabase.dao.update(trip);
         if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+          await postTrip();
           await updateTrip();
         }
       }
