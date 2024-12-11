@@ -20,6 +20,7 @@ import 'package:sa_common/schemes/models/tax_model.dart';
 import 'package:sa_common/synchronization/Database/BranchProductTax_database.dart';
 import 'package:sa_common/synchronization/Models/BranchProductTaxModel.dart';
 import 'package:sa_common/utils/Logger.dart';
+import 'package:sa_common/utils/app_routes.dart';
 import 'package:sa_common/utils/pref_utils.dart';
 import 'package:toastification/toastification.dart';
 import '../Controller/BaseController.dart';
@@ -32,6 +33,7 @@ import '../synchronization/Database/EndOfTheDay_database.dart';
 import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
 import 'LocalStorageKey.dart';
+import 'package:http/http.dart' as http;
 
 class Helper extends BaseController {
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
@@ -293,5 +295,51 @@ class Helper extends BaseController {
     } catch (error) {
       pagingController.error = error;
     }
+  }
+
+ static http.Response handleHttpResponse(http.Response response) {
+    final statusCode = response.statusCode;
+    final requestInfo = 'Url: ${response.request}';
+    final errorLogMessage = '$requestInfo Server Exception with statusCode: $statusCode data: ${response.body}';
+        BuildContext? context = Get.key.currentContext;
+
+    void logAndShowError(String title, String message, [bool navigateToLogin = false]) {
+      Logger.ErrorLog(errorLogMessage);
+      if (navigateToLogin) {
+        Helper.infoMsg('Session Expired', 'You are already logged in another session', null);
+        Get.offNamedUntil(Routes.LOGIN, (route) => false);
+      } else {
+        Helper.errorMsg(title, message, context);
+      }
+      if (Get.isDialogOpen!) {
+        Get.back();
+      }
+    }
+
+    switch (statusCode) {
+      case 200:
+        Logger.InfoLog('Data Push Server statusCode: $statusCode $requestInfo');
+        break;
+
+      case 401:
+      case 427:
+      case 423:
+        logAndShowError('Session Expired', 'You are already logged in another session', true);
+        break;
+
+      case 500:
+        logAndShowError('Server Error', 'Internal Server Error');
+        break;
+
+      case 400:
+        logAndShowError('Server Message', response.body);
+        break;
+
+      default:
+        Logger.InfoLog('Unhandled statusCode: $statusCode $requestInfo');
+        break;
+    }
+
+    return response;
   }
 }
