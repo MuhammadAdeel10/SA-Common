@@ -512,6 +512,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.enableSalesGeography} $boolType CHECK(${CompanySettingField.enableSalesGeography} IN (0,1)),
       ${CompanySettingField.enableMasterGroups} $boolType CHECK(${CompanySettingField.enableMasterGroups} IN (0,1)),
       ${CompanySettingField.enableDetailBGroups} $boolType CHECK(${CompanySettingField.enableDetailBGroups} IN (0,1)),
+      ${CompanySettingField.enableNarration} $boolType CHECK(${CompanySettingField.enableNarration} IN (0,1)),
       ${CompanySettingField.enableDetailAGroups} $boolType CHECK(${CompanySettingField.enableDetailAGroups} IN (0,1)),
       ${CompanySettingField.currencySymbol} $boolType CHECK(${CompanySettingField.currencySymbol} IN (0,1)),
       ${CompanySettingField.allowDuplicateProducts} $boolType CHECK(${CompanySettingField.allowDuplicateProducts} IN (0,1)),
@@ -1540,6 +1541,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.zip, textType);
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.countryId, integerType);
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.phone, textType);
+      await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.enableNarration, boolType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);

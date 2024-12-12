@@ -33,7 +33,6 @@ import '../synchronization/Database/EndOfTheDay_database.dart';
 import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
 import 'LocalStorageKey.dart';
-import 'package:http/http.dart' as http;
 
 class Helper extends BaseController {
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
