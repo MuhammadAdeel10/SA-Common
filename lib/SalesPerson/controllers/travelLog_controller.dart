@@ -102,7 +102,10 @@ class TravelLogController extends BaseController {
             var lastLocation = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
             var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
             if (lastLocation?.isIdle == true) {
+              await endTrip();
+              await SetCurrentLocation(isIdle: true, tripId: trip?.id);
               trip?.id = await startTrip(travelStatus: TravelStatus.Moving);
+              await SetCurrentLocation(tripId: trip?.id);
             }
             await CreateTravelLog(position, tripId: trip?.id);
           }
@@ -341,6 +344,7 @@ class TravelLogController extends BaseController {
       await TravelLogDatabase.dao.insert(travelLog);
 
       if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
+        await postTrip();
         await SyncToServerTravelLog();
       }
     } catch (ex) {
@@ -386,8 +390,10 @@ class TravelLogController extends BaseController {
         final DateTime timeLimit = currentTime.subtract(Duration(minutes: 4));
         if (logs.isIdle == false && logs.locationDateTime!.isBefore(timeLimit)) {
           var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
-          await SetCurrentLocation(isIdle: true, tripId: trip?.id);
           await endTrip();
+          await SetCurrentLocation(isIdle: true, tripId: trip?.id);
+          trip?.id = await startTrip(travelStatus: TravelStatus.Idle);
+          await SetCurrentLocation(isIdle: true, tripId: trip?.id);
         }
       }
     }
