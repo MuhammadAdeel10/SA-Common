@@ -62,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 13;
+  int version = 14;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -1547,6 +1547,8 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.updatedOn, textType);
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.tripId, integerType);
+      await addColumnIfNotExists(db, Tables.Trips, TripFiles.isNew, boolType);
+      await addColumnIfNotExists(db, Tables.Trips, TripFiles.isEdit, boolType);
       await db.execute(CreateWarehouseTableQuery());
       await db.execute(CreateTripsTableQuery());
     }
