@@ -27,6 +27,7 @@ class CompanySettingField {
   static final String detailBGroupCaption = 'detailBGroupCaption';
   static final String enableDetailAGroups = 'enableDetailAGroups';
   static final String enableDetailBGroups = 'enableDetailBGroups';
+  static final String enableNarration = 'enableNarration';
   static final String isSync = 'isSync';
   static final String syncDate = 'syncDate';
   static final String printerName = 'printerName';
@@ -83,6 +84,7 @@ class CompanySettingModel extends BaseModel<Guid> {
   bool enableDetailAGroups;
   String? detailAGroupCaption;
   bool enableDetailBGroups;
+  bool enableNarration;
   bool allowDuplicateProducts;
   String? detailBGroupCaption;
   String? printerName;
@@ -138,6 +140,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       this.detailBGroupCaption,
       this.enableDetailAGroups = false,
       this.enableDetailBGroups = false,
+      this.enableNarration = false,
       this.enableScheme = false,
       this.defaultPOSCustomerId = 0,
       this.enableCustomerLoyaltyPoints = false,
@@ -230,6 +233,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       'currencyId': currencyId,
       'enableDetailAGroups': enableDetailAGroups == true ? 1 : 0,
       'enableDetailBGroups': enableDetailBGroups == true ? 1 : 0,
+      'enableNarration': enableNarration == true ? 1 : 0,
       'enableScheme': enableScheme == true ? 1 : 0,
       'masterGroupCaption': masterGroupCaption,
       'detailAGroupCaption': detailAGroupCaption,
@@ -284,6 +288,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       enableMasterGroups: (map['enableMasterGroups'] == 0 || map['enableMasterGroups'] == false) ? false : true,
       currencyId: map['currencyId']?.toInt() ?? 0,
       enableDetailBGroups: (map['enableDetailBGroups'] == 0 || map['enableDetailBGroups'] == false) ? false : true,
+      enableNarration: (map['enableNarration'] == 0 || map['enableNarration'] == false) ? false : true,
       enableDetailAGroups: (map['enableDetailAGroups'] == 0 || map['enableDetailAGroups'] == false) ? false : true,
       masterGroupCaption: map['masterGroupCaption'] ?? '',
       detailAGroupCaption: map['detailAGroupCaption'] ?? '',
