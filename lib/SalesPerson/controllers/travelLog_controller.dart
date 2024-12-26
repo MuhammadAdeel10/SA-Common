@@ -94,7 +94,10 @@ class TravelLogController extends BaseController {
 
     if (isCheckIn) {
       subscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(distanceFilter: 15),
+        locationSettings: LocationSettings(
+          distanceFilter: 15,
+          accuracy: LocationAccuracy.high,
+        ),
       ).listen((Position position) async {
         if (position.speed > 0.5) {
           if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
@@ -102,9 +105,6 @@ class TravelLogController extends BaseController {
             var lastLocation = await TravelLogDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
             var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
             if (lastLocation?.isIdle == true) {
-              await endTrip();
-              await SetCurrentLocation(isIdle: true, tripId: trip?.id);
-              trip?.id = await startTrip(travelStatus: TravelStatus.Moving);
               await SetCurrentLocation(tripId: trip?.id);
             }
             await CreateTravelLog(position, tripId: trip?.id);
@@ -390,9 +390,6 @@ class TravelLogController extends BaseController {
         final DateTime timeLimit = currentTime.subtract(Duration(minutes: 4));
         if (logs.isIdle == false && logs.locationDateTime!.isBefore(timeLimit)) {
           var trip = await TripDatabase.dao.SelectSingle("branchId = ${Helper.user.branchId} order by id desc limit 1");
-          await endTrip();
-          await SetCurrentLocation(isIdle: true, tripId: trip?.id);
-          trip?.id = await startTrip(travelStatus: TravelStatus.Idle);
           await SetCurrentLocation(isIdle: true, tripId: trip?.id);
         }
       }
