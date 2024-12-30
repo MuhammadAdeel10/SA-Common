@@ -19,6 +19,7 @@ class SalesPersonFiles {
   static final String saleOrderSeries = 'saleOrderSeries';
   static final String isActive = 'isActive';
   static final String branchId = 'branchId';
+  static final String employeeId = 'employeeId';
 }
 mixin  DropDown{ 
 abstract String name;
@@ -43,7 +44,8 @@ class SalesPersonModel extends BaseModel<int> with DropDown  {
   DateTime? syncDate;
   bool isActive;
   int? branchId;
-  SalesPersonModel({this.id, this.companySlug, this.name = "", this.isOrderBooker = false, this.isDeliveryPerson = false, this.isSalesman = false, this.CanChangePrice = false, this.CanAddDiscount = false, this.applicationUserId = "", this.cashAccountId, this.receiveMoneySeries = "", this.saleOrderSeries = "", this.isSync = false, this.syncDate, this.isActive = true, this.branchId});
+  int? employeeId;
+  SalesPersonModel({this.id, this.companySlug, this.name = "", this.isOrderBooker = false, this.isDeliveryPerson = false, this.isSalesman = false, this.CanChangePrice = false, this.CanAddDiscount = false, this.applicationUserId = "", this.cashAccountId, this.receiveMoneySeries = "", this.saleOrderSeries = "", this.isSync = false, this.syncDate, this.isActive = true, this.branchId, this.employeeId});
 
   Map<String, dynamic> toMap() {
     return {
@@ -62,7 +64,8 @@ class SalesPersonModel extends BaseModel<int> with DropDown  {
       'isSync': isSync == true ? 1 : 0,
       'syncDate': syncDate?.toIso8601String(),
       'isActive': isActive == false ? 0 : 1,
-      'branchId': branchId
+      'branchId': branchId,
+      'employeeId': employeeId
     };
   }
 
@@ -84,6 +87,7 @@ class SalesPersonModel extends BaseModel<int> with DropDown  {
       syncDate: map['syncDate'] != null ? DateTime.parse(map['syncDate']) : null,
       isActive: (map['isActive'] == 0 || map['isActive'] == false) ? false : true,
       branchId: map['branchId']?.toInt(),
+      employeeId: map['employeeId']?.toInt(),
     );
   }
 

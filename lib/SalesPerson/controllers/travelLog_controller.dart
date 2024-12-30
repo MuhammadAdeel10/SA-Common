@@ -296,7 +296,7 @@ class TravelLogController extends BaseController {
       if (response != null && response.statusCode == 200) {
         var responseJson = json.decode(response.body);
         if (responseJson["errors"] != null || responseJson["errors"].isNotEmpty) {
-          var errorIds = (responseJson["errors"] as List).map((error) => int.tryParse(error["id"] ?? "")).where((id) => id != null).toSet();
+          var errorIds = (responseJson["errors"] as List).map((error) => int.tryParse(error["clientId"] ?? "")).where((id) => id != null).toSet();
           var tripsToDelete = trips.where((trip) => !errorIds.contains(trip.id)).toList();
           if (tripsToDelete.isNotEmpty) {
             final db = await DatabaseHelper.instance.database;

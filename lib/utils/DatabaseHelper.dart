@@ -62,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 14;
+  int version = 17;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -562,6 +562,7 @@ class DatabaseHelper implements DBHelper {
       ${SalesPersonFiles.isSync} $boolType CHECK(${SalesPersonFiles.isSync} IN (0,1)),
       ${SalesPersonFiles.syncDate} $dateTimeType,
       ${SalesPersonFiles.branchId} $integerType,
+      ${SalesPersonFiles.employeeId} $integerType,
       ${SalesPersonFiles.isActive} $boolType CHECK(${SalesPersonFiles.isActive} IN (0,1))
       )''');
 
@@ -1549,6 +1550,7 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.tripId, integerType);
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.isNew, boolType);
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.isEdit, boolType);
+      await addColumnIfNotExists(db, Tables.SalesPerson, SalesPersonFiles.employeeId, integerType);
       await db.execute(CreateWarehouseTableQuery());
       await db.execute(CreateTripsTableQuery());
     }
