@@ -201,6 +201,7 @@ class Helper extends BaseController {
   static DateFormat onlyDateFormatterDateMonth = DateFormat('dd-MM-yyyy');
   static DateFormat onlyDateFormatterYearMonth = DateFormat('yyyy-MM-dd');
   static DateFormat onlyTimeFormatter = DateFormat.jm();
+  static final DateFormat eventTimeFormatter = DateFormat("h:mm a");
 
   static String DateTimeRemoveZ(DateTime date) {
     var dateString = date.toIso8601String();

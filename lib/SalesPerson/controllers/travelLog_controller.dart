@@ -309,6 +309,11 @@ class TravelLogController extends BaseController {
                     where: "id = ?",
                     whereArgs: [trip.id],
                   );
+                  batch.delete(
+                    Tables.TravelLogs,
+                    where: "tripId = ?",
+                    whereArgs: [trip.id],
+                  );
                 }
                 await batch.commit();
               });
