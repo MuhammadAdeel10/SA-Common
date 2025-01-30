@@ -130,7 +130,7 @@ class TravelLogController extends BaseController {
     locations.clear();
   }
 
-  void requestEnableGps() async {
+  requestEnableGps() async {
     if (await isGpsEnabled()) {
       log("Already open");
       gpsEnabled = true;
