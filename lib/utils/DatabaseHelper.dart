@@ -62,7 +62,7 @@ class DatabaseHelper implements DBHelper {
   String integerTypeNotNull = 'INTEGER Not Null';
   String dateTimeType = 'Datetime';
   String decimalType = 'DECIMAL(30, 10)';
-  int version = 31;
+  int version = 33;
   String dataBaseName = "";
 
   static final DatabaseHelper instance = DatabaseHelper.init();
@@ -340,6 +340,8 @@ class DatabaseHelper implements DBHelper {
     ${CustomerFields.id} $idTypeNoAutoIncrement,
     ${CustomerFields.idTemp} $integerType,
     ${CustomerFields.name} $textTypeNotNull,
+    ${CustomerFields.base64ImageString} $textType,
+    ${CustomerFields.imageUrl} $textType,
     ${CustomerFields.contactType} $integerType,
     ${CustomerFields.code} $textType,
     ${CustomerFields.series} $integerType,
@@ -1544,6 +1546,8 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.phone, textType);
       await addColumnIfNotExists(db, Tables.CompanySetting, CompanySettingField.enableNarration, boolType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.latitude, decimalType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.base64ImageString, textType);
+      await addColumnIfNotExists(db, Tables.Customer, CustomerFields.imageUrl, textType);
       await addColumnIfNotExists(db, Tables.Customer, CustomerFields.longitude, decimalType);
       await addColumnIfNotExists(db, Tables.TravelLogs, TravelLogFiles.isIdle, boolType);
       await addColumnIfNotExists(db, Tables.Trips, TripFiles.updatedOn, textType);

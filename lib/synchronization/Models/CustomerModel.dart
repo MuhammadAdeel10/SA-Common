@@ -5,11 +5,12 @@ import 'package:sa_common/schemes/models/SubAreasModel.dart';
 import '../../Controller/BaseRepository.dart';
 import '../../SalesPerson/model/SalesPersonModel.dart';
 
-
 class CustomerFields {
   static final String id = 'id';
   static final String idTemp = 'idTemp';
   static final String name = 'name';
+  static final String base64ImageString = 'base64ImageString';
+  static final String imageUrl = 'imageUrl';
   static final String code = 'code';
   static final String series = 'series';
   static final String contactType = 'contactType';
@@ -58,6 +59,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
   @override
   int? id;
   String name;
+  String? base64ImageString;
+  String? imageUrl;
   String code;
   String series;
   int contactType;
@@ -105,6 +108,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
   CustomerModel(
       {this.id,
       this.name = "",
+      this.base64ImageString,
+      this.imageUrl,
       this.code = "",
       this.series = "",
       this.contactType = 0,
@@ -152,6 +157,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
   CustomerModel copyWith(
       {int? id,
       String? name,
+      String? base64ImageString,
+      String? imageUrl,
       String? code,
       String? series,
       int? contactType,
@@ -196,6 +203,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
     return CustomerModel(
         id: id ?? this.id,
         name: name ?? this.name,
+        base64ImageString: base64ImageString ?? this.base64ImageString,
+        imageUrl: imageUrl ?? this.imageUrl,
         code: code ?? this.code,
         series: series ?? this.series,
         contactType: contactType ?? this.contactType,
@@ -243,6 +252,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
     return {
       'id': id,
       'name': name,
+      'base64ImageString': base64ImageString,
+      'imageUrl': imageUrl,
       'code': code,
       'series': series,
       'contactType': contactType,
@@ -292,6 +303,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
     return CustomerModel(
       id: map['id']?.toInt(),
       name: map['name'] ?? '',
+      base64ImageString: map['base64ImageString'] ?? '',
+      imageUrl: map['imageUrl'] ?? '',
       code: map['code'] ?? '',
       series: map['series'].toString(),
       contactType: map['contactType'] ?? 0,
@@ -353,7 +366,7 @@ class CustomerModel extends BaseModel<int> with DropDown {
 
   @override
   String toString() {
-    return 'CustomerModel(id: $id, name: $name, code: $code, series: $series, contactType: $contactType, CustomerCategoryId: $customerCategoryId, categoryName: $categoryName, CountryId: $countryId, CurrencyId: $currencyId, companySlug: $companySlug, address1: $address1, Address2: $address2, city: $city, contactPerson: $contactPerson, phone: $phone, fax: $fax, opening: $opening, asOfDate: $asOfDate, creditLimit: $creditLimit, creditLimitDays: $creditLimitDays, displayName: $displayName, printName: $printName, cNIC: $cNIC, outstandingBalance: $outstandingBalance, dateOfBirth: $dateOfBirth, sTN: $sTN, ExchangeRate: $exchangeRate, latitude: $latitude, longitude: $longitude, isSync: $isSync, isNew: $isNew, isDeleted: $isDeleted, DiscountInPercent: $discountInPercent, syncDate: $syncDate, insertedDate: $insertedDate, isActive: $isActive, textField2Value: $textField2Value, textField1Value: $textField1Value)';
+    return 'CustomerModel(id: $id, name: $name, base64ImageString: $base64ImageString, imageUrl: $imageUrl, code: $code, series: $series, contactType: $contactType, CustomerCategoryId: $customerCategoryId, categoryName: $categoryName, CountryId: $countryId, CurrencyId: $currencyId, companySlug: $companySlug, address1: $address1, Address2: $address2, city: $city, contactPerson: $contactPerson, phone: $phone, fax: $fax, opening: $opening, asOfDate: $asOfDate, creditLimit: $creditLimit, creditLimitDays: $creditLimitDays, displayName: $displayName, printName: $printName, cNIC: $cNIC, outstandingBalance: $outstandingBalance, dateOfBirth: $dateOfBirth, sTN: $sTN, ExchangeRate: $exchangeRate, latitude: $latitude, longitude: $longitude, isSync: $isSync, isNew: $isNew, isDeleted: $isDeleted, DiscountInPercent: $discountInPercent, syncDate: $syncDate, insertedDate: $insertedDate, isActive: $isActive, textField2Value: $textField2Value, textField1Value: $textField1Value)';
   }
 
   @override
@@ -363,6 +376,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
     return other is CustomerModel &&
         other.id == id &&
         other.name == name &&
+        other.base64ImageString == base64ImageString &&
+        other.imageUrl == imageUrl &&
         other.code == code &&
         other.series == series &&
         other.contactType == contactType &&
@@ -405,6 +420,8 @@ class CustomerModel extends BaseModel<int> with DropDown {
   int get hashCode {
     return id.hashCode ^
         name.hashCode ^
+        base64ImageString.hashCode ^
+        imageUrl.hashCode ^
         code.hashCode ^
         series.hashCode ^
         contactType.hashCode ^
