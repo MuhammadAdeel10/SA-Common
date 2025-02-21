@@ -44,7 +44,7 @@ class NumericTextFormField extends StatelessWidget {
       onTap: onTap,
       inputFormatters: [if (!isFractional) FilteringTextInputFormatter.digitsOnly],
       onChanged: (val) {
-        if (Helper.AmountLengthCheck(input: val, lengthValue: 10, allowDecimal: isFractional, decimalPlaces: decimalRange, isEmptyAllowed: true)) {
+        if (Helper.AmountLengthCheck(input: val, lengthValue: 10, allowDecimal: isFractional, decimalPlaces: decimalRange, isEmptyAllowed: true, allowNegative: true)) {
           if (onChanged != null) {
             onChanged!(val);
           }
