@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 class MapMarkers {
   final String markerId;
   final LatLng location;
@@ -12,6 +15,8 @@ class MapMarkers {
 class SAMapWidget extends StatelessWidget {
   SAMapWidget({
     super.key,
+    required this.onMapCreated,
+    required this.mapController,
     this.mapType = MapType.normal,
     required this.target,
     this.onCameraMove,
@@ -32,6 +37,8 @@ class SAMapWidget extends StatelessWidget {
 
   final void Function(CameraPosition)? onCameraMove;
   final void Function()? onCameraIdle;
+  final void Function(GoogleMapController controller) onMapCreated;
+  final Completer<GoogleMapController> mapController;
   final num height;
   final bool isStaticMarker;
   final bool zoomGesturesEnabled;
@@ -43,10 +50,6 @@ class SAMapWidget extends StatelessWidget {
   final Icon nonStaticMarker;
   final MapType mapType;
 
-  late final GoogleMapController mapController;
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +63,7 @@ class SAMapWidget extends StatelessWidget {
             zoomGesturesEnabled: zoomGesturesEnabled,
             zoomControlsEnabled: zoomControlsEnabled,
             myLocationEnabled: myLocationEnabled,
-            onMapCreated: _onMapCreated,
+            onMapCreated: onMapCreated,
             gestureRecognizers: {Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer())},
             onCameraIdle: onCameraIdle,
             onCameraMove: onCameraMove,
