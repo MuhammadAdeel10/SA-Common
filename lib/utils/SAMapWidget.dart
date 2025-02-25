@@ -50,10 +50,6 @@ class SAMapWidget extends StatelessWidget {
   final Icon nonStaticMarker;
   final MapType mapType;
 
-//   late final GoogleMapController mapController;
-//   void _onMapCreated(GoogleMapController controller) {
-//     mapController = controller;
-//   }
 
   @override
   Widget build(BuildContext context) {
