@@ -240,8 +240,10 @@ class Helper extends BaseController {
 
   static Future<void> UserData() async {
     var prefs = PrefUtils();
-    var userId = prefs.GetPreferencesInteger(LocalStorageKey.localUserId);
-    user = await UserDatabase.instance.GetUserById(userId);
+    int? userId = prefs.GetPreferencesInteger(LocalStorageKey.localUserId);
+    if (userId != null) {
+      user = await UserDatabase.instance.GetUserById(userId);
+    }
   }
 
   static Future<String> GetDeviceId() async {

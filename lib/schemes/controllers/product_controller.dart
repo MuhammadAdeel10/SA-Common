@@ -25,7 +25,7 @@ class ProductController extends BaseController {
       baseUrl,
       "${slug}/${branchId}${ApiEndPoint.getAllProduct}"
       "${formatted}"
-      "&page=${page}&pageSize=5000",
+      "&page=${page}&pageSize=500",
     )
         .catchError(
       (error) {
@@ -72,7 +72,6 @@ class ProductController extends BaseController {
       await SyncSettingDatabase.dao.update(getSyncSetting);
     }
   }
-
 
   Future<void> DeleteProduct(String baseUrl, String slug, int branchId) async {
     var getSyncSetting = await SyncSettingDatabase.GetByTableName(Tables.products, slug: slug, branchId: branchId, isBranch: true);
@@ -224,7 +223,7 @@ class ProductController extends BaseController {
         var totalPages = decode['pages'];
         var productImages = decode['results'];
         var pullData = List<ProductImages>.from(productImages.map((x) => ProductImages().fromJson(x, slug: slug)));
-        await ProductImagesDatabase.bulkInsert(pullData,ApiEndPoint.ImageBaseUrl);
+        await ProductImagesDatabase.bulkInsert(pullData, ApiEndPoint.ImageBaseUrl);
         if (currentPage <= totalPages) {
           print("Pages" + "$currentPage");
           await PullProductImages(baseUrl, slug, branchId, page: currentPage + 1);
