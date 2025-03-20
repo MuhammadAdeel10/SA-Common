@@ -47,6 +47,7 @@ class Helper extends BaseController {
   static UserModel user = UserModel();
   static String plainPassword = "";
   static String homeCurrency = "";
+  static bool enableProductAddMultiple = false;
   static SalesPersonModel? salePerson = SalesPersonModel();
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);

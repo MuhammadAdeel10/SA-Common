@@ -77,6 +77,31 @@ class TravelLogController extends BaseController {
     locations.insert(0, data);
   }
 
+  Future<bool> checkAndRequestPermission() async {
+    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isLocationServiceEnabled) {
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        await Geolocator.openAppSettings();
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      await Geolocator.openAppSettings();
+      return false;
+    }
+
+    return true;
+  }
+
   Future<void> startTracking() async {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
@@ -93,12 +118,7 @@ class TravelLogController extends BaseController {
     }
 
     if (isCheckIn) {
-      subscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-          distanceFilter: 15,
-          accuracy: LocationAccuracy.high,
-        ),
-      ).listen((Position position) async {
+      subscription = Geolocator.getPositionStream(locationSettings: Platform.isAndroid ? AndroidSettings(distanceFilter: 15, accuracy: LocationAccuracy.high) : AppleSettings(accuracy: LocationAccuracy.high, distanceFilter: 15, activityType: ActivityType.fitness, showBackgroundLocationIndicator: true)).listen((Position position) async {
         if (position.speed > 0.5) {
           if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
             _previousLocation = position;

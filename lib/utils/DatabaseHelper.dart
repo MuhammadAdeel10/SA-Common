@@ -501,6 +501,7 @@ class DatabaseHelper implements DBHelper {
       ${CompanySettingField.fbrPosFeeAccountType} $integerType,
       ${CompanySettingField.defaultPOSCustomerId} $integerType,
       ${CompanySettingField.decimalPlaces} $integerType,
+      ${CompanySettingField.enableProductAddMultiple} $boolType CHECK(${CompanySettingField.enableProductAddMultiple} IN (0,1)),
       ${CompanySettingField.currencyId} $integerType,
       ${CompanySettingField.allowDiscountOnPosProduct} $boolType CHECK(${CompanySettingField.allowDiscountOnPosProduct} IN (0,1)),
       ${CompanySettingField.allowPriceChangeForPosProduct} $boolType CHECK(${CompanySettingField.allowPriceChangeForPosProduct} IN (0,1)),
@@ -1561,9 +1562,20 @@ CREATE INDEX  [PK_SchemeSalesGeography] on [SchemeSalesGeography]
   }
 
   Future<void> addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
-    final result = await db.rawQuery('PRAGMA table_info($tableName)');
-    bool columnExists = result.any((column) => column['name'] == columnName);
+    // Check if the table exists
+    final result = await db.rawQuery('SELECT name FROM sqlite_master WHERE type="table" AND name="$tableName"');
 
+    // If the table doesn't exist, handle it (e.g., log error or create the table)
+    if (result.isEmpty) {
+      print("Table $tableName does not exist.");
+      return; // Or you can create the table if needed.
+    }
+
+    // Check if the column exists
+    final columns = await db.rawQuery('PRAGMA table_info($tableName)');
+    bool columnExists = columns.any((column) => column['name'] == columnName);
+
+    // If the column doesn't exist, add it
     if (!columnExists) {
       await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
     }
