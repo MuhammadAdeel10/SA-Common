@@ -11,8 +11,7 @@ import '../models/schemeGetModel.dart';
 import '../models/schemesModel.dart';
 
 class SchemesDatabase {
-  static final dao =
-      BaseRepository<SchemesModel>(SchemesModel(), tableName: Tables.Schemes);
+  static final dao = BaseRepository<SchemesModel>(SchemesModel(), tableName: Tables.Schemes);
   Future<SchemesModel> find(int id) => dao.find(id);
   Future<List<SchemesModel>> getAll() => dao.getAll();
   Future<List<SchemesModel>> getByCompanySlug() => dao.getByCompanySlug();
@@ -47,6 +46,7 @@ class SchemesDatabase {
     if (DateTime.now().weekday == 7) {
       currentDay = 0;
     }
+    await Helper.UserData();
     String currentTimeUtc = DateTime.now().toUtc().toIso8601String();
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT DISTINCT schemeTypeId, companySlug
@@ -66,8 +66,7 @@ class SchemesDatabase {
     });
   }
 
-  static Future<void> bulkWithMasterDetailInsert(
-      List<SchemeGetModel> models) async {
+  static Future<void> bulkWithMasterDetailInsert(List<SchemeGetModel> models) async {
     final db = await DatabaseHelper.instance.database;
 
     var getAll = await SchemesDatabase.dao.getByCompanySlug();
@@ -91,32 +90,19 @@ class SchemesDatabase {
     await batch.commit();
     models.forEach((val) {
       if (val.schemeDetails != null) {
-        val.schemeDetails!
-            .map((e) => e.companySlug =
-                e.companySlug != null ? e.companySlug : val.companySlug)
-            .toList();
+        val.schemeDetails!.map((e) => e.companySlug = e.companySlug != null ? e.companySlug : val.companySlug).toList();
         DetailsSchemesDatabase.bulkInsert(val.schemeDetails!);
       }
       if (val.linkedBranches != null) {
-        val.linkedBranches!
-            .map((e) => e.companySlug =
-                e.companySlug != null ? e.companySlug : val.companySlug)
-            .toList();
+        val.linkedBranches!.map((e) => e.companySlug = e.companySlug != null ? e.companySlug : val.companySlug).toList();
         BranchesSchemesDatabase.bulkInsert(val.linkedBranches!);
       }
       if (val.linkedCustomerCategories != null) {
-        val.linkedCustomerCategories!
-            .map((e) => e.companySlug =
-                e.companySlug != null ? e.companySlug : val.companySlug)
-            .toList();
-        CustomerCategoriesSchemesDatabase.bulkInsert(
-            val.linkedCustomerCategories!);
+        val.linkedCustomerCategories!.map((e) => e.companySlug = e.companySlug != null ? e.companySlug : val.companySlug).toList();
+        CustomerCategoriesSchemesDatabase.bulkInsert(val.linkedCustomerCategories!);
       }
       if (val.schemeSalesGeography != null) {
-        val.schemeSalesGeography!
-            .map((e) => e.companySlug =
-                e.companySlug != null ? e.companySlug : val.companySlug)
-            .toList();
+        val.schemeSalesGeography!.map((e) => e.companySlug = e.companySlug != null ? e.companySlug : val.companySlug).toList();
         SalesGeographySchemesDatabase.bulkInsert(val.schemeSalesGeography!);
       }
     });

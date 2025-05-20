@@ -182,6 +182,38 @@ class BaseRepository<T extends BaseModel> {
     }
     return false;
   }
+
+  static Future<void> bulkInsertOrUpdate<T>({
+    required List<T> models,
+    required String tableName,
+    required String idField,
+    required List<T> getExistingData,
+    required Map<String, dynamic> Function(T) toJson,
+  }) async {
+    final db = await DatabaseHelper.instance.database;
+    // Create a set of existing record IDs for quick lookup
+    final existingIds = getExistingData.map((record) => toJson(record)[idField]).toSet();
+
+    await db.transaction((txn) async {
+      Batch batch = txn.batch();
+      for (var model in models) {
+        var data = toJson(model);
+        var id = data[idField];
+
+        if (existingIds.contains(id)) {
+          batch.update(
+            tableName,
+            data,
+            where: "$idField = ?",
+            whereArgs: [id],
+          );
+        } else {
+          batch.insert(tableName, data);
+        }
+      }
+      await batch.commit(noResult: true);
+    });
+  }
 }
 
 abstract class BaseModel<Tkey> {

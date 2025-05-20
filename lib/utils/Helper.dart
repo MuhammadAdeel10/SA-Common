@@ -1,14 +1,19 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:sa_common/ChangeUrl/AppService.dart';
 import 'package:sa_common/Controller/statusController.dart';
 import 'package:sa_common/SalesPerson/database/salesPerson_database.dart';
 import 'package:sa_common/SalesPerson/model/SalesPersonModel.dart';
+import 'package:sa_common/cart/model/cart_model.dart';
 import 'package:sa_common/company/Models/CompanySettingModel.dart';
 import 'package:sa_common/login/UserDatabase.dart';
 import 'package:sa_common/login/UserModel.dart';
@@ -19,9 +24,13 @@ import 'package:sa_common/schemes/models/product_model.dart';
 import 'package:sa_common/schemes/models/tax_model.dart';
 import 'package:sa_common/synchronization/Database/BranchProductTax_database.dart';
 import 'package:sa_common/synchronization/Models/BranchProductTaxModel.dart';
+import 'package:sa_common/utils/ApiEndPoint.dart';
 import 'package:sa_common/utils/Logger.dart';
+import 'package:sa_common/utils/colors.dart';
 import 'package:sa_common/utils/app_routes.dart';
+import 'package:sa_common/utils/constants.dart';
 import 'package:sa_common/utils/pref_utils.dart';
+import 'package:sa_common/utils/styles.dart';
 import 'package:toastification/toastification.dart';
 import '../Controller/BaseController.dart';
 import '../productCategory/product_categoriesDatabase.dart';
@@ -33,11 +42,17 @@ import '../synchronization/Database/EndOfTheDay_database.dart';
 import '../synchronization/Database/currency_database.dart';
 import '../synchronization/Models/EndOfTheDay_model.dart';
 import 'LocalStorageKey.dart';
+import 'package:sa_common/generated/locales.g.dart';
 
 class Helper extends BaseController {
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   static List<ProductModel> productsModel = [];
   static List<ProductModel> allProductModel = [];
+  static RxList<CartModel> cartList = RxList<CartModel>();
+  static RxList<ProductModel> productList = RxList.empty();
+  static RxList<ProductCategoryModel> productCategoryList = RxList.empty();
+  static RxInt masterIdSaleOrder = 0.obs;
+  static RxInt customerCurrencyId = 0.obs;
   static List<ProductCategoryModel> productCategoriesModel = [];
   static List<TaxModel> taxModel = [];
   static List<BranchProductTaxModel> branchProductSalesTaxModel = [];
@@ -47,11 +62,20 @@ class Helper extends BaseController {
   static UserModel user = UserModel();
   static String plainPassword = "";
   static String homeCurrency = "";
-  static bool enableProductAddMultiple = false;
   static SalesPersonModel? salePerson = SalesPersonModel();
+  static String appId = GlobalConstant.orderBookerAppId;
+  static RxInt customerId = 0.obs;
+  static RxString selectedLanguage = "en".obs;
+
   static bool isEmailValid(String email) {
     bool emailValid = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
     return emailValid;
+  }
+
+  static Future<void> SetBaseUrl() async {
+    AppService _appService = AppService();
+    await _appService.init();
+    ApiEndPoint.url = _appService.appUrl != "" ? _appService.appUrl : ApiEndPoint.defaultUrl;
   }
 
   static bool AmountLengthCheck({
@@ -67,6 +91,10 @@ class Helper extends BaseController {
       return true;
     }
     decimalPlaces = decimalPlaces ?? Helper.requestContext.decimalPlaces;
+    if (decimalPlaces <= 0) {
+      allowDecimal = false;
+      input = input?.split(".")[0];
+    }
     String numberPattern = '\\d{1,$lengthValue}';
     if (allowDecimal && decimalPlaces > 0) {
       numberPattern += '(\\.\\d{1,$decimalPlaces})?';
@@ -104,6 +132,7 @@ class Helper extends BaseController {
     StatusController statusController = Get.put(StatusController());
 
     try {
+      await Helper.SetBaseUrl();
       final result = await InternetAddress.lookup("example.com");
       Logger.InfoLog("hasNetwork  $result");
       var response = await http.get(Uri.parse("${baseUrl}"));
@@ -219,6 +248,14 @@ class Helper extends BaseController {
     return date;
   }
 
+  static DateTime? parseDate(String formattedDate) {
+    try {
+      return DateFormat('dd-MM-yyyy').parse(formattedDate);
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<void> FillLists() async {
     var branchId = user.branchId;
     productsModel = await ProductDatabase().getProducts();
@@ -241,10 +278,8 @@ class Helper extends BaseController {
 
   static Future<void> UserData() async {
     var prefs = PrefUtils();
-    int? userId = prefs.GetPreferencesInteger(LocalStorageKey.localUserId);
-    if (userId != null) {
-      user = await UserDatabase.instance.GetUserById(userId);
-    }
+    int userId = prefs.GetPreferencesInteger(LocalStorageKey.localUserId);
+    user = await UserDatabase.instance.GetUserById(userId);
   }
 
   static Future<String> GetDeviceId() async {
@@ -284,7 +319,7 @@ class Helper extends BaseController {
     required PagingController<int, T> pagingController,
   }) async {
     try {
-      final newItems = await fetchFunction.then(
+      await fetchFunction.then(
         (value) {
           final isLastPage = value!.length < _pageSize;
           if (isLastPage) {
@@ -344,5 +379,67 @@ class Helper extends BaseController {
     }
 
     return response;
+  }
+
+  static void showLoading([String? message]) {
+    Get.dialog(
+      barrierDismissible: false,
+      GetBuilder<StatusController>(
+        builder: (controller) => PopScope(
+          canPop: false,
+          child: Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Styles.xsmallRadius)),
+            child: Container(
+              height: 80,
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SpinKitCircle(
+                    color: AppColors.primary,
+                    size: 50.0,
+                  ),
+                  Styles.smallHGap,
+                  Expanded(child: Text(controller.loaderText.toString())),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static void hideLoading() {
+    if (Get.isDialogOpen!) {
+      Get.back();
+    }
+  }
+
+  static Future<bool> showGetXDeleteDialog({
+    String title = LocaleKeys.delete_Confirmation,
+    String content = LocaleKeys.are_YouSure_Delete,
+    String confirmText = LocaleKeys.button_deleteButton,
+    String cancelText = LocaleKeys.button_cancel,
+  }) async {
+    final result = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text(title.tr),
+        content: Text(content.tr),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(cancelText.tr),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red, textStyle: TextStyle(color: AppColors.white)),
+            onPressed: () => Get.back(result: true),
+            child: Text(confirmText.tr, style: TextStyle(color: AppColors.white)),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+    return result ?? false;
   }
 }

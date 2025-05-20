@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:sa_common/utils/ApiEndPoint.dart';
+import 'package:sa_common/utils/Helper.dart';
 import 'package:sa_common/utils/LocalStorageKey.dart';
 import 'package:sa_common/utils/Logger.dart';
 import 'package:sa_common/utils/constants.dart';
@@ -15,10 +17,13 @@ class BaseClient {
 
   Map<String, String> GetHeader({String token = ""}) {
     Map<String, String> userHeader;
+    if (Helper.appId.isEmpty) {
+      Helper.appId = GlobalConstant.orderBookerAppId;
+    }
     if (token.isNotEmpty) {
-      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": Platform.isWindows ? GlobalConstant.appId : GlobalConstant.orderBookerAppId, "Authorization": "Bearer " + token};
+      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": Platform.isWindows ? GlobalConstant.appId : Helper.appId, "Authorization": "Bearer " + token};
     } else {
-      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": Platform.isWindows ? GlobalConstant.appId : GlobalConstant.orderBookerAppId};
+      userHeader = {"Content-type": "application/json", "Accept": "application/json", "X-APP-Id": Platform.isWindows ? GlobalConstant.appId : Helper.appId};
     }
     return userHeader;
   }
@@ -62,6 +67,7 @@ class BaseClient {
       throw ApiNotRespondingException('API not responded in time', uri.toString());
     } catch (Ex) {
       Logger.ErrorLog('data: $uri + $Ex');
+      log('data: $uri + $Ex');
     }
   }
 
@@ -99,7 +105,7 @@ class BaseClient {
     }
   }
 
-  Future<dynamic> postFile(String baseUrl, String url, List<PlatformFile> selectedFiles) async {
+  Future<dynamic> postFile(String baseUrl, String url, List<PlatformFile> selectedFiles, {Map<String, String>? additionalData}) async {
     var uri = Uri.parse(baseUrl + url);
     var pref = await SharedPreferences.getInstance();
     String token = pref.get(LocalStorageKey.token) as String;
@@ -113,10 +119,15 @@ class BaseClient {
         ),
       );
     }
+
+    // Add additional form fields like any param
+    if (additionalData != null) {
+      request.fields.addAll(additionalData);
+    }
+
     try {
       var response = await request.send();
       var result = await http.Response.fromStream(response);
-
       return _processResponse(baseUrl, result);
     } on SocketException {
       throw FetchDataException('No Internet connection', uri.toString());
@@ -125,7 +136,6 @@ class BaseClient {
     } catch (Ex) {
       Logger.ErrorLog('data: $uri + $Ex');
     }
-    // Send the request and await the response:
   }
 
   Future<dynamic> delete(String baseUrl, String api) async {
@@ -146,6 +156,7 @@ class BaseClient {
   }
 
   dynamic _processResponse(String baseUrl, http.Response response) async {
+    log("${response.request?.url}  + ${response.statusCode}");
     switch (response.statusCode) {
       case 200:
       case 201:

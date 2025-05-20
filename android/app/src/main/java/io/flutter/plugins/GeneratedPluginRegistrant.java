@@ -41,6 +41,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin flutter_plugin_android_lifecycle, io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.baseflow.geocoding.GeocodingPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin geocoding_android, com.baseflow.geocoding.GeocodingPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.baseflow.geolocator.GeolocatorPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin geolocator_android, com.baseflow.geolocator.GeolocatorPlugin", e);
@@ -51,9 +56,19 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin google_maps_flutter_android, io.flutter.plugins.googlemaps.GoogleMapsPlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new io.flutter.plugins.imagepicker.ImagePickerPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin image_picker_android, io.flutter.plugins.imagepicker.ImagePickerPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.lyokone.location.LocationPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin location, com.lyokone.location.LocationPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.joutvhu.openfile.OpenFilePlusPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin open_file_plus, com.joutvhu.openfile.OpenFilePlusPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.pathprovider.PathProviderPlugin());
@@ -73,7 +88,7 @@ public final class GeneratedPluginRegistrant {
     try {
       flutterEngine.getPlugins().add(new com.tekartik.sqflite.SqflitePlugin());
     } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin sqflite, com.tekartik.sqflite.SqflitePlugin", e);
+      Log.e(TAG, "Error registering plugin sqflite_android, com.tekartik.sqflite.SqflitePlugin", e);
     }
   }
 }

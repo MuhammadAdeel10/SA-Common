@@ -30,6 +30,12 @@
 @import flutter_local_notifications;
 #endif
 
+#if __has_include(<geocoding_ios/GeocodingPlugin.h>)
+#import <geocoding_ios/GeocodingPlugin.h>
+#else
+@import geocoding_ios;
+#endif
+
 #if __has_include(<geolocator_apple/GeolocatorPlugin.h>)
 #import <geolocator_apple/GeolocatorPlugin.h>
 #else
@@ -42,10 +48,22 @@
 @import google_maps_flutter_ios;
 #endif
 
+#if __has_include(<image_picker_ios/FLTImagePickerPlugin.h>)
+#import <image_picker_ios/FLTImagePickerPlugin.h>
+#else
+@import image_picker_ios;
+#endif
+
 #if __has_include(<location/LocationPlugin.h>)
 #import <location/LocationPlugin.h>
 #else
 @import location;
+#endif
+
+#if __has_include(<open_file_plus/OpenFilePlusPlugin.h>)
+#import <open_file_plus/OpenFilePlusPlugin.h>
+#else
+@import open_file_plus;
 #endif
 
 #if __has_include(<path_provider_foundation/PathProviderPlugin.h>)
@@ -66,10 +84,10 @@
 @import shared_preferences_foundation;
 #endif
 
-#if __has_include(<sqflite/SqflitePlugin.h>)
-#import <sqflite/SqflitePlugin.h>
+#if __has_include(<sqflite_darwin/SqflitePlugin.h>)
+#import <sqflite_darwin/SqflitePlugin.h>
 #else
-@import sqflite;
+@import sqflite_darwin;
 #endif
 
 @implementation GeneratedPluginRegistrant
@@ -79,9 +97,12 @@
   [FilePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FilePickerPlugin"]];
   [FlutterBackgroundServicePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterBackgroundServicePlugin"]];
   [FlutterLocalNotificationsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterLocalNotificationsPlugin"]];
+  [GeocodingPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeocodingPlugin"]];
   [GeolocatorPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeolocatorPlugin"]];
   [FLTGoogleMapsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleMapsPlugin"]];
+  [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [LocationPlugin registerWithRegistrar:[registry registrarForPlugin:@"LocationPlugin"]];
+  [OpenFilePlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"OpenFilePlusPlugin"]];
   [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
   [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];

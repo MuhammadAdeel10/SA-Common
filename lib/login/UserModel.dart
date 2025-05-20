@@ -9,6 +9,7 @@ class UserFields {
   static final String expiry = 'expiry';
   static final String companyId = 'companyId';
   static final String branchId = 'branchId';
+  static final String customerId = 'customerId';
   static final String userId = 'userId';
   static final String branchPrefix = 'branchPrefix';
   static final String phoneNumber = 'phoneNumber';
@@ -21,10 +22,11 @@ class UserFields {
 class UserModel {
   final int? id;
   final String email;
-  final String password;
+  String password;
   final DateTime? expiry;
   final String? companyId;
   final int? branchId;
+  int? customerId;
   final String? userId;
   final String? prefix;
   String? phoneNumber;
@@ -33,58 +35,25 @@ class UserModel {
   String? imageUrl;
   String? fullName;
 
-  UserModel(
-      {this.id,
-      this.email = "",
-      this.password = "",
-      this.expiry,
-      this.branchId,
-      this.companyId,
-      this.userId,
-      this.prefix,
-      this.isPrivacyMode,
-      this.phoneNumber,
-      this.fullName,
-      this.imageUrl,
-      this.isActive});
+  UserModel({this.id, this.email = "", this.password = "", this.expiry, this.branchId, this.customerId, this.companyId, this.userId, this.prefix, this.isPrivacyMode, this.phoneNumber, this.fullName, this.imageUrl, this.isActive});
 
-  UserModel copy(
-          {int? id,
-          String? email,
-          String? password,
-          DateTime? expiry,
-          String? userId}) =>
-      UserModel(
-          id: id ?? this.id,
-          email: email ?? this.email,
-          password: password ?? this.password,
-          expiry: expiry ?? this.expiry,
-          branchId: branchId ?? this.branchId,
-          companyId: companyId ?? this.companyId,
-          userId: userId ?? this.userId);
+  UserModel copy({int? id, String? email, String? password, DateTime? expiry, int? customerId, String? userId}) => UserModel(id: id ?? this.id, email: email ?? this.email, password: password ?? this.password, expiry: expiry ?? this.expiry, branchId: branchId ?? this.branchId, customerId: customerId ?? this.customerId, companyId: companyId ?? this.companyId, userId: userId ?? this.userId);
 
-  static UserModel fromJson(Map<String, Object?> json,
-          {bool isProfile = false}) =>
-      UserModel(
+  static UserModel fromJson(Map<String, Object?> json, {bool isProfile = false}) => UserModel(
         id: isProfile == true ? null : json[UserFields.id] as int?,
         email: json[UserFields.email].toString(),
         password: json[UserFields.password].toString(),
-        expiry: isProfile == true
-            ? null
-            : DateTime.parse(json[UserFields.expiry] as String),
+        expiry: isProfile == true ? null : DateTime.parse(json[UserFields.expiry] as String),
         branchId: json[UserFields.branchId] as int?,
+        customerId: json[UserFields.customerId] as int?,
         companyId: json[UserFields.companyId] as String?,
         userId: json[UserFields.userId] as String?,
         prefix: json[UserFields.branchPrefix] as String?,
         phoneNumber: json[UserFields.phoneNumber] as String?,
         fullName: json[UserFields.fullName] as String?,
         imageUrl: json[UserFields.imageUrl] as String?,
-        isActive:
-            (json['isActive'] == 0 || json['isActive'] == false) ? false : true,
-        isPrivacyMode:
-            (json['isPrivacyMode'] == 0 || json['isPrivacyMode'] == false)
-                ? false
-                : true,
+        isActive: (json['isActive'] == 0 || json['isActive'] == false) ? false : true,
+        isPrivacyMode: (json['isPrivacyMode'] == 0 || json['isPrivacyMode'] == false) ? false : true,
         // userId: json[UserFields.userId] != null
         //     ? Guid(json[UserFields.userId] as String?)
         //     : null,
@@ -96,6 +65,7 @@ class UserModel {
         UserFields.password: password,
         UserFields.expiry: expiry?.toIso8601String(),
         UserFields.branchId: branchId,
+        UserFields.customerId: customerId,
         UserFields.companyId: companyId,
         UserFields.userId: userId,
         UserFields.branchPrefix: prefix,

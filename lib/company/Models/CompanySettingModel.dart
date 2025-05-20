@@ -9,7 +9,6 @@ class CompanySettingField {
   static final String id = 'id';
   static final String slug = 'slug';
   static final String name = 'name';
-  static final String enableProductAddMultiple = 'enableProductAddMultiple';
   static final String allowDiscountOnPosProduct = 'allowDiscountOnPosProduct';
   static final String allowPriceChangeForPosProduct = 'allowPriceChangeForPosProduct';
   static final String allowRemovePosProductAfterScanning = 'allowRemovePosProductAfterScanning';
@@ -57,6 +56,7 @@ class CompanySettingField {
   static final String zip = 'zip';
   static final String countryId = 'countryId';
   static final String phone = 'phone';
+  static final String enableSalePricing = 'enableSalePricing';
 }
 
 class CompanySettingModel extends BaseModel<Guid> {
@@ -66,7 +66,6 @@ class CompanySettingModel extends BaseModel<Guid> {
 
   String? slug;
   String name;
-  bool enableProductAddMultiple;
   bool allowDiscountOnPosProduct;
   bool allowPriceChangeForPosProduct;
   bool allowRemovePosProductAfterScanning;
@@ -114,6 +113,7 @@ class CompanySettingModel extends BaseModel<Guid> {
   String? zip;
   int? countryId;
   String? phone;
+  bool enableSalePricing;
 
   CompanySettingModel({
     this.id,
@@ -167,14 +167,13 @@ class CompanySettingModel extends BaseModel<Guid> {
     this.countryId,
     this.phone,
     this.allowNegativeStock = false,
-    this.enableProductAddMultiple = false,
+    this.enableSalePricing = false,
   });
 
   CompanySettingModel copyWith({
     Guid? id,
     String? companySlug,
     String? name,
-    bool? enableProductAddMultiple,
     bool? allowDiscountOnPosProduct,
     bool? allowPriceChangeForPosProduct,
     bool? allowRemovePosProductAfterScanning,
@@ -220,7 +219,6 @@ class CompanySettingModel extends BaseModel<Guid> {
       'logo': logo,
       'defaultPOSCustomerId': defaultPOSCustomerId,
       'decimalPlaces': decimalPlaces,
-      'enableProductAddMultiple': enableProductAddMultiple == true ? 1 : 0,
       'allowDiscountOnPosProduct': allowDiscountOnPosProduct == true ? 1 : 0,
       'allowPriceChangeForPosProduct': allowPriceChangeForPosProduct == true ? 1 : 0,
       'allowRemovePosProductAfterScanning': allowRemovePosProductAfterScanning == true ? 1 : 0,
@@ -252,6 +250,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       'customerLoyaltyProgramCategories': customerLoyaltyProgramCategories,
       'customerLoyaltyCalculationType': customerLoyaltyCalculationType.value,
       'currencySymbol': currencySymbol == true ? 1 : 0,
+      'enableSalePricing': enableSalePricing == true ? 1 : 0,
       'allowNegativeStock': allowNegativeStock == true ? 1 : 0,
       'orderDateFilter': orderDateFilter != null ? orderDateFilter!.value : null,
       'textField1Value': textField1Value,
@@ -320,6 +319,7 @@ class CompanySettingModel extends BaseModel<Guid> {
       state: map['state'] ?? "",
       zip: map['zip'] ?? "",
       phone: map['phone'] ?? "",
+      enableSalePricing: (map['enableSalePricing'] == 0 || map['enableSalePricing'] == false) ? false : true,
     );
   }
 

@@ -209,12 +209,71 @@ Days? intoDays(int value) {
   return Days.values.firstWhere((element) => element.value == value);
 }
 
-enum OrderDayType  {
+enum AttachmentsSource {
+  SaleOrder(0),
+  CustomerPayment(1),
+  Event(20);
+
+  const AttachmentsSource(this.value);
+  final int value;
+}
+
+enum SaleOrderStatus {
+  Draft(0),
+  Pending(10),
+  Approved(20),
+  Dispatched(25),
+  PartiallyDelivered(30),
+  Delivered(40),
+  Completed(50),
+  PartiallyCancelled(60),
+  Cancelled(70);
+
+  const SaleOrderStatus(this.value);
+  final int value;
+}
+
+SaleOrderStatus intoSaleOrderStatus(int value) {
+  return SaleOrderStatus.values.firstWhere((element) => element.value == value);
+}
+
+enum CustomerPaymentStatus {
+  Draft(0),
+  Pending(10),
+  Approved(20),
+  PartiallyAllocated(30),
+  Allocated(40),
+  Void(50);
+
+  const CustomerPaymentStatus(this.value);
+  final int value;
+}
+
+CustomerPaymentStatus intoCustomerPaymentStatus(int value) {
+  return CustomerPaymentStatus.values.firstWhere((element) => element.value == value);
+}
+
+enum MarkVisitItem {
+  FirstVisit(10),
+  ShopClosed(20),
+  ContactPersonNotAvailable(30),
+  PaymentReceived(40),
+  OrderReceived(50);
+
+  const MarkVisitItem(this.value);
+  final int value;
+}
+
+MarkVisitItem? intoMarkVisitItem(int value) {
+  return MarkVisitItem.values.firstWhere((element) => element.value == value);
+}
+
+enum OrderDayType {
   Today(0),
   Yesterday(1),
   DayBeforeYesterday(2);
 
-  const OrderDayType (this.value);
+  const OrderDayType(this.value);
 
   final int value;
 }
@@ -234,4 +293,34 @@ enum TravelStatus {
 
 TravelStatus? intoTravelStatus(int value) {
   return TravelStatus.values.firstWhere((element) => element.value == value);
+}
+
+enum SalePriceStatus {
+  Draft(0),
+  Pending(10),
+  Approved(20),
+  Void(30);
+
+  const SalePriceStatus(this.value);
+  final int value;
+}
+
+SalePriceStatus intToSalePriceStatuss(int value) {
+  return SalePriceStatus.values.firstWhere((element) => element.value == value);
+}
+
+enum LanguageState {
+  en,
+  ar,
+}
+
+extension LanguageExtension on LanguageState {
+  String get value {
+    switch (this) {
+      case LanguageState.en:
+        return 'en';
+      case LanguageState.ar:
+        return 'ar';
+    }
+  }
 }

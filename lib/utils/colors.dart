@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+
+class AppColors {
+  static const white = Colors.white;
+  static const black = Colors.black;
+  static const whiteItemBg = Color.fromARGB(220, 255, 255, 255);
+  static const primary = Color(0xff32BA7C);
+  static const secondary = Color(0xff598bff);
+  static const lightBlue = Color.fromARGB(255, 81, 196, 249);
+  static const backgroundColor = Color(0xffedf1f7);
+  static const goldDrop = Color(0xffdb8b00);
+  static const grey = Color(0xffdadfe6);
+  static const darkgray = Color.fromARGB(255, 153, 153, 153);
+  static const red = Color(0xFFcc0000);
+  static const redShade = Color.fromRGBO(204, 0, 0, 0.2);
+  static const grayShade = Color(0xFFFAFAFA);
+  static const gray = Color(0xFFC9C9C9);
+  static const green = Color(0xFF198754);
+  static const yellow = Color(0xFFFCCA55);
+  static const orange = Color(0xFFFF5722);
+  static const purple = Color(0xFF8A7FFF);
+  static const primaryShade = Color.fromRGBO(98, 189, 122, 0.2);
+  static const secondaryShade = Color.fromRGBO(96, 193, 236, 0.2);
+  static const purpleShade = Color.fromRGBO(138, 127, 255, 0.4);
+  static const orangeShade = Color.fromRGBO(255, 87, 34, 0.4);
+  static const darkPink = Color(0xFFFF3D71);
+  static const pinkShade = Color.fromRGBO(255, 61, 113, 0.4);
+  static const blackShade = Color(0xFF1B1B1B);
+  static const backgroundShade = Color.fromRGBO(98, 189, 122, 0.1);
+  static const aliceblue = Color(0xFFF0F8FF);
+  static const darkseagreen = Color(0xFF8FBC8F);
+  static const lightGray = Color.fromRGBO(169, 169, 169, 0.3);
+  static const saffron = Color(0xFFFBC02D);
+  static const orangePeel = Color(0xFFFF9800);
+  static const japaneseLaurel = Color(0xFF388E3C);
+  static const Grey = Color(0xFF757575);
+  static const mantis = Color(0xFF8BC34A);
+  static const navyBlue = Color(0xFF1976D2);
+  static const outrageousOrange = Color(0xFFFF5722);
+  static const roman = Color(0xFFD75A5A);
+}

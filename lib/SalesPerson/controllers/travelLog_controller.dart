@@ -77,32 +77,6 @@ class TravelLogController extends BaseController {
     locations.insert(0, data);
   }
 
-  Future<bool> checkAndRequestPermission() async {
-    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!isLocationServiceEnabled) {
-      return false;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    if (permission == LocationPermission.always) {
-      return true;
-    }
-
-    if (permission == LocationPermission.whileInUse) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.always) {
-        return true;
-      }
-    }
-    await Geolocator.openAppSettings();
-    return false;
-  }
-
   Future<void> startTracking() async {
     var pref = PrefUtils();
     var slug = pref.GetPreferencesString(LocalStorageKey.companySlug);
@@ -121,8 +95,16 @@ class TravelLogController extends BaseController {
     }
 
     if (isCheckIn) {
-      subscription = Geolocator.getPositionStream(locationSettings: Platform.isAndroid ? AndroidSettings(distanceFilter: 15, accuracy: LocationAccuracy.high) : AppleSettings(accuracy: LocationAccuracy.high, pauseLocationUpdatesAutomatically: true, activityType: ActivityType.fitness, showBackgroundLocationIndicator: false)).listen((Position position) async {
-        log(position.toString(), name: "currentlocation");
+      subscription = Geolocator.getPositionStream(
+              locationSettings: Platform.isAndroid
+                  ? AndroidSettings(distanceFilter: 15, accuracy: LocationAccuracy.high)
+                  : AppleSettings(
+                      accuracy: LocationAccuracy.high,
+                      distanceFilter: 15,
+                      activityType: ActivityType.fitness,
+                      showBackgroundLocationIndicator: true,
+                    ))
+          .listen((Position position) async {
         if (position.speed > 0.5) {
           if (_previousLocation == null || _calculateDistance(_previousLocation!, position) > 10) {
             _previousLocation = position;
@@ -148,6 +130,7 @@ class TravelLogController extends BaseController {
     subscription = null;
     _previousLocation = null;
     clearLocation();
+    await stopService();
   }
 
   clearLocation() {
@@ -183,9 +166,18 @@ class TravelLogController extends BaseController {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(width: 8),
-                Text(title, style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w500)),
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w500),
+                ),
                 SizedBox(height: 24),
-                SizedBox(width: double.infinity, child: Text(description, style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500))),
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    description,
+                    style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
+                  ),
+                ),
                 SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -215,7 +207,7 @@ class TravelLogController extends BaseController {
                       ),
                     ),
                   ],
-                ),
+                )
               ],
             ),
           ),
@@ -230,7 +222,13 @@ class TravelLogController extends BaseController {
 
   Future<int> startTrip({required TravelStatus travelStatus}) async {
     try {
-      TripModel trip = TripModel(applicationUserId: Helper.user.userId, branchId: Helper.user.branchId, startDate: DateTime.now(), isNew: true, travelStatus: travelStatus);
+      TripModel trip = TripModel(
+        applicationUserId: Helper.user.userId,
+        branchId: Helper.user.branchId,
+        startDate: DateTime.now(),
+        isNew: true,
+        travelStatus: travelStatus,
+      );
       if (await Helper.hasNetwork(ApiEndPoint.baseUrl)) {
         await postTrip();
       }
@@ -251,7 +249,11 @@ class TravelLogController extends BaseController {
         return trip.toMap();
       }).toList();
 
-      var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk", payload);
+      var response = await this.baseClient.post(
+            ApiEndPoint.baseUrl,
+            "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk",
+            payload,
+          );
 
       if (response != null && response.statusCode == 200) {
         var responseJson = json.decode(response.body);
@@ -269,7 +271,11 @@ class TravelLogController extends BaseController {
             await db.transaction((txn) async {
               Batch batch = txn.batch();
               for (var model in responseList) {
-                batch.delete(Tables.Trips, where: "id = ?", whereArgs: [model.tripId]);
+                batch.delete(
+                  Tables.Trips,
+                  where: "id = ?",
+                  whereArgs: [model.tripId],
+                );
 
                 model.isNew = false;
                 batch.insert(Tables.Trips, model.toMap());
@@ -289,7 +295,11 @@ class TravelLogController extends BaseController {
     var trips = await TripDatabase.dao.SelectList("isEdit = 1 and branchId = ${Helper.user.branchId}");
     if (trips != null && trips.isNotEmpty) {
       var payload = trips.map((trip) => trip.toMap()).toList();
-      var response = await this.baseClient.put(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk", payload);
+      var response = await this.baseClient.put(
+            ApiEndPoint.baseUrl,
+            "${Helper.user.companyId}/${Helper.user.branchId}/Trips/Bulk",
+            payload,
+          );
       if (response != null && response.statusCode == 200) {
         var responseJson = json.decode(response.body);
         if (responseJson["errors"] != null || responseJson["errors"].isNotEmpty) {
@@ -301,8 +311,16 @@ class TravelLogController extends BaseController {
               await db.transaction((txn) async {
                 Batch batch = txn.batch();
                 for (var trip in tripsToDelete) {
-                  batch.delete(Tables.Trips, where: "id = ?", whereArgs: [trip.id]);
-                  batch.delete(Tables.TravelLogs, where: "tripId = ?", whereArgs: [trip.id]);
+                  batch.delete(
+                    Tables.Trips,
+                    where: "id = ?",
+                    whereArgs: [trip.id],
+                  );
+                  batch.delete(
+                    Tables.TravelLogs,
+                    where: "tripId = ?",
+                    whereArgs: [trip.id],
+                  );
                 }
                 await batch.commit();
               });
@@ -347,18 +365,20 @@ class TravelLogController extends BaseController {
   }
 
   Future<void> SyncToServerTravelLog() async {
-    await lock.synchronized(() async {
-      var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 and branchId = ${Helper.user.branchId} order by locationDateTime");
-      if (logs != null && logs.isNotEmpty) {
-        logs.forEach((element) {
-          element.id = 0;
-        });
-        var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
-        if (response != null && response.statusCode == 200) {
-          await TravelLogDatabase.bulkUpdate();
+    await lock.synchronized(
+      () async {
+        var logs = await TravelLogDatabase.dao.SelectList("isSync = 0 and branchId = ${Helper.user.branchId} order by locationDateTime");
+        if (logs != null && logs.isNotEmpty) {
+          logs.forEach((element) {
+            element.id = 0;
+          });
+          var response = await this.baseClient.post(ApiEndPoint.baseUrl, "${Helper.user.companyId}/${Helper.user.branchId}/TravelLogs", logs);
+          if (response != null && response.statusCode == 200) {
+            await TravelLogDatabase.bulkUpdate();
+          }
         }
-      }
-    });
+      },
+    );
   }
 
   void CheckInOut({required bool isCheckIn}) {
@@ -408,22 +428,76 @@ class TravelLogController extends BaseController {
     }
   }
 
+  Future<bool> checkAndRequestPermission() async {
+    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isLocationServiceEnabled) {
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.always) {
+      return true;
+    }
+
+    if (permission == LocationPermission.whileInUse) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.always) {
+        return true;
+      }
+    }
+    await Geolocator.openAppSettings();
+    return false;
+  }
+
   Future<void> initializeService() async {
     final service = FlutterBackgroundService();
 
     // Set up a custom notification channel for Android
-    const AndroidNotificationChannel channel = AndroidNotificationChannel('my_foreground', 'MY FOREGROUND SERVICE', description: 'This channel is used for important notifications.', importance: Importance.high);
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'my_foreground',
+      'MY FOREGROUND SERVICE',
+      description: 'This channel is used for important notifications.',
+      importance: Importance.high,
+    );
 
     final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-    // Initialize notifications for Android and iOS
+    // Initialize notificat
+    //ions for Android and iOS
     if (Platform.isIOS || Platform.isAndroid) {
-      await flutterLocalNotificationsPlugin.initialize(const InitializationSettings(iOS: DarwinInitializationSettings(), android: AndroidInitializationSettings('ic_notification_icon')));
+      await flutterLocalNotificationsPlugin.initialize(
+        const InitializationSettings(
+          iOS: DarwinInitializationSettings(),
+          android: AndroidInitializationSettings('ic_notification_icon'),
+        ),
+      );
     }
 
     await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
 
-    await service.configure(androidConfiguration: AndroidConfiguration(onStart: onStart, autoStart: true, isForegroundMode: true, autoStartOnBoot: true, notificationChannelId: 'my_foreground', initialNotificationTitle: 'Background location', initialNotificationContent: 'Initializing', foregroundServiceNotificationId: 888, foregroundServiceTypes: [AndroidForegroundType.location]), iosConfiguration: IosConfiguration(autoStart: true, onForeground: onStart, onBackground: onIosBackground));
+    await service.configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,
+        autoStart: true,
+        isForegroundMode: true,
+        autoStartOnBoot: true,
+        notificationChannelId: 'my_foreground',
+        initialNotificationTitle: 'Background location',
+        initialNotificationContent: 'Initializing',
+        foregroundServiceNotificationId: 888,
+        foregroundServiceTypes: [AndroidForegroundType.location],
+      ),
+      iosConfiguration: IosConfiguration(
+        autoStart: true,
+        onForeground: onStart,
+        onBackground: onIosBackground,
+      ),
+    );
   }
 
   @pragma('vm:entry-point')
@@ -443,12 +517,15 @@ class TravelLogController extends BaseController {
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
+  TravelLogController travelLogController = Get.put(TravelLogController());
+
   DartPluginRegistrant.ensureInitialized();
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
   await preferences.setString("hello", "world");
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
       service.setAsForegroundService();
@@ -459,6 +536,7 @@ void onStart(ServiceInstance service) async {
     });
   }
   service.on('stopService').listen((event) async {
+    await travelLogController.stopService();
     await flutterLocalNotificationsPlugin.cancel(888); // Cancel notification
     service.stopSelf(); // Stop the service
   });
@@ -466,7 +544,19 @@ void onStart(ServiceInstance service) async {
   // For Android foreground notification
   if (service is AndroidServiceInstance) {
     if (await service.isForegroundService()) {
-      flutterLocalNotificationsPlugin.show(888, 'Background Location Service', 'Background location tracking is active', const NotificationDetails(android: AndroidNotificationDetails('my_foreground', 'MY FOREGROUND SERVICE', icon: 'ic_notification_icon', ongoing: true)));
+      flutterLocalNotificationsPlugin.show(
+        888,
+        'Background Location Service',
+        'Background location tracking is active',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'my_foreground',
+            'MY FOREGROUND SERVICE',
+            icon: 'ic_notification_icon',
+            ongoing: true,
+          ),
+        ),
+      );
     }
   }
 
@@ -477,9 +567,8 @@ void onStart(ServiceInstance service) async {
   await Helper.UserData();
 
   /// you can see this log in logcat
-  TravelLogController travelLogController = Get.put(TravelLogController());
 
-//   debugPrint('FLUTTER BACKGROUND SERVICE: ${DateTime.now()} ');
+  debugPrint('FLUTTER BACKGROUND SERVICE: ${DateTime.now()} ');
   await travelLogController.startTracking();
   final deviceInfo = DeviceInfoPlugin();
   String? device;
@@ -491,5 +580,11 @@ void onStart(ServiceInstance service) async {
     device = iosInfo.model;
   }
 
-  service.invoke('update', {"current_date": DateTime.now().toIso8601String(), "device": device});
+  service.invoke(
+    'update',
+    {
+      "current_date": DateTime.now().toIso8601String(),
+      "device": device,
+    },
+  );
 }

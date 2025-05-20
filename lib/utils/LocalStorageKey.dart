@@ -6,6 +6,7 @@ class LocalStorageKey {
   static const companyCount = "companyCount";
   static const brachCount = "brachCount";
   static const userId = "userGuid";
+  static const customerId = "customerId";
   static const companyName = "companyName";
   static const logo = "logo";
   static const isCheckIn = "isCheckIn";
@@ -24,4 +25,6 @@ class LocalStorageKey {
   static const screen2SalesPersonId = "screen2SalesPersonId";
   static const screen3SalesPersonName = "screen3SalesPersonName";
   static const screen3SalesPersonId = "screen3SalesPersonId";
+  static const baseUrl = "urlKey";
+  static const appId = "appId";
 }

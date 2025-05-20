@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:sa_common/Controller/statusController.dart';
 import 'package:sa_common/company/Database/company_setting_database.dart';
 import 'package:sa_common/company/controllers/company_controller.dart';
+import 'package:sa_common/generated/locales.g.dart';
 import 'package:sa_common/utils/CipherService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Controller/BaseController.dart';
@@ -26,10 +27,8 @@ class LoginController extends BaseController {
   FocusNode focusNodePassword = FocusNode();
   CompanyController companyController = Get.put(CompanyController());
   StatusController statusController = Get.put(StatusController());
-  //SynchronizationController synchronizationController = Get.put(SynchronizationController());
 
   Future<dynamic> login(String baseUrl, String email, String password, {VoidCallback? errorDialogOpen}) async {
-    //synchronizationController.LoaderText('Please Wait..!');
     statusController.status.value = Status.loading;
     var hashPassword = CipherService.Encrypt(password);
     UserModel? checkUser = await UserDatabase.instance.getLogin(email.toLowerCase(), hashPassword);
@@ -42,7 +41,6 @@ class LoginController extends BaseController {
       });
       if (response != null) {
         var jsonDecode = json.decode(response.body);
-        //var prefs = await SharedPreferences.getInstance();
         prefs.SetPreferencesString(LocalStorageKey.token, jsonDecode["token"]);
         var userId = jsonDecode["id"];
         var expiryInSeconds = jsonDecode["expires_in"];
@@ -215,7 +213,6 @@ class LoginController extends BaseController {
     var pref = PrefUtils();
     if (response != null && response.statusCode == 200) {
       var jsonDecode = json.decode(response.body);
-
       pref.SetPreferencesString(LocalStorageKey.token, jsonDecode["token"]);
       pref.SetPreferencesInteger(LocalStorageKey.localUserId, user.id ?? 0);
       pref.SetPreferencesString(LocalStorageKey.userId, user.userId ?? "");
@@ -246,5 +243,58 @@ class LoginController extends BaseController {
         }
       }
     }
+  }
+
+  final oldPassword = ''.obs;
+  final newPassword = ''.obs;
+  final confirmPassword = ''.obs;
+  final isLoading = false.obs;
+
+  void changePassword({VoidCallback? onSuccess}) async {
+    if (oldPassword.value.isEmpty || newPassword.value.isEmpty || confirmPassword.value.isEmpty) {
+      Helper.errorMsg(LocaleKeys.fillAllFields.tr, "", context);
+      return;
+    }
+    if (newPassword.value.length < 6 || newPassword.value.length > 50) {
+      Helper.errorMsg(LocaleKeys.passwordLength.tr, "", context);
+      return;
+    }
+    if (newPassword.value != confirmPassword.value) {
+      Helper.errorMsg(LocaleKeys.passwordMismatch.tr, "", context);
+      return;
+    }
+
+    isLoading.value = true;
+
+    var payloadMap = {
+      "currentPassword": oldPassword.value,
+      "password": newPassword.value,
+      "confirmPassword": confirmPassword.value,
+    };
+
+    final response = await this.baseClient.put(ApiEndPoint.baseUrl, ApiEndPoint.changePassword, payloadMap).catchError((error) {
+      isLoading.value = false;
+      handleError(error);
+      throw error;
+    });
+
+    isLoading.value = false;
+
+    if (response != null && response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      Helper.successMsg(LocaleKeys.successMessage.tr, responseData, context);
+      var hashPassword = CipherService.Encrypt(newPassword.value);
+      var user = Helper.user;
+      user.password = hashPassword;
+      UserDatabase.instance.update(user);
+      clearFields();
+      if (onSuccess != null) onSuccess(); // clear TextEditingControllers too
+    }
+  }
+
+  void clearFields() {
+    oldPassword.value = '';
+    newPassword.value = '';
+    confirmPassword.value = '';
   }
 }

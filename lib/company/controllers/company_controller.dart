@@ -40,6 +40,8 @@ class CompanyController extends BaseController {
       lstCompanySetting = CompanySettingModel().FromJson(response.body);
 
       lstCompany = CompanyModel().stringToList(response.body);
+      print(response.body);
+      print(response.body);
     }
     var pref = await SharedPreferences.getInstance();
     pref.setInt(LocalStorageKey.companyCount, lstCompany.length);
@@ -127,6 +129,7 @@ class CompanyController extends BaseController {
           phoneNumber: UserData.phoneNumber,
           imageUrl: UserData.imageUrl,
           isActive: UserData.isActive,
+          customerId: UserData.customerId,
           isPrivacyMode: UserData.isPrivacyMode,
         );
         await UserDatabase.instance.update(user);
@@ -161,6 +164,7 @@ class CompanyController extends BaseController {
           phoneNumber: UserData.phoneNumber,
           imageUrl: UserData.imageUrl,
           isActive: UserData.isActive,
+          customerId: UserData.customerId,
           isPrivacyMode: UserData.isPrivacyMode,
         );
         await UserDatabase.instance.update(user);
@@ -171,7 +175,6 @@ class CompanyController extends BaseController {
         //Get.toNamed(Routes.BRANCHES, arguments: [companyName, companyLogo]);
       }
     }
-
     return true;
   }
 
@@ -286,7 +289,22 @@ class CompanyController extends BaseController {
     var prefs = await SharedPreferences.getInstance();
     var userId = prefs.get(LocalStorageKey.localUserId) as int;
     var UserData = await UserDatabase.instance.GetUserById(userId);
-    var user = UserModel(id: UserData.id, email: UserData.email, password: UserData.password, expiry: UserData.expiry, companyId: UserData.companyId, userId: UserData.userId, fullName: UserData.fullName, phoneNumber: UserData.phoneNumber, imageUrl: UserData.imageUrl, isActive: UserData.isActive, isPrivacyMode: UserData.isPrivacyMode, branchId: branchId, prefix: prefix);
+    var user = UserModel(
+      id: UserData.id,
+      email: UserData.email,
+      password: UserData.password,
+      expiry: UserData.expiry,
+      companyId: UserData.companyId,
+      customerId: UserData.customerId,
+      userId: UserData.userId,
+      fullName: UserData.fullName,
+      phoneNumber: UserData.phoneNumber,
+      imageUrl: UserData.imageUrl,
+      isActive: UserData.isActive,
+      isPrivacyMode: UserData.isPrivacyMode,
+      branchId: branchId,
+      prefix: prefix,
+    );
     await UserDatabase.instance.update(user);
 
     Helper.requestContext.defaultPOSCustomerId = defaultPOSCustomerId;

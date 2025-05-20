@@ -1,6 +1,8 @@
 class ApiEndPoint {
-  static const baseUrl = "https://app.splendidaccounts.com/api/";
-  static const ImageBaseUrl = "https://app.splendidaccounts.com/";
+  static const defaultUrl = "https://app.splendidaccounts.com";
+  static String url = "";
+  static String get baseUrl => "$url/api/";
+  static String get ImageBaseUrl => "$url/";
 
   static const logIn = "auth/login";
   static const refreshToken = "auth/refreshToken";
@@ -65,4 +67,7 @@ class ApiEndPoint {
   static const getCustomerLoyaltyPoint = "/CustomerLoyatyPoint/ModifiedBetween/";
   static const getCustomerLoyaltyPointBalance = "/CustomerLoyatyPoint/CustomerLoyatyPointBalance/";
   static const EndOfTheFDay = "/EndOfDay/GetLastEndOfDay/";
+  static const saleOrderSearch = "/saleOrders/Search?page=1&size=50&orderBy=date&ascending=false&showVoid=false";
+  static const saleOrderRevise = "/saleOrders/Revise";
+  static const changePassword = "auth/ChangePassword";
 }
